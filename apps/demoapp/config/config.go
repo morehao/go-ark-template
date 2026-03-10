@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 
 	"github.com/morehao/golib/conf"
-	"github.com/morehao/golib/database/dbes"
-	"github.com/morehao/golib/database/dbmysql"
-	"github.com/morehao/golib/database/dbredis"
+	"github.com/morehao/golib/dbaccess/dbes"
+	"github.com/morehao/golib/dbaccess/dbgorm"
+	"github.com/morehao/golib/dbaccess/dbredis"
 	"github.com/morehao/golib/glog"
 	"github.com/morehao/golib/protocol/ghttp"
 )
@@ -16,12 +16,12 @@ import (
 var Conf *Config
 
 type Config struct {
-	Server       Server                    `yaml:"server"`
-	Log          map[string]glog.LogConfig `yaml:"log"`
-	MysqlConfigs []dbmysql.MysqlConfig     `yaml:"mysql_configs"`
-	RedisConfig  dbredis.RedisConfig       `yaml:"redis_config"`
-	ESConfigs    []dbes.ESConfig           `yaml:"es_configs"`
-	Client       Client                    `yaml:"client"`
+	Server      Server                    `yaml:"server"`
+	Log         map[string]glog.LogConfig `yaml:"log"`
+	DBConfigs   []dbgorm.GormConfig       `yaml:"db_configs"`
+	RedisConfig dbredis.RedisConfig       `yaml:"redis_config"`
+	ESConfigs   []dbes.ESConfig           `yaml:"es_configs"`
+	Client      Client                    `yaml:"client"`
 }
 
 type Server struct {

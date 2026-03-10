@@ -45,15 +45,9 @@ log:
       - requestId
 
 
-mysql_configs:
-  - addr: 127.0.0.1:3306
-    user: root
-    password: 123456
-    database: demo
-    charset: utf8mb4
-    timeout: 5s
-    read_timeout: 3s
-    write_timeout: 3s
+db_configs:
+  - url: "mysql://root:123456@127.0.0.1:3306/demo?charset=utf8mb4&parseTime=True&loc=Local&timeout=5s&readTimeout=3s&writeTimeout=3s"
+    service: demoapp
 
 redis_config:
   service: demoapp

@@ -13,7 +13,7 @@ import (
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
 	"github.com/morehao/golib/biz/gobject"
-	"github.com/morehao/golib/database/dbes"
+	"github.com/morehao/golib/dbaccess/dbes"
 	"github.com/morehao/golib/glog"
 	"github.com/morehao/golib/gutil"
 )

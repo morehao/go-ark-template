@@ -32,8 +32,8 @@ func resourceInit() error {
 	if cfg, ok := config.Conf.Log["gorm"]; ok {
 		gormLogConfig = &cfg
 	}
-	if err := dbclient.InitMultiMysql(config.Conf.MysqlConfigs, gormLogConfig); err != nil {
-		return fmt.Errorf("init mysql failed: " + err.Error())
+	if err := dbclient.InitMultiDB(config.Conf.DBConfigs, gormLogConfig); err != nil {
+		return fmt.Errorf("init db failed: " + err.Error())
 	}
 	var redisLogConfig *glog.LogConfig
 	if cfg, ok := config.Conf.Log["redis"]; ok {

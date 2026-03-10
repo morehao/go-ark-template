@@ -78,13 +78,13 @@ func (d *demoappInitializer) Initialize() error {
 // initResources 初始化各类资源（MySQL、Redis、ES 等）
 func (d *demoappInitializer) initResources() error {
 	// 初始化 MySQL
-	if len(config.Conf.MysqlConfigs) > 0 {
+	if len(config.Conf.DBConfigs) > 0 {
 		var gormLogConfig *glog.LogConfig
 		if cfg, ok := config.Conf.Log["gorm"]; ok {
 			gormLogConfig = &cfg
 		}
-		if err := dbclient.InitMultiMysql(config.Conf.MysqlConfigs, gormLogConfig); err != nil {
-			return fmt.Errorf("init mysql: %w", err)
+		if err := dbclient.InitMultiDB(config.Conf.DBConfigs, gormLogConfig); err != nil {
+			return fmt.Errorf("init db: %w", err)
 		}
 	}
 
