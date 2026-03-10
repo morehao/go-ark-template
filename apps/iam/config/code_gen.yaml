@@ -7,14 +7,14 @@ layer_name_map:
   model: iammodel
   dao: iamdao
 module:
-  package_name: permission
-  description: 角色管理
-  table_name: iam_role
+  package_name: audit
+  description: 登录日志
+  table_name: iam_login_log
   table_prefix: iam_ 
 model:
-  package_name: tenant
-  description: 租户配置
-  table_name: iam_tenant_config
+  package_name: audit
+  description: 登录日志
+  table_name: iam_login_log
   table_prefix: iam_ 
 api:
   package_name: tenants

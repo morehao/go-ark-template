@@ -99,9 +99,28 @@ swag:
 	@echo "✅ Swagger 文档已生成：apps/$(APP)/docs"
 
 
+CLI_VERSION := v1.0.15
+CLI_PKG     := github.com/morehao/gocli
+
 codegen:
 	$(call validate_app)
 	$(if $(MODE),, $(error ❌ 请使用 MODE 参数指定生成模式，例如 MODE=api,module,model))
+
+	@set -e; \
+	if ! command -v gocli >/dev/null 2>&1; then \
+		echo "⚠️ 未检测到 gocli，正在安装 $(CLI_VERSION)..."; \
+		go install $(CLI_PKG)@$(CLI_VERSION); \
+	else \
+		INSTALLED_VER=$$(go version -m $$(which gocli) 2>/dev/null | grep -E "^\s+mod\s+$(CLI_PKG)" | awk '{print $$3}' || echo ""); \
+		echo "🔍 已安装的 gocli 版本: $$INSTALLED_VER"; \
+		echo "🎯 目标版本: $(CLI_VERSION)"; \
+		if [ "$$INSTALLED_VER" != "$(CLI_VERSION)" ]; then \
+			echo "⚠️ gocli 版本不匹配，重新安装 $(CLI_VERSION)..."; \
+			go install $(CLI_PKG)@$(CLI_VERSION); \
+		else \
+			echo "✅ gocli 版本已是最新"; \
+		fi; \
+	fi
 
 	@echo "🔧 开始生成代码：APP=$(APP)，MODE=$(MODE)"
 	@gocli generate --mode=$(MODE) --app=$(APP)
