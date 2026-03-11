@@ -1,7 +1,9 @@
 package dbclient
 
 import (
+	"context"
 	"fmt"
+	"sync"
 
 	"github.com/morehao/golib/dbaccess/dbgorm"
 	"github.com/morehao/golib/glog"
@@ -9,13 +11,13 @@ import (
 )
 
 var (
-	DBDemo *gorm.DB
-	DBIam  *gorm.DB
+	dbMap   = make(map[string]*gorm.DB)
+	dbMutex sync.RWMutex
 )
 
 const (
-	DBNameDemo = "demoapp"
-	DBNameIam  = "iam"
+	dbNameDemo = "demo"
+	dbNameIam  = "ark_iam"
 )
 
 func InitMultiDB(configs []dbgorm.GormConfig, logConfig *glog.LogConfig) error {
@@ -32,14 +34,23 @@ func InitMultiDB(configs []dbgorm.GormConfig, logConfig *glog.LogConfig) error {
 		if err != nil {
 			return fmt.Errorf("init mysql failed: " + err.Error())
 		}
-		switch cfg.Service {
-		case DBNameDemo:
-			DBDemo = client
-		case DBNameIam:
-			DBIam = client
-		default:
-			return fmt.Errorf("unknown database service: " + cfg.Service)
-		}
+		dbMutex.Lock()
+		dbMap[cfg.Service] = client
+		dbMutex.Unlock()
 	}
 	return nil
+}
+
+func GetDB(ctx context.Context, dbName string) *gorm.DB {
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
+	return dbMap[dbName].WithContext(ctx)
+}
+
+func IamDB(ctx context.Context) *gorm.DB {
+	return GetDB(ctx, dbNameIam)
+}
+
+func DemoDB(ctx context.Context) *gorm.DB {
+	return GetDB(ctx, dbNameDemo)
 }

@@ -2,14 +2,15 @@ package svcorg
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam/iamdao/daoorg"
+	"github.com/morehao/goark/apps/iam/iamdao"
 	"github.com/morehao/goark/apps/iam/iammodel"
 	"github.com/morehao/goark/apps/iam/internal/dto/dtoorg"
 	"github.com/morehao/goark/apps/iam/object/objorg"
 	"github.com/morehao/goark/pkg/code"
+	"github.com/morehao/goark/pkg/genericdao"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
-	"github.com/morehao/golib/glog"
 	"github.com/morehao/golib/biz/gobject"
+	"github.com/morehao/golib/glog"
 	"github.com/morehao/golib/gutil"
 )
 
@@ -44,7 +45,7 @@ func (svc *departmentSvc) Create(ctx *gin.Context, req *dtoorg.DepartmentCreateR
 		Status:    req.Status,
 	}
 
-	if err := daoorg.NewDepartmentDao().Insert(ctx, insertEntity); err != nil {
+	if err := iamdao.NewDepartmentDao().Insert(ctx, insertEntity); err != nil {
 		glog.Errorf(ctx, "[svcorg.DepartmentCreate] daoDepartment Create fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.DepartmentCreateError)
 	}
@@ -57,7 +58,7 @@ func (svc *departmentSvc) Create(ctx *gin.Context, req *dtoorg.DepartmentCreateR
 func (svc *departmentSvc) Delete(ctx *gin.Context, req *dtoorg.DepartmentDeleteReq) error {
 	userID := gincontext.GetUserID(ctx)
 
-	if err := daoorg.NewDepartmentDao().Delete(ctx, req.ID, userID); err != nil {
+	if err := iamdao.NewDepartmentDao().Delete(ctx, req.ID, userID); err != nil {
 		glog.Errorf(ctx, "[svcorg.Delete] daoDepartment Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.DepartmentDeleteError)
 	}
@@ -78,7 +79,7 @@ func (svc *departmentSvc) Update(ctx *gin.Context, req *dtoorg.DepartmentUpdateR
 		SortOrder: req.SortOrder,
 		Status:    req.Status,
 	}
-	if err := daoorg.NewDepartmentDao().UpdateByID(ctx, req.ID, updateEntity); err != nil {
+	if err := iamdao.NewDepartmentDao().UpdateByID(ctx, req.ID, updateEntity); err != nil {
 		glog.Errorf(ctx, "[svcorg.DepartmentUpdate] daoDepartment UpdateByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.DepartmentUpdateError)
 	}
@@ -87,7 +88,7 @@ func (svc *departmentSvc) Update(ctx *gin.Context, req *dtoorg.DepartmentUpdateR
 
 // Detail 根据id获取部门管理
 func (svc *departmentSvc) Detail(ctx *gin.Context, req *dtoorg.DepartmentDetailReq) (*dtoorg.DepartmentDetailResp, error) {
-	detailEntity, err := daoorg.NewDepartmentDao().GetById(ctx, req.ID)
+	detailEntity, err := iamdao.NewDepartmentDao().GetById(ctx, req.ID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.DepartmentDetail] daoDepartment GetById fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.DepartmentGetDetailError)
@@ -119,11 +120,13 @@ func (svc *departmentSvc) Detail(ctx *gin.Context, req *dtoorg.DepartmentDetailR
 
 // PageList 分页获取部门管理列表
 func (svc *departmentSvc) PageList(ctx *gin.Context, req *dtoorg.DepartmentPageListReq) (*dtoorg.DepartmentPageListResp, error) {
-	cond := &daoorg.DepartmentCond{
-		Page:     req.Page,
-		PageSize: req.PageSize,
+	cond := &iamdao.DepartmentCond{
+		BaseCond: &genericdao.BaseCond{
+			Page:     req.Page,
+			PageSize: req.PageSize,
+		},
 	}
-	dataList, total, err := daoorg.NewDepartmentDao().GetPageListByCond(ctx, cond)
+	dataList, total, err := iamdao.NewDepartmentDao().GetPageListByCond(ctx, cond)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.DepartmentPageList] daoDepartment GetPageListByCond fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.DepartmentGetPageListError)
