@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/morehao/golib/biz/gconstant"
+	"github.com/morehao/golib/biz/genericdao"
 	"github.com/morehao/golib/gerror"
 )
 
@@ -29,7 +30,7 @@ func GetError(code int) *gerror.Error {
 
 func init() {
 	// 业务错误码从110100开始
-	registerError(gconstant.DBErrorMsgMap)
+	registerError(genericdao.DBErrorMsgMap)
 	registerError(gconstant.SystemErrorMsgMap)
 	registerError(gconstant.AuthErrorMsgMap)
 	registerError(tenantErrorMsgMap)

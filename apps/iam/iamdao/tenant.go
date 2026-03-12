@@ -3,7 +3,7 @@ package iamdao
 import (
 	"github.com/morehao/goark/apps/iam/iammodel"
 	"github.com/morehao/goark/pkg/dbclient"
-	"github.com/morehao/goark/pkg/genericdao"
+	"github.com/morehao/golib/biz/genericdao"
 	"gorm.io/gorm"
 )
 
