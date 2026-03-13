@@ -69,22 +69,21 @@ func (svc *companySvc) Delete(ctx *gin.Context, req *dtoorg.CompanyDeleteReq) er
 
 // Update 更新公司管理
 func (svc *companySvc) Update(ctx *gin.Context, req *dtoorg.CompanyUpdateReq) error {
-
-	updateEntity := &iammodel.CompanyEntity{
-		Address:                 req.Address,
-		CompanyCode:             req.CompanyCode,
-		CompanyName:             req.CompanyName,
-		ContactEmail:            req.ContactEmail,
-		ContactPhone:            req.ContactPhone,
-		LegalPerson:             req.LegalPerson,
-		Logo:                    req.Logo,
-		ShortName:               req.ShortName,
-		Status:                  req.Status,
-		TenantID:                req.TenantID,
-		UnifiedSocialCreditCode: req.UnifiedSocialCreditCode,
+	updateMap := map[string]any{
+		"address":                    req.Address,
+		"company_code":               req.CompanyCode,
+		"company_name":               req.CompanyName,
+		"contact_email":              req.ContactEmail,
+		"contact_phone":              req.ContactPhone,
+		"legal_person":               req.LegalPerson,
+		"logo":                       req.Logo,
+		"short_name":                 req.ShortName,
+		"status":                     req.Status,
+		"tenant_id":                  req.TenantID,
+		"unified_social_credit_code": req.UnifiedSocialCreditCode,
 	}
-	if err := iamdao.NewCompanyDao().UpdateByID(ctx, req.ID, updateEntity); err != nil {
-		glog.Errorf(ctx, "[svcorg.CompanyUpdate] daoCompany UpdateByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+	if err := iamdao.NewCompanyDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
+		glog.Errorf(ctx, "[svcorg.CompanyUpdate] daoCompany UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.CompanyUpdateError)
 	}
 	return nil
@@ -92,33 +91,33 @@ func (svc *companySvc) Update(ctx *gin.Context, req *dtoorg.CompanyUpdateReq) er
 
 // Detail 根据id获取公司管理
 func (svc *companySvc) Detail(ctx *gin.Context, req *dtoorg.CompanyDetailReq) (*dtoorg.CompanyDetailResp, error) {
-	detailEntity, err := iamdao.NewCompanyDao().GetByID(ctx, req.ID)
+	companyEntity, err := iamdao.NewCompanyDao().GetByID(ctx, req.ID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.CompanyDetail] daoCompany GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.CompanyGetDetailError)
 	}
 	// 判断是否存在
-	if detailEntity == nil || detailEntity.ID == 0 {
+	if companyEntity == nil || companyEntity.ID == 0 {
 		return nil, code.GetError(code.CompanyNotExistError)
 	}
 	resp := &dtoorg.CompanyDetailResp{
-		ID: detailEntity.ID,
+		ID: companyEntity.ID,
 		CompanyBaseInfo: objorg.CompanyBaseInfo{
-			Address:                 detailEntity.Address,
-			CompanyCode:             detailEntity.CompanyCode,
-			CompanyName:             detailEntity.CompanyName,
-			ContactEmail:            detailEntity.ContactEmail,
-			ContactPhone:            detailEntity.ContactPhone,
-			LegalPerson:             detailEntity.LegalPerson,
-			Logo:                    detailEntity.Logo,
-			ShortName:               detailEntity.ShortName,
-			Status:                  detailEntity.Status,
-			TenantID:                detailEntity.TenantID,
-			UnifiedSocialCreditCode: detailEntity.UnifiedSocialCreditCode,
+			Address:                 companyEntity.Address,
+			CompanyCode:             companyEntity.CompanyCode,
+			CompanyName:             companyEntity.CompanyName,
+			ContactEmail:            companyEntity.ContactEmail,
+			ContactPhone:            companyEntity.ContactPhone,
+			LegalPerson:             companyEntity.LegalPerson,
+			Logo:                    companyEntity.Logo,
+			ShortName:               companyEntity.ShortName,
+			Status:                  companyEntity.Status,
+			TenantID:                companyEntity.TenantID,
+			UnifiedSocialCreditCode: companyEntity.UnifiedSocialCreditCode,
 		},
 		OperatorBaseInfo: gobject.OperatorBaseInfo{
-			CreatedAt: detailEntity.CreatedAt.Unix(),
-			UpdatedAt: detailEntity.UpdatedAt.Unix(),
+			CreatedAt: companyEntity.CreatedAt.Unix(),
+			UpdatedAt: companyEntity.UpdatedAt.Unix(),
 		},
 	}
 	return resp, nil
@@ -132,13 +131,13 @@ func (svc *companySvc) PageList(ctx *gin.Context, req *dtoorg.CompanyPageListReq
 			PageSize: req.PageSize,
 		},
 	}
-	dataList, total, err := iamdao.NewCompanyDao().GetPageListByCond(ctx, cond)
+	companyEntityList, total, err := iamdao.NewCompanyDao().GetPageListByCond(ctx, cond)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.CompanyPageList] daoCompany GetPageListByCond fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.CompanyGetPageListError)
 	}
-	list := make([]dtoorg.CompanyPageListItem, 0, len(dataList))
-	for _, v := range dataList {
+	list := make([]dtoorg.CompanyPageListItem, 0, len(companyEntityList))
+	for _, v := range companyEntityList {
 		list = append(list, dtoorg.CompanyPageListItem{
 			ID: v.ID,
 			CompanyBaseInfo: objorg.CompanyBaseInfo{

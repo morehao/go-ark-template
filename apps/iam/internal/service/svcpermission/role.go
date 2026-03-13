@@ -66,19 +66,18 @@ func (svc *roleSvc) Delete(ctx *gin.Context, req *dtopermission.RoleDeleteReq) e
 
 // Update 更新角色管理
 func (svc *roleSvc) Update(ctx *gin.Context, req *dtopermission.RoleUpdateReq) error {
-
-	updateEntity := &iammodel.RoleEntity{
-		CompanyID:   req.CompanyID,
-		DataScope:   req.DataScope,
-		Description: req.Description,
-		RoleCode:    req.RoleCode,
-		RoleName:    req.RoleName,
-		RoleType:    req.RoleType,
-		SortOrder:   req.SortOrder,
-		Status:      req.Status,
+	updateMap := map[string]any{
+		"company_id":  req.CompanyID,
+		"data_scope":  req.DataScope,
+		"description": req.Description,
+		"role_code":   req.RoleCode,
+		"role_name":   req.RoleName,
+		"role_type":   req.RoleType,
+		"sort_order":  req.SortOrder,
+		"status":      req.Status,
 	}
-	if err := iamdao.NewRoleDao().UpdateByID(ctx, req.ID, updateEntity); err != nil {
-		glog.Errorf(ctx, "[svcpermission.RoleUpdate] daoRole UpdateByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+	if err := iamdao.NewRoleDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
+		glog.Errorf(ctx, "[svcpermission.RoleUpdate] daoRole UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.RoleUpdateError)
 	}
 	return nil
@@ -86,30 +85,30 @@ func (svc *roleSvc) Update(ctx *gin.Context, req *dtopermission.RoleUpdateReq) e
 
 // Detail 根据id获取角色管理
 func (svc *roleSvc) Detail(ctx *gin.Context, req *dtopermission.RoleDetailReq) (*dtopermission.RoleDetailResp, error) {
-	detailEntity, err := iamdao.NewRoleDao().GetByID(ctx, req.ID)
+	roleEntity, err := iamdao.NewRoleDao().GetByID(ctx, req.ID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcpermission.RoleDetail] daoRole GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.RoleGetDetailError)
 	}
 	// 判断是否存在
-	if detailEntity == nil || detailEntity.ID == 0 {
+	if roleEntity == nil || roleEntity.ID == 0 {
 		return nil, code.GetError(code.RoleNotExistError)
 	}
 	resp := &dtopermission.RoleDetailResp{
-		ID: detailEntity.ID,
+		ID: roleEntity.ID,
 		RoleBaseInfo: objpermission.RoleBaseInfo{
-			CompanyID:   detailEntity.CompanyID,
-			DataScope:   detailEntity.DataScope,
-			Description: detailEntity.Description,
-			RoleCode:    detailEntity.RoleCode,
-			RoleName:    detailEntity.RoleName,
-			RoleType:    detailEntity.RoleType,
-			SortOrder:   detailEntity.SortOrder,
-			Status:      detailEntity.Status,
+			CompanyID:   roleEntity.CompanyID,
+			DataScope:   roleEntity.DataScope,
+			Description: roleEntity.Description,
+			RoleCode:    roleEntity.RoleCode,
+			RoleName:    roleEntity.RoleName,
+			RoleType:    roleEntity.RoleType,
+			SortOrder:   roleEntity.SortOrder,
+			Status:      roleEntity.Status,
 		},
 		OperatorBaseInfo: gobject.OperatorBaseInfo{
-			CreatedAt: detailEntity.CreatedAt.Unix(),
-			UpdatedAt: detailEntity.UpdatedAt.Unix(),
+			CreatedAt: roleEntity.CreatedAt.Unix(),
+			UpdatedAt: roleEntity.UpdatedAt.Unix(),
 		},
 	}
 	return resp, nil
@@ -123,13 +122,13 @@ func (svc *roleSvc) PageList(ctx *gin.Context, req *dtopermission.RolePageListRe
 			PageSize: req.PageSize,
 		},
 	}
-	dataList, total, err := iamdao.NewRoleDao().GetPageListByCond(ctx, cond)
+	roleEntityList, total, err := iamdao.NewRoleDao().GetPageListByCond(ctx, cond)
 	if err != nil {
 		glog.Errorf(ctx, "[svcpermission.RolePageList] daoRole GetPageListByCond fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.RoleGetPageListError)
 	}
-	list := make([]dtopermission.RolePageListItem, 0, len(dataList))
-	for _, v := range dataList {
+	list := make([]dtopermission.RolePageListItem, 0, len(roleEntityList))
+	for _, v := range roleEntityList {
 		list = append(list, dtopermission.RolePageListItem{
 			ID: v.ID,
 			RoleBaseInfo: objpermission.RoleBaseInfo{

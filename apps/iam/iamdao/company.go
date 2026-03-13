@@ -45,9 +45,3 @@ func NewCompanyDao() *CompanyDao {
 		),
 	}
 }
-
-func (d *CompanyDao) WithTx(db *gorm.DB) *CompanyDao {
-	return &CompanyDao{
-		GenericDao: d.GenericDao.WithTx(db),
-	}
-}

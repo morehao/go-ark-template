@@ -41,9 +41,3 @@ func NewRoleMenuDao() *RoleMenuDao {
 		),
 	}
 }
-
-func (d *RoleMenuDao) WithTx(db *gorm.DB) *RoleMenuDao {
-	return &RoleMenuDao{
-		GenericDao: d.GenericDao.WithTx(db),
-	}
-}

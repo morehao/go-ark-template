@@ -53,9 +53,3 @@ func NewMenuDao() *MenuDao {
 		),
 	}
 }
-
-func (d *MenuDao) WithTx(db *gorm.DB) *MenuDao {
-	return &MenuDao{
-		GenericDao: d.GenericDao.WithTx(db),
-	}
-}

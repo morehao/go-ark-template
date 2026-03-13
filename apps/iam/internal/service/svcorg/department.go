@@ -67,20 +67,19 @@ func (svc *departmentSvc) Delete(ctx *gin.Context, req *dtoorg.DepartmentDeleteR
 
 // Update 更新部门管理
 func (svc *departmentSvc) Update(ctx *gin.Context, req *dtoorg.DepartmentUpdateReq) error {
-
-	updateEntity := &iammodel.DepartmentEntity{
-		CompanyID: req.CompanyID,
-		DeptCode:  req.DeptCode,
-		DeptLevel: req.DeptLevel,
-		DeptName:  req.DeptName,
-		DeptPath:  req.DeptPath,
-		LeaderID:  req.LeaderID,
-		ParentID:  req.ParentID,
-		SortOrder: req.SortOrder,
-		Status:    req.Status,
+	updateMap := map[string]any{
+		"company_id": req.CompanyID,
+		"dept_code":  req.DeptCode,
+		"dept_level": req.DeptLevel,
+		"dept_name":  req.DeptName,
+		"dept_path":  req.DeptPath,
+		"leader_id":  req.LeaderID,
+		"parent_id":  req.ParentID,
+		"sort_order": req.SortOrder,
+		"status":     req.Status,
 	}
-	if err := iamdao.NewDepartmentDao().UpdateByID(ctx, req.ID, updateEntity); err != nil {
-		glog.Errorf(ctx, "[svcorg.DepartmentUpdate] daoDepartment UpdateByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+	if err := iamdao.NewDepartmentDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
+		glog.Errorf(ctx, "[svcorg.DepartmentUpdate] daoDepartment UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.DepartmentUpdateError)
 	}
 	return nil
@@ -88,31 +87,31 @@ func (svc *departmentSvc) Update(ctx *gin.Context, req *dtoorg.DepartmentUpdateR
 
 // Detail 根据id获取部门管理
 func (svc *departmentSvc) Detail(ctx *gin.Context, req *dtoorg.DepartmentDetailReq) (*dtoorg.DepartmentDetailResp, error) {
-	detailEntity, err := iamdao.NewDepartmentDao().GetByID(ctx, req.ID)
+	departmentEntity, err := iamdao.NewDepartmentDao().GetByID(ctx, req.ID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.DepartmentDetail] daoDepartment GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.DepartmentGetDetailError)
 	}
 	// 判断是否存在
-	if detailEntity == nil || detailEntity.ID == 0 {
+	if departmentEntity == nil || departmentEntity.ID == 0 {
 		return nil, code.GetError(code.DepartmentNotExistError)
 	}
 	resp := &dtoorg.DepartmentDetailResp{
-		ID: detailEntity.ID,
+		ID: departmentEntity.ID,
 		DepartmentBaseInfo: objorg.DepartmentBaseInfo{
-			CompanyID: detailEntity.CompanyID,
-			DeptCode:  detailEntity.DeptCode,
-			DeptLevel: detailEntity.DeptLevel,
-			DeptName:  detailEntity.DeptName,
-			DeptPath:  detailEntity.DeptPath,
-			LeaderID:  detailEntity.LeaderID,
-			ParentID:  detailEntity.ParentID,
-			SortOrder: detailEntity.SortOrder,
-			Status:    detailEntity.Status,
+			CompanyID: departmentEntity.CompanyID,
+			DeptCode:  departmentEntity.DeptCode,
+			DeptLevel: departmentEntity.DeptLevel,
+			DeptName:  departmentEntity.DeptName,
+			DeptPath:  departmentEntity.DeptPath,
+			LeaderID:  departmentEntity.LeaderID,
+			ParentID:  departmentEntity.ParentID,
+			SortOrder: departmentEntity.SortOrder,
+			Status:    departmentEntity.Status,
 		},
 		OperatorBaseInfo: gobject.OperatorBaseInfo{
-			CreatedAt: detailEntity.CreatedAt.Unix(),
-			UpdatedAt: detailEntity.UpdatedAt.Unix(),
+			CreatedAt: departmentEntity.CreatedAt.Unix(),
+			UpdatedAt: departmentEntity.UpdatedAt.Unix(),
 		},
 	}
 	return resp, nil
@@ -126,13 +125,13 @@ func (svc *departmentSvc) PageList(ctx *gin.Context, req *dtoorg.DepartmentPageL
 			PageSize: req.PageSize,
 		},
 	}
-	dataList, total, err := iamdao.NewDepartmentDao().GetPageListByCond(ctx, cond)
+	departmentEntityList, total, err := iamdao.NewDepartmentDao().GetPageListByCond(ctx, cond)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.DepartmentPageList] daoDepartment GetPageListByCond fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.DepartmentGetPageListError)
 	}
-	list := make([]dtoorg.DepartmentPageListItem, 0, len(dataList))
-	for _, v := range dataList {
+	list := make([]dtoorg.DepartmentPageListItem, 0, len(departmentEntityList))
+	for _, v := range departmentEntityList {
 		list = append(list, dtoorg.DepartmentPageListItem{
 			ID: v.ID,
 			DepartmentBaseInfo: objorg.DepartmentBaseInfo{

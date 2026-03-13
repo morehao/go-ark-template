@@ -1,26 +1,18 @@
-mysql_dsn: root:123456@tcp(127.0.0.1:3306)/ark_iam?charset=utf8mb4&parseTime=True&loc=Local
-layer_parent_dir_map:
-  controller: internal
-  service: internal
-  dto: internal
-layer_name_map:
-  model: iammodel
-  dao: iamdao
+mysql_dsn: root:123456@tcp(127.0.0.1:3306)/demo?charset=utf8mb4&parseTime=True&loc=Local
+service_name: iam
 module:
-  package_name: audit
-  description: 登录日志
-  table_name: iam_login_log
-  table_prefix: iam_ 
+  package_name: user
+  description: 用户管理
+  table_name: user_login_log
 model:
-  package_name: audit
-  description: 登录日志
-  table_name: iam_login_log
-  table_prefix: iam_ 
+  package_name: user
+  description: 用户登录记录
+  table_name: user_login_log
 api:
-  package_name: tenants
-  target_filename: tenants.go
-  function_name: DisableTenant
+  package_name: user
+  target_filename: user_login_log.go
+  function_name: ResetStatusV2
   http_method: POST
-  description: 禁用租户
-  api_doc_tag: 租户管理
+  description: 重置登录记录V2
+  api_doc_tag: 用户登录记录
 

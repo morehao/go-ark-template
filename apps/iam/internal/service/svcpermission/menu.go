@@ -72,25 +72,24 @@ func (svc *menuSvc) Delete(ctx *gin.Context, req *dtopermission.MenuDeleteReq) e
 
 // Update 更新菜单管理
 func (svc *menuSvc) Update(ctx *gin.Context, req *dtopermission.MenuUpdateReq) error {
-
-	updateEntity := &iammodel.MenuEntity{
-		CacheType:     req.CacheType,
-		CompanyID:     req.CompanyID,
-		ComponentPath: req.ComponentPath,
-		Icon:          req.Icon,
-		LinkType:      req.LinkType,
-		MenuCode:      req.MenuCode,
-		MenuName:      req.MenuName,
-		MenuType:      req.MenuType,
-		ParentID:      req.ParentID,
-		Permission:    req.Permission,
-		RoutePath:     req.RoutePath,
-		SortOrder:     req.SortOrder,
-		Status:        req.Status,
-		Visibility:    req.Visibility,
+	updateMap := map[string]any{
+		"cache_type":     req.CacheType,
+		"company_id":     req.CompanyID,
+		"component_path": req.ComponentPath,
+		"icon":           req.Icon,
+		"link_type":      req.LinkType,
+		"menu_code":      req.MenuCode,
+		"menu_name":      req.MenuName,
+		"menu_type":      req.MenuType,
+		"parent_id":      req.ParentID,
+		"permission":     req.Permission,
+		"route_path":     req.RoutePath,
+		"sort_order":     req.SortOrder,
+		"status":         req.Status,
+		"visibility":     req.Visibility,
 	}
-	if err := iamdao.NewMenuDao().UpdateByID(ctx, req.ID, updateEntity); err != nil {
-		glog.Errorf(ctx, "[svcpermission.MenuUpdate] daoMenu UpdateByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+	if err := iamdao.NewMenuDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
+		glog.Errorf(ctx, "[svcpermission.MenuUpdate] daoMenu UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.MenuUpdateError)
 	}
 	return nil
@@ -98,36 +97,36 @@ func (svc *menuSvc) Update(ctx *gin.Context, req *dtopermission.MenuUpdateReq) e
 
 // Detail 根据id获取菜单管理
 func (svc *menuSvc) Detail(ctx *gin.Context, req *dtopermission.MenuDetailReq) (*dtopermission.MenuDetailResp, error) {
-	detailEntity, err := iamdao.NewMenuDao().GetByID(ctx, req.ID)
+	menuEntity, err := iamdao.NewMenuDao().GetByID(ctx, req.ID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcpermission.MenuDetail] daoMenu GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.MenuGetDetailError)
 	}
 	// 判断是否存在
-	if detailEntity == nil || detailEntity.ID == 0 {
+	if menuEntity == nil || menuEntity.ID == 0 {
 		return nil, code.GetError(code.MenuNotExistError)
 	}
 	resp := &dtopermission.MenuDetailResp{
-		ID: detailEntity.ID,
+		ID: menuEntity.ID,
 		MenuBaseInfo: objpermission.MenuBaseInfo{
-			CacheType:     detailEntity.CacheType,
-			CompanyID:     detailEntity.CompanyID,
-			ComponentPath: detailEntity.ComponentPath,
-			Icon:          detailEntity.Icon,
-			LinkType:      detailEntity.LinkType,
-			MenuCode:      detailEntity.MenuCode,
-			MenuName:      detailEntity.MenuName,
-			MenuType:      detailEntity.MenuType,
-			ParentID:      detailEntity.ParentID,
-			Permission:    detailEntity.Permission,
-			RoutePath:     detailEntity.RoutePath,
-			SortOrder:     detailEntity.SortOrder,
-			Status:        detailEntity.Status,
-			Visibility:    detailEntity.Visibility,
+			CacheType:     menuEntity.CacheType,
+			CompanyID:     menuEntity.CompanyID,
+			ComponentPath: menuEntity.ComponentPath,
+			Icon:          menuEntity.Icon,
+			LinkType:      menuEntity.LinkType,
+			MenuCode:      menuEntity.MenuCode,
+			MenuName:      menuEntity.MenuName,
+			MenuType:      menuEntity.MenuType,
+			ParentID:      menuEntity.ParentID,
+			Permission:    menuEntity.Permission,
+			RoutePath:     menuEntity.RoutePath,
+			SortOrder:     menuEntity.SortOrder,
+			Status:        menuEntity.Status,
+			Visibility:    menuEntity.Visibility,
 		},
 		OperatorBaseInfo: gobject.OperatorBaseInfo{
-			CreatedAt: detailEntity.CreatedAt.Unix(),
-			UpdatedAt: detailEntity.UpdatedAt.Unix(),
+			CreatedAt: menuEntity.CreatedAt.Unix(),
+			UpdatedAt: menuEntity.UpdatedAt.Unix(),
 		},
 	}
 	return resp, nil
@@ -141,13 +140,13 @@ func (svc *menuSvc) PageList(ctx *gin.Context, req *dtopermission.MenuPageListRe
 			PageSize: req.PageSize,
 		},
 	}
-	dataList, total, err := iamdao.NewMenuDao().GetPageListByCond(ctx, cond)
+	menuEntityList, total, err := iamdao.NewMenuDao().GetPageListByCond(ctx, cond)
 	if err != nil {
 		glog.Errorf(ctx, "[svcpermission.MenuPageList] daoMenu GetPageListByCond fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.MenuGetPageListError)
 	}
-	list := make([]dtopermission.MenuPageListItem, 0, len(dataList))
-	for _, v := range dataList {
+	list := make([]dtopermission.MenuPageListItem, 0, len(menuEntityList))
+	for _, v := range menuEntityList {
 		list = append(list, dtopermission.MenuPageListItem{
 			ID: v.ID,
 			MenuBaseInfo: objpermission.MenuBaseInfo{

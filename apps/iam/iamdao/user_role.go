@@ -41,9 +41,3 @@ func NewUserRoleDao() *UserRoleDao {
 		),
 	}
 }
-
-func (d *UserRoleDao) WithTx(db *gorm.DB) *UserRoleDao {
-	return &UserRoleDao{
-		GenericDao: d.GenericDao.WithTx(db),
-	}
-}

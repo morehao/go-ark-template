@@ -63,16 +63,15 @@ func (svc *tenantSvc) Delete(ctx *gin.Context, req *dtotenant.TenantDeleteReq) e
 
 // Update 更新租户管理
 func (svc *tenantSvc) Update(ctx *gin.Context, req *dtotenant.TenantUpdateReq) error {
-
-	updateEntity := &iammodel.TenantEntity{
-		Description: req.Description,
-		SortOrder:   req.SortOrder,
-		Status:      req.Status,
-		TenantCode:  req.TenantCode,
-		TenantName:  req.TenantName,
+	updateMap := map[string]any{
+		"description": req.Description,
+		"sort_order":  req.SortOrder,
+		"status":      req.Status,
+		"tenant_code": req.TenantCode,
+		"tenant_name": req.TenantName,
 	}
-	if err := iamdao.NewTenantDao().UpdateByID(ctx, req.ID, updateEntity); err != nil {
-		glog.Errorf(ctx, "[svctenant.TenantUpdate] daoTenant UpdateByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+	if err := iamdao.NewTenantDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
+		glog.Errorf(ctx, "[svctenant.TenantUpdate] daoTenant UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.TenantUpdateError)
 	}
 	return nil
@@ -80,27 +79,27 @@ func (svc *tenantSvc) Update(ctx *gin.Context, req *dtotenant.TenantUpdateReq) e
 
 // Detail 根据id获取租户管理
 func (svc *tenantSvc) Detail(ctx *gin.Context, req *dtotenant.TenantDetailReq) (*dtotenant.TenantDetailResp, error) {
-	detailEntity, err := iamdao.NewTenantDao().GetByID(ctx, req.ID)
+	tenantEntity, err := iamdao.NewTenantDao().GetByID(ctx, req.ID)
 	if err != nil {
 		glog.Errorf(ctx, "[svctenant.TenantDetail] daoTenant GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.TenantGetDetailError)
 	}
 	// 判断是否存在
-	if detailEntity == nil || detailEntity.ID == 0 {
+	if tenantEntity == nil || tenantEntity.ID == 0 {
 		return nil, code.GetError(code.TenantNotExistError)
 	}
 	resp := &dtotenant.TenantDetailResp{
-		ID: detailEntity.ID,
+		ID: tenantEntity.ID,
 		TenantBaseInfo: objtenant.TenantBaseInfo{
-			Description: detailEntity.Description,
-			SortOrder:   detailEntity.SortOrder,
-			Status:      detailEntity.Status,
-			TenantCode:  detailEntity.TenantCode,
-			TenantName:  detailEntity.TenantName,
+			Description: tenantEntity.Description,
+			SortOrder:   tenantEntity.SortOrder,
+			Status:      tenantEntity.Status,
+			TenantCode:  tenantEntity.TenantCode,
+			TenantName:  tenantEntity.TenantName,
 		},
 		OperatorBaseInfo: gobject.OperatorBaseInfo{
-			CreatedAt: detailEntity.CreatedAt.Unix(),
-			UpdatedAt: detailEntity.UpdatedAt.Unix(),
+			CreatedAt: tenantEntity.CreatedAt.Unix(),
+			UpdatedAt: tenantEntity.UpdatedAt.Unix(),
 		},
 	}
 	return resp, nil
@@ -114,13 +113,13 @@ func (svc *tenantSvc) PageList(ctx *gin.Context, req *dtotenant.TenantPageListRe
 			PageSize: req.PageSize,
 		},
 	}
-	dataList, total, err := iamdao.NewTenantDao().GetPageListByCond(ctx, cond)
+	tenantEntityList, total, err := iamdao.NewTenantDao().GetPageListByCond(ctx, cond)
 	if err != nil {
 		glog.Errorf(ctx, "[svctenant.TenantPageList] daoTenant GetPageListByCond fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.TenantGetPageListError)
 	}
-	list := make([]dtotenant.TenantPageListItem, 0, len(dataList))
-	for _, v := range dataList {
+	list := make([]dtotenant.TenantPageListItem, 0, len(tenantEntityList))
+	for _, v := range tenantEntityList {
 		list = append(list, dtotenant.TenantPageListItem{
 			ID: v.ID,
 			TenantBaseInfo: objtenant.TenantBaseInfo{

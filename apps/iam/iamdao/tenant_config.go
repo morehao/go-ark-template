@@ -41,9 +41,3 @@ func NewTenantConfigDao() *TenantConfigDao {
 		),
 	}
 }
-
-func (d *TenantConfigDao) WithTx(db *gorm.DB) *TenantConfigDao {
-	return &TenantConfigDao{
-		GenericDao: d.GenericDao.WithTx(db),
-	}
-}

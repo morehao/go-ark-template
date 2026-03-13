@@ -99,7 +99,7 @@ swag:
 	@echo "✅ Swagger 文档已生成：apps/$(APP)/docs"
 
 
-CLI_VERSION := v1.0.16
+CLI_VERSION := v1.0.17
 CLI_PKG     := github.com/morehao/gocli
 
 codegen:

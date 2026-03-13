@@ -41,9 +41,3 @@ func NewUserDao() *UserDao {
 		),
 	}
 }
-
-func (d *UserDao) WithTx(db *gorm.DB) *UserDao {
-	return &UserDao{
-		GenericDao: d.GenericDao.WithTx(db),
-	}
-}

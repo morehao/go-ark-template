@@ -49,9 +49,3 @@ func NewDepartmentDao() *DepartmentDao {
 		),
 	}
 }
-
-func (d *DepartmentDao) WithTx(db *gorm.DB) *DepartmentDao {
-	return &DepartmentDao{
-		GenericDao: d.GenericDao.WithTx(db),
-	}
-}
