@@ -3,12 +3,12 @@ package code
 import "github.com/morehao/golib/gerror"
 
 const (
-	UserCreateError      = 110400
-	UserDeleteError      = 110401
-	UserUpdateError      = 110402
-	UserGetDetailError   = 110403
-	UserGetPageListError = 110404
-	UserNotExistError    = 110405
+	UserCreateError      = 100500
+	UserDeleteError      = 100501
+	UserUpdateError      = 100502
+	UserGetDetailError   = 100503
+	UserGetPageListError = 100504
+	UserNotExistError    = 100505
 )
 
 var userErrorMsgMap = gerror.CodeMsgMap{

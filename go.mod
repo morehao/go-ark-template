@@ -6,7 +6,7 @@ require (
 	github.com/elastic/go-elasticsearch/v8 v8.18.0
 	github.com/gin-gonic/gin v1.10.1
 	github.com/json-iterator/go v1.1.12
-	github.com/morehao/golib v1.2.25
+	github.com/morehao/golib v1.2.26
 	github.com/redis/go-redis/v9 v9.9.0
 	github.com/stretchr/testify v1.10.0
 	github.com/swaggo/files v1.0.1
@@ -17,8 +17,6 @@ require (
 	go.opentelemetry.io/otel/trace v1.36.0
 	gorm.io/gorm v1.30.0
 )
-
-replace github.com/morehao/golib => ../golib
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect

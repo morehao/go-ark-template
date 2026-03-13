@@ -92,9 +92,9 @@ func (svc *companySvc) Update(ctx *gin.Context, req *dtoorg.CompanyUpdateReq) er
 
 // Detail 根据id获取公司管理
 func (svc *companySvc) Detail(ctx *gin.Context, req *dtoorg.CompanyDetailReq) (*dtoorg.CompanyDetailResp, error) {
-	detailEntity, err := iamdao.NewCompanyDao().GetById(ctx, req.ID)
+	detailEntity, err := iamdao.NewCompanyDao().GetByID(ctx, req.ID)
 	if err != nil {
-		glog.Errorf(ctx, "[svcorg.CompanyDetail] daoCompany GetById fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+		glog.Errorf(ctx, "[svcorg.CompanyDetail] daoCompany GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.CompanyGetDetailError)
 	}
 	// 判断是否存在

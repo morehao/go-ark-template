@@ -88,9 +88,9 @@ func (svc *departmentSvc) Update(ctx *gin.Context, req *dtoorg.DepartmentUpdateR
 
 // Detail 根据id获取部门管理
 func (svc *departmentSvc) Detail(ctx *gin.Context, req *dtoorg.DepartmentDetailReq) (*dtoorg.DepartmentDetailResp, error) {
-	detailEntity, err := iamdao.NewDepartmentDao().GetById(ctx, req.ID)
+	detailEntity, err := iamdao.NewDepartmentDao().GetByID(ctx, req.ID)
 	if err != nil {
-		glog.Errorf(ctx, "[svcorg.DepartmentDetail] daoDepartment GetById fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+		glog.Errorf(ctx, "[svcorg.DepartmentDetail] daoDepartment GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.DepartmentGetDetailError)
 	}
 	// 判断是否存在

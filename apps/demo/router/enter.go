@@ -7,8 +7,8 @@ import (
 )
 
 type RouterGroups struct {
-	AuthGroup   *gin.RouterGroup
-	NoAuthGroup *gin.RouterGroup
+	AuthGroup	*gin.RouterGroup
+	NoAuthGroup	*gin.RouterGroup
 }
 
 func RegisterRouter(groups *RouterGroups, appName string) {
@@ -20,4 +20,5 @@ func RegisterRouter(groups *RouterGroups, appName string) {
 	formatRouter(v1AuthGroup)
 	sseRouter(v1AuthGroup)
 	clientRouter(v1AuthGroup)
+	userRouter(v1AuthGroup)
 }

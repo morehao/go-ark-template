@@ -98,9 +98,9 @@ func (svc *menuSvc) Update(ctx *gin.Context, req *dtopermission.MenuUpdateReq) e
 
 // Detail 根据id获取菜单管理
 func (svc *menuSvc) Detail(ctx *gin.Context, req *dtopermission.MenuDetailReq) (*dtopermission.MenuDetailResp, error) {
-	detailEntity, err := iamdao.NewMenuDao().GetById(ctx, req.ID)
+	detailEntity, err := iamdao.NewMenuDao().GetByID(ctx, req.ID)
 	if err != nil {
-		glog.Errorf(ctx, "[svcpermission.MenuDetail] daoMenu GetById fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+		glog.Errorf(ctx, "[svcpermission.MenuDetail] daoMenu GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.MenuGetDetailError)
 	}
 	// 判断是否存在

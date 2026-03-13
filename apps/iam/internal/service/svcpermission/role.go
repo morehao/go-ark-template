@@ -86,9 +86,9 @@ func (svc *roleSvc) Update(ctx *gin.Context, req *dtopermission.RoleUpdateReq) e
 
 // Detail 根据id获取角色管理
 func (svc *roleSvc) Detail(ctx *gin.Context, req *dtopermission.RoleDetailReq) (*dtopermission.RoleDetailResp, error) {
-	detailEntity, err := iamdao.NewRoleDao().GetById(ctx, req.ID)
+	detailEntity, err := iamdao.NewRoleDao().GetByID(ctx, req.ID)
 	if err != nil {
-		glog.Errorf(ctx, "[svcpermission.RoleDetail] daoRole GetById fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+		glog.Errorf(ctx, "[svcpermission.RoleDetail] daoRole GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.RoleGetDetailError)
 	}
 	// 判断是否存在

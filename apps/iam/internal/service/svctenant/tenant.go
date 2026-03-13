@@ -80,9 +80,9 @@ func (svc *tenantSvc) Update(ctx *gin.Context, req *dtotenant.TenantUpdateReq) e
 
 // Detail 根据id获取租户管理
 func (svc *tenantSvc) Detail(ctx *gin.Context, req *dtotenant.TenantDetailReq) (*dtotenant.TenantDetailResp, error) {
-	detailEntity, err := iamdao.NewTenantDao().GetById(ctx, req.ID)
+	detailEntity, err := iamdao.NewTenantDao().GetByID(ctx, req.ID)
 	if err != nil {
-		glog.Errorf(ctx, "[svctenant.TenantDetail] daoTenant GetById fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+		glog.Errorf(ctx, "[svctenant.TenantDetail] daoTenant GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.TenantGetDetailError)
 	}
 	// 判断是否存在
