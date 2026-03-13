@@ -26,7 +26,7 @@ Follows [project-layout](https://github.com/golang-standards/project-layout). Cu
 ```bash
 .
 ├── apps
-│   ├── demoapp
+│   ├── demo
 │   │   ├── cmd
 │   │   ├── client
 │   │   │   └── httpbingo
@@ -82,13 +82,13 @@ Run code generation commands:
 
 ```bash
 # Generate full module based on table
-make codegen MODE=module APP=demoapp
+make codegen MODE=module APP=demo
 
 # Generate only model code
-make codegen MODE=model APP=demoapp
+make codegen MODE=model APP=demo
 
 # Generate API endpoint code
-make codegen MODE=api APP=demoapp
+make codegen MODE=api APP=demo
 ```
 
 See [generate](https://github.com/morehao/gocli?tab=readme-ov-file#generate) for full documentation.
@@ -106,7 +106,7 @@ go install github.com/swaggo/swag/cmd/swag@latest
 Generate Swagger docs:
 
 ```bash
-make swag APP=demoapp
+make swag APP=demo
 ```
 
 Access docs at:
@@ -122,13 +122,13 @@ http://localhost:8099/demoapp/swagger/index.html
 Build Docker image:
 
 ```bash
-make docker-build APP=demoapp
+make docker-build APP=demo
 ```
 
 Run container:
 
 ```bash
-make docker-run APP=demoapp
+make docker-run APP=demo
 ```
 
 ---

@@ -13,7 +13,7 @@ var (
 )
 
 const (
-	ESServiceDemo = "demoapp"
+	ESServiceDemo = "demo"
 )
 
 func InitMultiEs(configs []dbes.ESConfig, logConfig *glog.LogConfig) error {
