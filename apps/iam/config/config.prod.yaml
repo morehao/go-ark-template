@@ -37,15 +37,9 @@ log:
     extra_keys:
       - requestId
 
-mysql_configs:
-  - addr: host.docker.internal:3306
-    user: root
-    password: 123456
-    database: practice
-    charset: utf8mb4
-    timeout: 5s
-    read_timeout: 3s
-    write_timeout: 3s
+db_configs:
+  - url: "mysql://root:123456@host.docker.internal:3306/practice?charset=utf8mb4&parseTime=True&loc=Local&timeout=5s&readTimeout=3s&writeTimeout=3s"
+    service: iam
 
 redis_config:
   service: iam

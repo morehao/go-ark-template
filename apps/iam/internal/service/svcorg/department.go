@@ -2,14 +2,15 @@ package svcorg
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam/iamdao/daoorg"
+	"github.com/morehao/goark/apps/iam/iamdao"
 	"github.com/morehao/goark/apps/iam/iammodel"
 	"github.com/morehao/goark/apps/iam/internal/dto/dtoorg"
 	"github.com/morehao/goark/apps/iam/object/objorg"
 	"github.com/morehao/goark/pkg/code"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
-	"github.com/morehao/golib/glog"
+	"github.com/morehao/golib/biz/genericdao"
 	"github.com/morehao/golib/biz/gobject"
+	"github.com/morehao/golib/glog"
 	"github.com/morehao/golib/gutil"
 )
 
@@ -44,7 +45,7 @@ func (svc *departmentSvc) Create(ctx *gin.Context, req *dtoorg.DepartmentCreateR
 		Status:    req.Status,
 	}
 
-	if err := daoorg.NewDepartmentDao().Insert(ctx, insertEntity); err != nil {
+	if err := iamdao.NewDepartmentDao().Insert(ctx, insertEntity); err != nil {
 		glog.Errorf(ctx, "[svcorg.DepartmentCreate] daoDepartment Create fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.DepartmentCreateError)
 	}
@@ -57,7 +58,7 @@ func (svc *departmentSvc) Create(ctx *gin.Context, req *dtoorg.DepartmentCreateR
 func (svc *departmentSvc) Delete(ctx *gin.Context, req *dtoorg.DepartmentDeleteReq) error {
 	userID := gincontext.GetUserID(ctx)
 
-	if err := daoorg.NewDepartmentDao().Delete(ctx, req.ID, userID); err != nil {
+	if err := iamdao.NewDepartmentDao().Delete(ctx, req.ID, userID); err != nil {
 		glog.Errorf(ctx, "[svcorg.Delete] daoDepartment Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.DepartmentDeleteError)
 	}
@@ -66,20 +67,19 @@ func (svc *departmentSvc) Delete(ctx *gin.Context, req *dtoorg.DepartmentDeleteR
 
 // Update 更新部门管理
 func (svc *departmentSvc) Update(ctx *gin.Context, req *dtoorg.DepartmentUpdateReq) error {
-
-	updateEntity := &iammodel.DepartmentEntity{
-		CompanyID: req.CompanyID,
-		DeptCode:  req.DeptCode,
-		DeptLevel: req.DeptLevel,
-		DeptName:  req.DeptName,
-		DeptPath:  req.DeptPath,
-		LeaderID:  req.LeaderID,
-		ParentID:  req.ParentID,
-		SortOrder: req.SortOrder,
-		Status:    req.Status,
+	updateMap := map[string]any{
+		"company_id": req.CompanyID,
+		"dept_code":  req.DeptCode,
+		"dept_level": req.DeptLevel,
+		"dept_name":  req.DeptName,
+		"dept_path":  req.DeptPath,
+		"leader_id":  req.LeaderID,
+		"parent_id":  req.ParentID,
+		"sort_order": req.SortOrder,
+		"status":     req.Status,
 	}
-	if err := daoorg.NewDepartmentDao().UpdateByID(ctx, req.ID, updateEntity); err != nil {
-		glog.Errorf(ctx, "[svcorg.DepartmentUpdate] daoDepartment UpdateByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+	if err := iamdao.NewDepartmentDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
+		glog.Errorf(ctx, "[svcorg.DepartmentUpdate] daoDepartment UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.DepartmentUpdateError)
 	}
 	return nil
@@ -87,31 +87,31 @@ func (svc *departmentSvc) Update(ctx *gin.Context, req *dtoorg.DepartmentUpdateR
 
 // Detail 根据id获取部门管理
 func (svc *departmentSvc) Detail(ctx *gin.Context, req *dtoorg.DepartmentDetailReq) (*dtoorg.DepartmentDetailResp, error) {
-	detailEntity, err := daoorg.NewDepartmentDao().GetById(ctx, req.ID)
+	departmentEntity, err := iamdao.NewDepartmentDao().GetByID(ctx, req.ID)
 	if err != nil {
-		glog.Errorf(ctx, "[svcorg.DepartmentDetail] daoDepartment GetById fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+		glog.Errorf(ctx, "[svcorg.DepartmentDetail] daoDepartment GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.DepartmentGetDetailError)
 	}
 	// 判断是否存在
-	if detailEntity == nil || detailEntity.ID == 0 {
+	if departmentEntity == nil || departmentEntity.ID == 0 {
 		return nil, code.GetError(code.DepartmentNotExistError)
 	}
 	resp := &dtoorg.DepartmentDetailResp{
-		ID: detailEntity.ID,
+		ID: departmentEntity.ID,
 		DepartmentBaseInfo: objorg.DepartmentBaseInfo{
-			CompanyID: detailEntity.CompanyID,
-			DeptCode:  detailEntity.DeptCode,
-			DeptLevel: detailEntity.DeptLevel,
-			DeptName:  detailEntity.DeptName,
-			DeptPath:  detailEntity.DeptPath,
-			LeaderID:  detailEntity.LeaderID,
-			ParentID:  detailEntity.ParentID,
-			SortOrder: detailEntity.SortOrder,
-			Status:    detailEntity.Status,
+			CompanyID: departmentEntity.CompanyID,
+			DeptCode:  departmentEntity.DeptCode,
+			DeptLevel: departmentEntity.DeptLevel,
+			DeptName:  departmentEntity.DeptName,
+			DeptPath:  departmentEntity.DeptPath,
+			LeaderID:  departmentEntity.LeaderID,
+			ParentID:  departmentEntity.ParentID,
+			SortOrder: departmentEntity.SortOrder,
+			Status:    departmentEntity.Status,
 		},
 		OperatorBaseInfo: gobject.OperatorBaseInfo{
-			CreatedAt: detailEntity.CreatedAt.Unix(),
-			UpdatedAt: detailEntity.UpdatedAt.Unix(),
+			CreatedAt: departmentEntity.CreatedAt.Unix(),
+			UpdatedAt: departmentEntity.UpdatedAt.Unix(),
 		},
 	}
 	return resp, nil
@@ -119,17 +119,19 @@ func (svc *departmentSvc) Detail(ctx *gin.Context, req *dtoorg.DepartmentDetailR
 
 // PageList 分页获取部门管理列表
 func (svc *departmentSvc) PageList(ctx *gin.Context, req *dtoorg.DepartmentPageListReq) (*dtoorg.DepartmentPageListResp, error) {
-	cond := &daoorg.DepartmentCond{
-		Page:     req.Page,
-		PageSize: req.PageSize,
+	cond := &iamdao.DepartmentCond{
+		BaseCond: &genericdao.BaseCond{
+			Page:     req.Page,
+			PageSize: req.PageSize,
+		},
 	}
-	dataList, total, err := daoorg.NewDepartmentDao().GetPageListByCond(ctx, cond)
+	departmentEntityList, total, err := iamdao.NewDepartmentDao().GetPageListByCond(ctx, cond)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.DepartmentPageList] daoDepartment GetPageListByCond fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.DepartmentGetPageListError)
 	}
-	list := make([]dtoorg.DepartmentPageListItem, 0, len(dataList))
-	for _, v := range dataList {
+	list := make([]dtoorg.DepartmentPageListItem, 0, len(departmentEntityList))
+	for _, v := range departmentEntityList {
 		list = append(list, dtoorg.DepartmentPageListItem{
 			ID: v.ID,
 			DepartmentBaseInfo: objorg.DepartmentBaseInfo{

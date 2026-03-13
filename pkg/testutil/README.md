@@ -93,7 +93,7 @@ var Conf *Config
 
 type Config struct {
     Log          map[string]glog.LogConfig `yaml:"log"`
-    MysqlConfigs []dbmysql.MysqlConfig     `yaml:"mysql_configs"`
+    DBConfigs    []dbgorm.GormConfig       `yaml:"db_configs"`
     RedisConfigs []dbredis.RedisConfig     `yaml:"redis_configs"`
     ESConfigs    []dbes.ESConfig           `yaml:"es_configs"`
 }
@@ -180,9 +180,9 @@ func (m *myappInitializer) Initialize() error {
     }
     
     // 4. 初始化资源
-    if len(config.Conf.MysqlConfigs) > 0 {
-        if err := dbclient.InitMultiMysql(config.Conf.MysqlConfigs); err != nil {
-            return fmt.Errorf("init mysql: %w", err)
+    if len(config.Conf.DBConfigs) > 0 {
+        if err := dbclient.InitMultiDB(config.Conf.DBConfigs); err != nil {
+            return fmt.Errorf("init db: %w", err)
         }
     }
     // ... 其他资源初始化
@@ -260,12 +260,9 @@ log:
     writer: file
     dir: ../../../log
 
-# MySQL 配置（可选）
-mysql_configs:
-  - addr: 127.0.0.1:3306
-    user: root
-    password: password
-    database: mydb
+# DB 配置（可选）
+db_configs:
+  - url: "mysql://root:password@127.0.0.1:3306/mydb?charset=utf8mb4&parseTime=True&loc=Local"
 
 # Redis 配置（可选）
 redis_configs:

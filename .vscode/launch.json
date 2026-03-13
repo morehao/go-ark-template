@@ -12,11 +12,11 @@
             "program": "${workspaceFolder}/apps/iam/cmd"
         },
         {
-            "name": "demoapp",
+            "name": "demo",
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/apps/demoapp/cmd"
+            "program": "${workspaceFolder}/apps/demo/cmd"
         }
     ]
 }

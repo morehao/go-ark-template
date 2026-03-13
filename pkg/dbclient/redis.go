@@ -1,7 +1,7 @@
 package dbclient
 
 import (
-	"github.com/morehao/golib/database/dbredis"
+	"github.com/morehao/golib/dbaccess/dbredis"
 	"github.com/morehao/golib/glog"
 	"github.com/redis/go-redis/v9"
 )
@@ -15,7 +15,7 @@ func InitRedis(config dbredis.RedisConfig, logConfig *glog.LogConfig) error {
 	if logConfig != nil {
 		opts = append(opts, dbredis.WithLogConfig(logConfig))
 	}
-	client, err := dbredis.InitRedis(&config, opts...)
+	client, err := dbredis.New(&config, opts...)
 	if err != nil {
 		return err
 	}

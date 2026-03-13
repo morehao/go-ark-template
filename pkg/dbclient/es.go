@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/elastic/go-elasticsearch/v8"
-	"github.com/morehao/golib/database/dbes"
+	"github.com/morehao/golib/dbaccess/dbes"
 	"github.com/morehao/golib/glog"
 )
 
@@ -13,7 +13,7 @@ var (
 )
 
 const (
-	ESServiceDemo = "demoapp"
+	ESServiceDemo = "demo"
 )
 
 func InitMultiEs(configs []dbes.ESConfig, logConfig *glog.LogConfig) error {
@@ -25,7 +25,7 @@ func InitMultiEs(configs []dbes.ESConfig, logConfig *glog.LogConfig) error {
 		opts = append(opts, dbes.WithLogConfig(logConfig))
 	}
 	for _, cfg := range configs {
-		client, _, err := dbes.InitES(&cfg, opts...)
+		client, _, err := dbes.New(&cfg, opts...)
 		if err != nil {
 			return err
 		}
