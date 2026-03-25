@@ -2,6 +2,7 @@ package svcpermission
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/morehao/goark/apps/iam/core/tenant"
 	"github.com/morehao/goark/apps/iam/iamdao"
 	"github.com/morehao/goark/apps/iam/iammodel"
 	"github.com/morehao/goark/apps/iam/internal/dto/dtopermission"
@@ -34,7 +35,6 @@ func NewRoleSvc() RoleSvc {
 // Create 创建角色管理
 func (svc *roleSvc) Create(ctx *gin.Context, req *dtopermission.RoleCreateReq) (*dtopermission.RoleCreateResp, error) {
 	insertEntity := &iammodel.RoleEntity{
-		CompanyID:   req.CompanyID,
 		DataScope:   req.DataScope,
 		Description: req.Description,
 		RoleCode:    req.RoleCode,
@@ -56,8 +56,19 @@ func (svc *roleSvc) Create(ctx *gin.Context, req *dtopermission.RoleCreateReq) (
 // Delete 删除角色管理
 func (svc *roleSvc) Delete(ctx *gin.Context, req *dtopermission.RoleDeleteReq) error {
 	userID := gincontext.GetUserID(ctx)
+	roleEntity, err := iamdao.NewRoleDao().GetByID(ctx, req.ID)
+	if err != nil {
+		glog.Errorf(ctx, "[svcpermission.Delete] daoRole GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+		return code.GetError(code.RoleDeleteError)
+	}
+	if roleEntity == nil || roleEntity.ID == 0 {
+		return code.GetError(code.RoleNotExistError)
+	}
+	if err = tenant.CheckCompanyAccess(ctx, roleEntity.CompanyID); err != nil {
+		return err
+	}
 
-	if err := iamdao.NewRoleDao().Delete(ctx, req.ID, userID); err != nil {
+	if err = iamdao.NewRoleDao().Delete(ctx, req.ID, userID); err != nil {
 		glog.Errorf(ctx, "[svcpermission.Delete] daoRole Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.RoleDeleteError)
 	}
@@ -66,8 +77,18 @@ func (svc *roleSvc) Delete(ctx *gin.Context, req *dtopermission.RoleDeleteReq) e
 
 // Update 更新角色管理
 func (svc *roleSvc) Update(ctx *gin.Context, req *dtopermission.RoleUpdateReq) error {
+	roleEntity, err := iamdao.NewRoleDao().GetByID(ctx, req.ID)
+	if err != nil {
+		glog.Errorf(ctx, "[svcpermission.RoleUpdate] daoRole GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+		return code.GetError(code.RoleUpdateError)
+	}
+	if roleEntity == nil || roleEntity.ID == 0 {
+		return code.GetError(code.RoleNotExistError)
+	}
+	if err = tenant.CheckCompanyAccess(ctx, roleEntity.CompanyID); err != nil {
+		return err
+	}
 	updateMap := map[string]any{
-		"company_id":  req.CompanyID,
 		"data_scope":  req.DataScope,
 		"description": req.Description,
 		"role_code":   req.RoleCode,
@@ -76,7 +97,7 @@ func (svc *roleSvc) Update(ctx *gin.Context, req *dtopermission.RoleUpdateReq) e
 		"sort_order":  req.SortOrder,
 		"status":      req.Status,
 	}
-	if err := iamdao.NewRoleDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
+	if err = iamdao.NewRoleDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
 		glog.Errorf(ctx, "[svcpermission.RoleUpdate] daoRole UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.RoleUpdateError)
 	}
@@ -93,6 +114,9 @@ func (svc *roleSvc) Detail(ctx *gin.Context, req *dtopermission.RoleDetailReq) (
 	// 判断是否存在
 	if roleEntity == nil || roleEntity.ID == 0 {
 		return nil, code.GetError(code.RoleNotExistError)
+	}
+	if err = tenant.CheckCompanyAccess(ctx, roleEntity.CompanyID); err != nil {
+		return nil, err
 	}
 	resp := &dtopermission.RoleDetailResp{
 		ID: roleEntity.ID,

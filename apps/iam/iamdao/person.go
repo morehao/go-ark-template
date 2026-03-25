@@ -10,6 +10,7 @@ import (
 type PersonCond struct {
 	*genericdao.BaseCond
 	Mobile   string
+	Email    string
 	RealName string
 }
 
@@ -19,6 +20,9 @@ func (c *PersonCond) BuildCondition(db *gorm.DB, tableName string) {
 	}
 	if c.Mobile != "" {
 		db.Where("mobile = ?", c.Mobile)
+	}
+	if c.Email != "" {
+		db.Where("email = ?", c.Email)
 	}
 	if c.RealName != "" {
 		db.Where("real_name = ?", c.RealName)

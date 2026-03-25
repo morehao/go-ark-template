@@ -9,6 +9,7 @@ import (
 
 type TenantCond struct {
 	*genericdao.BaseCond
+	ID   uint
 	Name string
 }
 
@@ -18,6 +19,9 @@ func (c *TenantCond) BuildCondition(db *gorm.DB, tableName string) {
 	}
 	if c.Name != "" {
 		db.Where("name = ?", c.Name)
+	}
+	if c.ID > 0 {
+		db.Where("id = ?", c.ID)
 	}
 }
 

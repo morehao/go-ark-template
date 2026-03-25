@@ -22,6 +22,16 @@ type Config struct {
 	RedisConfig dbredis.RedisConfig       `yaml:"redis_config"`
 	ESConfigs   []dbes.ESConfig           `yaml:"es_configs"`
 	Client      Client                    `yaml:"client"`
+	JWT         JWT                       `yaml:"jwt"`
+	Password    PasswordConfig            `yaml:"password"`
+}
+
+type PasswordConfig struct {
+	Prefix string `yaml:"prefix"`
+}
+
+type JWT struct {
+	SignKey string `yaml:"signKey"`
 }
 
 type Server struct {

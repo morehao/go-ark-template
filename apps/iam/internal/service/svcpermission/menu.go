@@ -2,6 +2,7 @@ package svcpermission
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/morehao/goark/apps/iam/core/tenant"
 	"github.com/morehao/goark/apps/iam/iamdao"
 	"github.com/morehao/goark/apps/iam/iammodel"
 	"github.com/morehao/goark/apps/iam/internal/dto/dtopermission"
@@ -35,7 +36,6 @@ func NewMenuSvc() MenuSvc {
 func (svc *menuSvc) Create(ctx *gin.Context, req *dtopermission.MenuCreateReq) (*dtopermission.MenuCreateResp, error) {
 	insertEntity := &iammodel.MenuEntity{
 		CacheType:     req.CacheType,
-		CompanyID:     req.CompanyID,
 		ComponentPath: req.ComponentPath,
 		Icon:          req.Icon,
 		LinkType:      req.LinkType,
@@ -62,8 +62,19 @@ func (svc *menuSvc) Create(ctx *gin.Context, req *dtopermission.MenuCreateReq) (
 // Delete 删除菜单管理
 func (svc *menuSvc) Delete(ctx *gin.Context, req *dtopermission.MenuDeleteReq) error {
 	userID := gincontext.GetUserID(ctx)
+	menuEntity, err := iamdao.NewMenuDao().GetByID(ctx, req.ID)
+	if err != nil {
+		glog.Errorf(ctx, "[svcpermission.Delete] daoMenu GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+		return code.GetError(code.MenuDeleteError)
+	}
+	if menuEntity == nil || menuEntity.ID == 0 {
+		return code.GetError(code.MenuNotExistError)
+	}
+	if err = tenant.CheckCompanyAccess(ctx, menuEntity.CompanyID); err != nil {
+		return err
+	}
 
-	if err := iamdao.NewMenuDao().Delete(ctx, req.ID, userID); err != nil {
+	if err = iamdao.NewMenuDao().Delete(ctx, req.ID, userID); err != nil {
 		glog.Errorf(ctx, "[svcpermission.Delete] daoMenu Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.MenuDeleteError)
 	}
@@ -72,9 +83,19 @@ func (svc *menuSvc) Delete(ctx *gin.Context, req *dtopermission.MenuDeleteReq) e
 
 // Update 更新菜单管理
 func (svc *menuSvc) Update(ctx *gin.Context, req *dtopermission.MenuUpdateReq) error {
+	menuEntity, err := iamdao.NewMenuDao().GetByID(ctx, req.ID)
+	if err != nil {
+		glog.Errorf(ctx, "[svcpermission.MenuUpdate] daoMenu GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+		return code.GetError(code.MenuUpdateError)
+	}
+	if menuEntity == nil || menuEntity.ID == 0 {
+		return code.GetError(code.MenuNotExistError)
+	}
+	if err = tenant.CheckCompanyAccess(ctx, menuEntity.CompanyID); err != nil {
+		return err
+	}
 	updateMap := map[string]any{
 		"cache_type":     req.CacheType,
-		"company_id":     req.CompanyID,
 		"component_path": req.ComponentPath,
 		"icon":           req.Icon,
 		"link_type":      req.LinkType,
@@ -88,7 +109,7 @@ func (svc *menuSvc) Update(ctx *gin.Context, req *dtopermission.MenuUpdateReq) e
 		"status":         req.Status,
 		"visibility":     req.Visibility,
 	}
-	if err := iamdao.NewMenuDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
+	if err = iamdao.NewMenuDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
 		glog.Errorf(ctx, "[svcpermission.MenuUpdate] daoMenu UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.MenuUpdateError)
 	}
@@ -105,6 +126,9 @@ func (svc *menuSvc) Detail(ctx *gin.Context, req *dtopermission.MenuDetailReq) (
 	// 判断是否存在
 	if menuEntity == nil || menuEntity.ID == 0 {
 		return nil, code.GetError(code.MenuNotExistError)
+	}
+	if err = tenant.CheckCompanyAccess(ctx, menuEntity.CompanyID); err != nil {
+		return nil, err
 	}
 	resp := &dtopermission.MenuDetailResp{
 		ID: menuEntity.ID,

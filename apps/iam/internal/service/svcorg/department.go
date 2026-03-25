@@ -2,6 +2,7 @@ package svcorg
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/morehao/goark/apps/iam/core/tenant"
 	"github.com/morehao/goark/apps/iam/iamdao"
 	"github.com/morehao/goark/apps/iam/iammodel"
 	"github.com/morehao/goark/apps/iam/internal/dto/dtoorg"
@@ -34,7 +35,6 @@ func NewDepartmentSvc() DepartmentSvc {
 // Create 创建部门管理
 func (svc *departmentSvc) Create(ctx *gin.Context, req *dtoorg.DepartmentCreateReq) (*dtoorg.DepartmentCreateResp, error) {
 	insertEntity := &iammodel.DepartmentEntity{
-		CompanyID: req.CompanyID,
 		DeptCode:  req.DeptCode,
 		DeptLevel: req.DeptLevel,
 		DeptName:  req.DeptName,
@@ -57,8 +57,19 @@ func (svc *departmentSvc) Create(ctx *gin.Context, req *dtoorg.DepartmentCreateR
 // Delete 删除部门管理
 func (svc *departmentSvc) Delete(ctx *gin.Context, req *dtoorg.DepartmentDeleteReq) error {
 	userID := gincontext.GetUserID(ctx)
+	departmentEntity, err := iamdao.NewDepartmentDao().GetByID(ctx, req.ID)
+	if err != nil {
+		glog.Errorf(ctx, "[svcorg.Delete] daoDepartment GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+		return code.GetError(code.DepartmentDeleteError)
+	}
+	if departmentEntity == nil || departmentEntity.ID == 0 {
+		return code.GetError(code.DepartmentNotExistError)
+	}
+	if err = tenant.CheckCompanyAccess(ctx, departmentEntity.CompanyID); err != nil {
+		return err
+	}
 
-	if err := iamdao.NewDepartmentDao().Delete(ctx, req.ID, userID); err != nil {
+	if err = iamdao.NewDepartmentDao().Delete(ctx, req.ID, userID); err != nil {
 		glog.Errorf(ctx, "[svcorg.Delete] daoDepartment Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.DepartmentDeleteError)
 	}
@@ -67,8 +78,18 @@ func (svc *departmentSvc) Delete(ctx *gin.Context, req *dtoorg.DepartmentDeleteR
 
 // Update 更新部门管理
 func (svc *departmentSvc) Update(ctx *gin.Context, req *dtoorg.DepartmentUpdateReq) error {
+	departmentEntity, err := iamdao.NewDepartmentDao().GetByID(ctx, req.ID)
+	if err != nil {
+		glog.Errorf(ctx, "[svcorg.DepartmentUpdate] daoDepartment GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+		return code.GetError(code.DepartmentUpdateError)
+	}
+	if departmentEntity == nil || departmentEntity.ID == 0 {
+		return code.GetError(code.DepartmentNotExistError)
+	}
+	if err = tenant.CheckCompanyAccess(ctx, departmentEntity.CompanyID); err != nil {
+		return err
+	}
 	updateMap := map[string]any{
-		"company_id": req.CompanyID,
 		"dept_code":  req.DeptCode,
 		"dept_level": req.DeptLevel,
 		"dept_name":  req.DeptName,
@@ -78,7 +99,7 @@ func (svc *departmentSvc) Update(ctx *gin.Context, req *dtoorg.DepartmentUpdateR
 		"sort_order": req.SortOrder,
 		"status":     req.Status,
 	}
-	if err := iamdao.NewDepartmentDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
+	if err = iamdao.NewDepartmentDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
 		glog.Errorf(ctx, "[svcorg.DepartmentUpdate] daoDepartment UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.DepartmentUpdateError)
 	}
@@ -95,6 +116,9 @@ func (svc *departmentSvc) Detail(ctx *gin.Context, req *dtoorg.DepartmentDetailR
 	// 判断是否存在
 	if departmentEntity == nil || departmentEntity.ID == 0 {
 		return nil, code.GetError(code.DepartmentNotExistError)
+	}
+	if err = tenant.CheckCompanyAccess(ctx, departmentEntity.CompanyID); err != nil {
+		return nil, err
 	}
 	resp := &dtoorg.DepartmentDetailResp{
 		ID: departmentEntity.ID,

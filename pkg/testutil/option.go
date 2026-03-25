@@ -2,7 +2,7 @@ package testutil
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/golib/biz/gcontext/gincontext"
+	"github.com/morehao/golib/biz/gcontext"
 	"github.com/morehao/golib/glog"
 )
 
@@ -12,7 +12,7 @@ type Option func(ctx *gin.Context)
 // WithUserID 设置用户ID
 func WithUserID(uid uint) Option {
 	return func(ctx *gin.Context) {
-		ctx.Set(gincontext.UserID, uid)
+		ctx.Set(gcontext.KeyUserID, uid)
 	}
 }
 

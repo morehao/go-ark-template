@@ -2,6 +2,7 @@ package svcorg
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/morehao/goark/apps/iam/core/tenant"
 	"github.com/morehao/goark/apps/iam/iamdao"
 	"github.com/morehao/goark/apps/iam/iammodel"
 	"github.com/morehao/goark/apps/iam/internal/dto/dtoorg"
@@ -43,7 +44,6 @@ func (svc *companySvc) Create(ctx *gin.Context, req *dtoorg.CompanyCreateReq) (*
 		Logo:                    req.Logo,
 		ShortName:               req.ShortName,
 		Status:                  req.Status,
-		TenantID:                req.TenantID,
 		UnifiedSocialCreditCode: req.UnifiedSocialCreditCode,
 	}
 
@@ -59,8 +59,19 @@ func (svc *companySvc) Create(ctx *gin.Context, req *dtoorg.CompanyCreateReq) (*
 // Delete 删除公司管理
 func (svc *companySvc) Delete(ctx *gin.Context, req *dtoorg.CompanyDeleteReq) error {
 	userID := gincontext.GetUserID(ctx)
+	companyEntity, err := iamdao.NewCompanyDao().GetByID(ctx, req.ID)
+	if err != nil {
+		glog.Errorf(ctx, "[svcorg.Delete] daoCompany GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+		return code.GetError(code.CompanyDeleteError)
+	}
+	if companyEntity == nil || companyEntity.ID == 0 {
+		return code.GetError(code.CompanyNotExistError)
+	}
+	if err = tenant.CheckTenantAccess(ctx, companyEntity.TenantID); err != nil {
+		return err
+	}
 
-	if err := iamdao.NewCompanyDao().Delete(ctx, req.ID, userID); err != nil {
+	if err = iamdao.NewCompanyDao().Delete(ctx, req.ID, userID); err != nil {
 		glog.Errorf(ctx, "[svcorg.Delete] daoCompany Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.CompanyDeleteError)
 	}
@@ -69,6 +80,17 @@ func (svc *companySvc) Delete(ctx *gin.Context, req *dtoorg.CompanyDeleteReq) er
 
 // Update 更新公司管理
 func (svc *companySvc) Update(ctx *gin.Context, req *dtoorg.CompanyUpdateReq) error {
+	companyEntity, err := iamdao.NewCompanyDao().GetByID(ctx, req.ID)
+	if err != nil {
+		glog.Errorf(ctx, "[svcorg.CompanyUpdate] daoCompany GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+		return code.GetError(code.CompanyUpdateError)
+	}
+	if companyEntity == nil || companyEntity.ID == 0 {
+		return code.GetError(code.CompanyNotExistError)
+	}
+	if err = tenant.CheckTenantAccess(ctx, companyEntity.TenantID); err != nil {
+		return err
+	}
 	updateMap := map[string]any{
 		"address":                    req.Address,
 		"company_code":               req.CompanyCode,
@@ -79,10 +101,9 @@ func (svc *companySvc) Update(ctx *gin.Context, req *dtoorg.CompanyUpdateReq) er
 		"logo":                       req.Logo,
 		"short_name":                 req.ShortName,
 		"status":                     req.Status,
-		"tenant_id":                  req.TenantID,
 		"unified_social_credit_code": req.UnifiedSocialCreditCode,
 	}
-	if err := iamdao.NewCompanyDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
+	if err = iamdao.NewCompanyDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
 		glog.Errorf(ctx, "[svcorg.CompanyUpdate] daoCompany UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.CompanyUpdateError)
 	}
@@ -99,6 +120,9 @@ func (svc *companySvc) Detail(ctx *gin.Context, req *dtoorg.CompanyDetailReq) (*
 	// 判断是否存在
 	if companyEntity == nil || companyEntity.ID == 0 {
 		return nil, code.GetError(code.CompanyNotExistError)
+	}
+	if err = tenant.CheckTenantAccess(ctx, companyEntity.TenantID); err != nil {
+		return nil, err
 	}
 	resp := &dtoorg.CompanyDetailResp{
 		ID: companyEntity.ID,

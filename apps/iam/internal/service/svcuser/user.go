@@ -1,17 +1,24 @@
 package svcuser
 
 import (
+	"strings"
+
 	"github.com/gin-gonic/gin"
+	"github.com/morehao/goark/apps/iam/config"
+	"github.com/morehao/goark/apps/iam/core/tenant"
 	"github.com/morehao/goark/apps/iam/iamdao"
 	"github.com/morehao/goark/apps/iam/iammodel"
 	"github.com/morehao/goark/apps/iam/internal/dto/dtouser"
 	"github.com/morehao/goark/apps/iam/object/objuser"
 	"github.com/morehao/goark/pkg/code"
+	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
 	"github.com/morehao/golib/biz/genericdao"
 	"github.com/morehao/golib/biz/gobject"
+	"github.com/morehao/golib/gcrypto"
 	"github.com/morehao/golib/glog"
 	"github.com/morehao/golib/gutil"
+	"gorm.io/gorm"
 )
 
 type UserSvc interface {
@@ -33,34 +40,112 @@ func NewUserSvc() UserSvc {
 
 // Create 创建用户管理
 func (svc *userSvc) Create(ctx *gin.Context, req *dtouser.UserCreateReq) (*dtouser.UserCreateResp, error) {
-	insertEntity := &iammodel.UserEntity{
-		CompanyID:   req.CompanyID,
+	companyID := gincontext.GetCompanyID(ctx)
+	operatorID := gincontext.GetUserID(ctx)
+
+	mobile := strings.TrimSpace(req.Mobile)
+	email := strings.TrimSpace(req.Email)
+	passwordHash := ""
+	if mobile != "" {
+		passwordHash = svc.generatePassword(mobile)
+	}
+	personCreateEntity := &iammodel.PersonEntity{
+		Mobile:       mobile,
+		Email:        email,
+		RealName:     req.RealName,
+		PasswordHash: passwordHash,
+		CreatedBy:    operatorID,
+		UpdatedBy:    operatorID,
+	}
+	userEntity := &iammodel.UserEntity{
+		CompanyID:   companyID,
 		DeptID:      req.DeptID,
 		EmployeeNo:  req.EmployeeNo,
 		JobLevel:    req.JobLevel,
 		LastLoginIp: req.LastLoginIp,
 		LoginCount:  req.LoginCount,
-		PersonID:    req.PersonID,
 		Position:    req.Position,
 		Status:      req.Status,
 		UserType:    req.UserType,
 		Username:    req.Username,
+		CreatedBy:   operatorID,
+		UpdatedBy:   operatorID,
 	}
 
-	if err := iamdao.NewUserDao().Insert(ctx, insertEntity); err != nil {
-		glog.Errorf(ctx, "[svcuser.UserCreate] daoUser Create fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+	var userID uint
+	var personID uint
+	txErr := dbclient.IamDB(ctx).Transaction(func(tx *gorm.DB) error {
+		var err error
+		personID, err = svc.getOrCreatePersonWithTx(ctx, tx, mobile, email, personCreateEntity)
+		if err != nil {
+			return err
+		}
+		userEntity.PersonID = personID
+		if err := iamdao.NewUserDao().WithTx(tx).Insert(ctx, userEntity); err != nil {
+			return err
+		}
+		userID = userEntity.ID
+		return nil
+	})
+	if txErr != nil {
+		glog.Errorf(ctx, "[svcuser.Create] Transaction fail, err:%v, mobile:%s, email:%s", txErr, mobile, email)
 		return nil, code.GetError(code.UserCreateError)
 	}
+
 	return &dtouser.UserCreateResp{
-		ID: insertEntity.ID,
+		ID:       userID,
+		PersonID: personID,
 	}, nil
+}
+
+func (svc *userSvc) getOrCreatePersonWithTx(ctx *gin.Context, tx *gorm.DB, mobile, email string, personCreateEntity *iammodel.PersonEntity) (uint, error) {
+	personEntity, err := iamdao.NewPersonDao().GetByCond(ctx, &iamdao.PersonCond{
+		Mobile: mobile,
+		Email:  email,
+	})
+	if err != nil {
+		glog.Errorf(ctx, "[svcuser.getOrCreatePerson] daoPerson GetByCond fail, err:%v, mobile:%s, email:%s", err, mobile, email)
+		return 0, code.GetError(code.UserCreateError)
+	}
+	if personEntity != nil && personEntity.ID != 0 {
+		return personEntity.ID, nil
+	}
+	if err := iamdao.NewPersonDao().WithTx(tx).Insert(ctx, personCreateEntity); err != nil {
+		glog.Errorf(ctx, "[svcuser.getOrCreatePerson] daoPerson Insert fail, err:%v, mobile:%s, email:%s", err, mobile, email)
+		return 0, code.GetError(code.UserCreateError)
+	}
+	return personCreateEntity.ID, nil
+}
+
+func (svc *userSvc) generatePassword(mobile string) string {
+	prefix := "pwd"
+	if config.Conf != nil && config.Conf.Password.Prefix != "" {
+		prefix = config.Conf.Password.Prefix
+	}
+	suffix := mobile
+	if len(mobile) > 8 {
+		suffix = mobile[len(mobile)-8:]
+	}
+	hash, _ := gcrypto.GeneratePasswordHash(prefix + suffix)
+	return hash
 }
 
 // Delete 删除用户管理
 func (svc *userSvc) Delete(ctx *gin.Context, req *dtouser.UserDeleteReq) error {
 	userID := gincontext.GetUserID(ctx)
+	userEntity, err := iamdao.NewUserDao().GetByID(ctx, req.ID)
+	if err != nil {
+		glog.Errorf(ctx, "[svcuser.Delete] daoUser GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+		return code.GetError(code.UserDeleteError)
+	}
+	if userEntity == nil || userEntity.ID == 0 {
+		return code.GetError(code.UserNotExistError)
+	}
+	if err = tenant.CheckCompanyAccess(ctx, userEntity.CompanyID); err != nil {
+		return err
+	}
 
-	if err := iamdao.NewUserDao().Delete(ctx, req.ID, userID); err != nil {
+	if err = iamdao.NewUserDao().Delete(ctx, req.ID, userID); err != nil {
 		glog.Errorf(ctx, "[svcuser.Delete] daoUser Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.UserDeleteError)
 	}
@@ -69,8 +154,18 @@ func (svc *userSvc) Delete(ctx *gin.Context, req *dtouser.UserDeleteReq) error {
 
 // Update 更新用户管理
 func (svc *userSvc) Update(ctx *gin.Context, req *dtouser.UserUpdateReq) error {
+	userEntity, err := iamdao.NewUserDao().GetByID(ctx, req.ID)
+	if err != nil {
+		glog.Errorf(ctx, "[svcuser.UserUpdate] daoUser GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+		return code.GetError(code.UserUpdateError)
+	}
+	if userEntity == nil || userEntity.ID == 0 {
+		return code.GetError(code.UserNotExistError)
+	}
+	if err = tenant.CheckCompanyAccess(ctx, userEntity.CompanyID); err != nil {
+		return err
+	}
 	updateMap := map[string]any{
-		"company_id":    req.CompanyID,
 		"dept_id":       req.DeptID,
 		"employee_no":   req.EmployeeNo,
 		"job_level":     req.JobLevel,
@@ -82,7 +177,7 @@ func (svc *userSvc) Update(ctx *gin.Context, req *dtouser.UserUpdateReq) error {
 		"user_type":     req.UserType,
 		"username":      req.Username,
 	}
-	if err := iamdao.NewUserDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
+	if err = iamdao.NewUserDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
 		glog.Errorf(ctx, "[svcuser.UserUpdate] daoUser UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.UserUpdateError)
 	}
@@ -99,6 +194,9 @@ func (svc *userSvc) Detail(ctx *gin.Context, req *dtouser.UserDetailReq) (*dtous
 	// 判断是否存在
 	if userEntity == nil || userEntity.ID == 0 {
 		return nil, code.GetError(code.UserNotExistError)
+	}
+	if err = tenant.CheckCompanyAccess(ctx, userEntity.CompanyID); err != nil {
+		return nil, err
 	}
 	resp := &dtouser.UserDetailResp{
 		ID: userEntity.ID,

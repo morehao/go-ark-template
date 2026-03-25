@@ -7,6 +7,9 @@ import (
 
 type UserCreateReq struct {
 	objuser.UserBaseInfo
+	Mobile   string `json:"mobile" form:"mobile"`
+	Email    string `json:"email" form:"email"`
+	RealName string `json:"realName" form:"realName"`
 }
 
 type UserUpdateReq struct {

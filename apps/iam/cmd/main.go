@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/morehao/goark/apps/iam"
 	"github.com/morehao/goark/apps/iam/config"
+	"github.com/morehao/goark/apps/iam/iammiddleware"
 	"github.com/morehao/golib/biz/gmiddleware/ginmiddleware"
 	"github.com/morehao/golib/glog"
 )
@@ -21,8 +22,10 @@ func main() {
 	defer glog.Close()
 
 	engine := gin.New()
+	engine.ContextWithFallback = true
 	engine.Use(gin.Recovery())
 	engine.Use(ginmiddleware.AccessLog())
+	engine.Use(iammiddleware.Auth())
 	iam.Routers(engine)
 
 	if err := engine.Run(fmt.Sprintf(":%s", config.Conf.Server.Port)); err != nil {

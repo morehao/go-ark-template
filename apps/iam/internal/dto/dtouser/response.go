@@ -6,8 +6,8 @@ import (
 )
 
 type UserCreateResp struct {
-	// ID 数据自增 ID
-	ID uint `json:"id"`
+	ID       uint `json:"id"`
+	PersonID uint `json:"personID"`
 }
 
 type UserDetailResp struct {
