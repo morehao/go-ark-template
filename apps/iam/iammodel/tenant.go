@@ -4,19 +4,22 @@ import (
 	"gorm.io/gorm"
 )
 
-// TenantEntity 租户管理表结构体
 type TenantEntity struct {
 	gorm.Model
-	CreatedBy   uint   `gorm:"column:created_by;type:bigint;not null;default 0;comment: 创建人ID"`
-	DeletedBy   uint   `gorm:"column:deleted_by;type:bigint;not null;default 0;comment: 删除人ID"`
-	Domain      string `gorm:"column:domain;type:varchar(255);;default '';comment: 租户域名"`
-	Logo        string `gorm:"column:logo;type:varchar(255);;default '';comment: 租户logo"`
-	Description string `gorm:"column:description;type:varchar(255);;default '';comment: 租户描述"`
-	SortOrder   int32  `gorm:"column:sort_order;type:int;;default 0;comment: 排序"`
-	Status      string `gorm:"column:status;type:varchar(16);;default active;comment: 状态: active-正常 inactive-停用"`
-	TenantCode  string `gorm:"column:tenant_code;type:varchar(32);not null;default '';comment: 租户编码"`
-	TenantName  string `gorm:"column:tenant_name;type:varchar(64);not null;default '';comment: 租户名称"`
-	UpdatedBy   uint   `gorm:"column:updated_by;type:bigint;not null;default 0;comment: 更新人ID"`
+	Address                 string `gorm:"column:address;type:varchar(255);;default '';comment: 租户地址"`
+	ContactEmail            string `gorm:"column:contact_email;type:varchar(64);;default '';comment: 联系邮箱"`
+	ContactPhone            string `gorm:"column:contact_phone;type:varchar(16);;default '';comment: 联系电话"`
+	CreatedBy               uint   `gorm:"column:created_by;type:bigint;not null;default 0;comment: 创建人ID"`
+	DeletedBy               uint   `gorm:"column:deleted_by;type:bigint;not null;default 0;comment: 删除人ID"`
+	LegalPerson             string `gorm:"column:legal_person;type:varchar(32);;default '';comment: 法人代表"`
+	Logo                    string `gorm:"column:logo;type:varchar(255);;default '';comment: 租户Logo"`
+	OrganizationID          uint   `gorm:"column:organization_id;type:bigint;not null;default 0;comment: 所属产品线ID"`
+	ShortName               string `gorm:"column:short_name;type:varchar(64);;default '';comment: 租户简称"`
+	Status                  string `gorm:"column:status;type:varchar(16);;default active;comment: 状态: active-正常 trial-试用 expired-已过期 inactive-停用"`
+	TenantCode              string `gorm:"column:tenant_code;type:varchar(32);not null;default '';comment: 租户编码"`
+	TenantName              string `gorm:"column:tenant_name;type:varchar(128);not null;default '';comment: 租户名称"`
+	UnifiedSocialCreditCode string `gorm:"column:unified_social_credit_code;type:varchar(18);;default '';comment: 统一社会信用代码(18位)"`
+	UpdatedBy               uint   `gorm:"column:updated_by;type:bigint;not null;default 0;comment: 更新人ID"`
 }
 
 type TenantEntityList []TenantEntity

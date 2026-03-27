@@ -9,19 +9,27 @@ import (
 
 type TenantCond struct {
 	*genericdao.BaseCond
-	ID   uint
-	Name string
+	OrganizationID uint
+	TenantName     string
+	TenantCode     string
+	Status         string
 }
 
 func (c *TenantCond) BuildCondition(db *gorm.DB, tableName string) {
 	if c.BaseCond != nil {
 		c.BaseCond.BuildCondition(db, tableName)
 	}
-	if c.Name != "" {
-		db.Where("name = ?", c.Name)
+	if c.OrganizationID > 0 {
+		db.Where("organization_id = ?", c.OrganizationID)
 	}
-	if c.ID > 0 {
-		db.Where("id = ?", c.ID)
+	if c.TenantName != "" {
+		db.Where("tenant_name = ?", c.TenantName)
+	}
+	if c.TenantCode != "" {
+		db.Where("tenant_code = ?", c.TenantCode)
+	}
+	if c.Status != "" {
+		db.Where("status = ?", c.Status)
 	}
 }
 

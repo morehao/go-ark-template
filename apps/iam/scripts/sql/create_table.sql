@@ -5,14 +5,14 @@ USE ark_iam;
 -- 1. 租户核心表
 -- ============================================
 
--- 租户表(最高层级)
-CREATE TABLE IF NOT EXISTS iam_tenant (
-    id BIGINT AUTO_INCREMENT COMMENT '租户ID',
-    tenant_code VARCHAR(32) UNIQUE NOT NULL COMMENT '租户编码',
-    tenant_name VARCHAR(64) NOT NULL COMMENT '租户名称',
-    description VARCHAR(255) COMMENT '租户描述',
-    domain VARCHAR(255) COMMENT '租户域名',
-    logo VARCHAR(255) COMMENT '租户Logo',
+-- 产品线表(最高层级)
+CREATE TABLE IF NOT EXISTS iam_organization (
+    id BIGINT AUTO_INCREMENT COMMENT '产品线ID',
+    organization_code VARCHAR(32) UNIQUE NOT NULL COMMENT '产品线编码',
+    organization_name VARCHAR(64) NOT NULL COMMENT '产品线名称',
+    description VARCHAR(255) COMMENT '产品线描述',
+    domain VARCHAR(255) COMMENT '产品线域名',
+    logo VARCHAR(255) COMMENT '产品线Logo',
     sort_order INT DEFAULT 0 COMMENT '排序',
     status VARCHAR(16) DEFAULT 'active' COMMENT '状态: active-正常 inactive-停用',
     created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
@@ -22,15 +22,15 @@ CREATE TABLE IF NOT EXISTS iam_tenant (
     updated_by BIGINT NOT NULL DEFAULT 0 COMMENT '更新人ID',
     deleted_by BIGINT NOT NULL DEFAULT 0 COMMENT '删除人ID',
     PRIMARY KEY (`id`),
-    UNIQUE KEY uk_tenant_code (tenant_code),
+    UNIQUE KEY uk_organization_code (organization_code),
     INDEX idx_created_at (created_at),
     INDEX idx_deleted_at (deleted_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='租户表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='产品线表';
 
--- 租户配置表(统一配置表)
-CREATE TABLE IF NOT EXISTS iam_tenant_config (
+-- 产品线配置表(统一配置表)
+CREATE TABLE IF NOT EXISTS iam_organization_config (
     id BIGINT AUTO_INCREMENT COMMENT '配置ID',
-    tenant_id BIGINT NOT NULL COMMENT '租户ID',
+    organization_id BIGINT NOT NULL COMMENT '产品线ID',
     config_key VARCHAR(100) NOT NULL COMMENT '配置键',
     config_value TEXT COMMENT '配置值(支持JSON)',
     config_type VARCHAR(32) DEFAULT 'string' COMMENT '配置类型: string/json/boolean/number',
@@ -40,24 +40,24 @@ CREATE TABLE IF NOT EXISTS iam_tenant_config (
     created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`id`),
-    UNIQUE KEY uk_tenant_config (tenant_id, config_key),
-    INDEX idx_tenant_id (tenant_id),
+    UNIQUE KEY uk_organization_config (organization_id, config_key),
+    INDEX idx_organization_id (organization_id),
     INDEX idx_config_group (config_group),
     INDEX idx_config_key (config_key)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='租户配置表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='产品线配置表';
 
--- 公司表(租户主体)
-CREATE TABLE IF NOT EXISTS iam_company (
-    id BIGINT AUTO_INCREMENT COMMENT '公司ID(租户ID)',
-    tenant_id BIGINT NOT NULL COMMENT '所属租户ID',
-    company_code VARCHAR(32) NOT NULL COMMENT '公司编码',
-    company_name VARCHAR(128) NOT NULL COMMENT '公司名称',
-    short_name VARCHAR(64) COMMENT '公司简称',
+-- 租户表(租户主体)
+CREATE TABLE IF NOT EXISTS iam_tenant (
+    id BIGINT AUTO_INCREMENT COMMENT '租户ID',
+    organization_id BIGINT NOT NULL COMMENT '所属产品线ID',
+    tenant_code VARCHAR(32) NOT NULL COMMENT '租户编码',
+    tenant_name VARCHAR(128) NOT NULL COMMENT '租户名称',
+    short_name VARCHAR(64) COMMENT '租户简称',
     legal_person VARCHAR(32) COMMENT '法人代表',
     contact_phone VARCHAR(16) COMMENT '联系电话',
     contact_email VARCHAR(64) COMMENT '联系邮箱',
-    address VARCHAR(255) COMMENT '公司地址',
-    logo VARCHAR(255) COMMENT '公司Logo',
+    address VARCHAR(255) COMMENT '租户地址',
+    logo VARCHAR(255) COMMENT '租户Logo',
     status VARCHAR(16) DEFAULT 'active' COMMENT '状态: active-正常 trial-试用 expired-已过期 inactive-停用',
     created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
     updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
@@ -66,13 +66,13 @@ CREATE TABLE IF NOT EXISTS iam_company (
     updated_by BIGINT NOT NULL DEFAULT 0 COMMENT '更新人ID',
     deleted_by BIGINT NOT NULL DEFAULT 0 COMMENT '删除人ID',
     PRIMARY KEY (`id`),
-    UNIQUE KEY uk_tenant_code (tenant_id, company_code),
-    INDEX idx_tenant_id (tenant_id),
-    INDEX idx_tenant_status (tenant_id, status),
+    UNIQUE KEY uk_organization_tenant_code (organization_id, tenant_code),
+    INDEX idx_organization_id (organization_id),
+    INDEX idx_organization_tenant_status (organization_id, status),
     INDEX idx_deleted_at (deleted_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='公司表(租户表)';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='租户表';
 
--- 自然人表(跨公司的人员身份)
+-- 自然人表(跨租户的人员身份)
 CREATE TABLE IF NOT EXISTS iam_person (
     id BIGINT AUTO_INCREMENT COMMENT '自然人ID',
     real_name VARCHAR(32) NOT NULL COMMENT '真实姓名',
@@ -100,7 +100,7 @@ CREATE TABLE IF NOT EXISTS iam_person (
 -- 部门表
 CREATE TABLE IF NOT EXISTS iam_department (
     id BIGINT AUTO_INCREMENT COMMENT '部门ID',
-    company_id BIGINT NOT NULL COMMENT '所属公司ID(租户ID)',
+    tenant_id BIGINT NOT NULL COMMENT '所属租户ID',
     parent_id BIGINT DEFAULT 0 COMMENT '父部门ID,0表示根部门',
     dept_code VARCHAR(32) NOT NULL COMMENT '部门编码',
     dept_name VARCHAR(64) NOT NULL COMMENT '部门名称',
@@ -116,27 +116,27 @@ CREATE TABLE IF NOT EXISTS iam_department (
     updated_by BIGINT NOT NULL DEFAULT 0 COMMENT '更新人ID',
     deleted_by BIGINT NOT NULL DEFAULT 0 COMMENT '删除人ID',
     PRIMARY KEY (`id`),
-    UNIQUE KEY uk_company_code (company_id, dept_code),
-    INDEX idx_company_parent (company_id, parent_id),
-    INDEX idx_company_path (company_id, dept_path(100)),
-    INDEX idx_company_status (company_id, status),
+    UNIQUE KEY uk_tenant_code (tenant_id, dept_code),
+    INDEX idx_tenant_parent (tenant_id, parent_id),
+    INDEX idx_tenant_path (tenant_id, dept_path(100)),
+    INDEX idx_tenant_status (tenant_id, status),
     INDEX idx_leader (leader_id),
     INDEX idx_deleted_at (deleted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='部门表';
 
--- 用户账号表(公司内的账号或平台管理员账号,一个自然人可在多个公司有账号)
+-- 用户账号表(租户内的账号或平台管理员账号,一个自然人可在多个租户有账号)
 CREATE TABLE IF NOT EXISTS iam_user (
     id BIGINT AUTO_INCREMENT COMMENT '用户ID',
     person_id BIGINT NOT NULL COMMENT '自然人ID',
-    company_id BIGINT NOT NULL DEFAULT 0 COMMENT '所属公司ID(租户ID), 0表示平台管理员账号',
+    tenant_id BIGINT NOT NULL DEFAULT 0 COMMENT '所属租户ID, 0表示平台管理员账号',
     dept_id BIGINT COMMENT '主部门ID(冗余字段,方便查询,实际关联关系在iam_user_department表)',
-    username VARCHAR(32) NOT NULL COMMENT '用户名(公司用户:公司内唯一,平台管理员:全局唯一,需应用层保证)',
+    username VARCHAR(32) NOT NULL COMMENT '用户名(租户用户:租户内唯一,平台管理员:全局唯一,需应用层保证)',
     employee_no VARCHAR(32) COMMENT '工号',
     position VARCHAR(64) COMMENT '职位',
     job_level VARCHAR(32) COMMENT '职级',
     entry_date DATE COMMENT '入职日期',
     status VARCHAR(16) DEFAULT 'active' COMMENT '状态: active-正常 locked-锁定 disabled-禁用',
-    user_type VARCHAR(16) DEFAULT 'normal' COMMENT '用户类型: normal-普通用户 company_admin-公司管理员 platform_admin-平台管理员(可管理所有公司)',
+    user_type VARCHAR(16) DEFAULT 'normal' COMMENT '用户类型: normal-普通用户 tenant_admin-租户管理员 platform_admin-平台管理员(可管理所有租户)',
     last_login_at DATETIME(3) NULL COMMENT '最后登录时间',
     last_login_ip VARCHAR(45) COMMENT '最后登录IP(支持IPv6)',
     login_count INT DEFAULT 0 COMMENT '登录次数',
@@ -147,12 +147,12 @@ CREATE TABLE IF NOT EXISTS iam_user (
     updated_by BIGINT NOT NULL DEFAULT 0 COMMENT '更新人ID',
     deleted_by BIGINT NOT NULL DEFAULT 0 COMMENT '删除人ID',
     PRIMARY KEY (`id`),
-    UNIQUE KEY uk_company_username (company_id, username),
-    UNIQUE KEY uk_company_employee_no (company_id, employee_no),
+    UNIQUE KEY uk_tenant_username (tenant_id, username),
+    UNIQUE KEY uk_tenant_employee_no (tenant_id, employee_no),
     INDEX idx_person_id (person_id),
-    INDEX idx_company_dept (company_id, dept_id),
-    INDEX idx_company_status (company_id, status),
-    INDEX idx_company_user_type (company_id, user_type),
+    INDEX idx_tenant_dept (tenant_id, dept_id),
+    INDEX idx_tenant_status (tenant_id, status),
+    INDEX idx_tenant_user_type (tenant_id, user_type),
     INDEX idx_deleted_at (deleted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户账号表';
 
@@ -160,7 +160,7 @@ CREATE TABLE IF NOT EXISTS iam_user (
 CREATE TABLE IF NOT EXISTS iam_user_department (
     id BIGINT AUTO_INCREMENT COMMENT '关联ID',
     user_id BIGINT NOT NULL COMMENT '用户ID',
-    company_id BIGINT NOT NULL COMMENT '公司ID(租户ID,冗余)',
+    tenant_id BIGINT NOT NULL COMMENT '租户ID(冗余)',
     dept_id BIGINT NOT NULL COMMENT '部门ID',
     dept_type VARCHAR(16) DEFAULT 'primary' COMMENT '部门类型: primary-主部门 secondary-其他部门',
     created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
@@ -172,7 +172,7 @@ CREATE TABLE IF NOT EXISTS iam_user_department (
     PRIMARY KEY (`id`),
     UNIQUE KEY uk_user_dept (user_id, dept_id),
     INDEX idx_user_id (user_id),
-    INDEX idx_company_dept (company_id, dept_id),
+    INDEX idx_tenant_dept (tenant_id, dept_id),
     INDEX idx_user_type (user_id, dept_type),
     INDEX idx_deleted_at (deleted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户部门关联表';
@@ -180,7 +180,7 @@ CREATE TABLE IF NOT EXISTS iam_user_department (
 -- 角色表
 CREATE TABLE IF NOT EXISTS iam_role (
     id BIGINT AUTO_INCREMENT COMMENT '角色ID',
-    company_id BIGINT NOT NULL COMMENT '所属公司ID(租户ID)',
+    tenant_id BIGINT NOT NULL COMMENT '所属租户ID',
     role_code VARCHAR(32) NOT NULL COMMENT '角色编码',
     role_name VARCHAR(64) NOT NULL COMMENT '角色名称',
     role_type VARCHAR(16) DEFAULT 'custom' COMMENT '角色类型: custom-自定义 system-系统内置',
@@ -195,15 +195,15 @@ CREATE TABLE IF NOT EXISTS iam_role (
     updated_by BIGINT NOT NULL DEFAULT 0 COMMENT '更新人ID',
     deleted_by BIGINT NOT NULL DEFAULT 0 COMMENT '删除人ID',
     PRIMARY KEY (`id`),
-    UNIQUE KEY uk_company_code (company_id, role_code),
-    INDEX idx_company_status (company_id, status),
+    UNIQUE KEY uk_tenant_code (tenant_id, role_code),
+    INDEX idx_tenant_status (tenant_id, status),
     INDEX idx_deleted_at (deleted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色表';
 
 -- 用户角色关联表
 CREATE TABLE IF NOT EXISTS iam_user_role (
     id BIGINT AUTO_INCREMENT COMMENT '关联ID',
-    company_id BIGINT NOT NULL COMMENT '公司ID(租户ID,冗余)',
+    tenant_id BIGINT NOT NULL COMMENT '租户ID(冗余)',
     user_id BIGINT NOT NULL COMMENT '用户ID',
     role_id BIGINT NOT NULL COMMENT '角色ID',
     created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
@@ -213,16 +213,16 @@ CREATE TABLE IF NOT EXISTS iam_user_role (
     updated_by BIGINT NOT NULL DEFAULT 0 COMMENT '更新人ID',
     deleted_by BIGINT NOT NULL DEFAULT 0 COMMENT '删除人ID',
     PRIMARY KEY (`id`),
-    UNIQUE KEY uk_user_role (company_id, user_id, role_id),
-    INDEX idx_company_user (company_id, user_id),
-    INDEX idx_company_role (company_id, role_id),
+    UNIQUE KEY uk_tenant_user_role (tenant_id, user_id, role_id),
+    INDEX idx_tenant_user (tenant_id, user_id),
+    INDEX idx_tenant_role (tenant_id, role_id),
     INDEX idx_deleted_at (deleted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户角色关联表';
 
 -- 菜单表
 CREATE TABLE IF NOT EXISTS iam_menu (
     id BIGINT AUTO_INCREMENT COMMENT '菜单ID',
-    company_id BIGINT NOT NULL COMMENT '所属公司ID(租户ID)',
+    tenant_id BIGINT NOT NULL COMMENT '所属租户ID',
     parent_id BIGINT DEFAULT 0 COMMENT '父菜单ID',
     menu_code VARCHAR(32) NOT NULL COMMENT '菜单编码',
     menu_name VARCHAR(64) NOT NULL COMMENT '菜单名称',
@@ -243,16 +243,16 @@ CREATE TABLE IF NOT EXISTS iam_menu (
     updated_by BIGINT NOT NULL DEFAULT 0 COMMENT '更新人ID',
     deleted_by BIGINT NOT NULL DEFAULT 0 COMMENT '删除人ID',
     PRIMARY KEY (`id`),
-    UNIQUE KEY uk_company_code (company_id, menu_code),
-    INDEX idx_company_parent (company_id, parent_id),
-    INDEX idx_company_status (company_id, status),
+    UNIQUE KEY uk_tenant_code (tenant_id, menu_code),
+    INDEX idx_tenant_parent (tenant_id, parent_id),
+    INDEX idx_tenant_status (tenant_id, status),
     INDEX idx_deleted_at (deleted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='菜单表';
 
 -- 角色菜单关联表
 CREATE TABLE IF NOT EXISTS iam_role_menu (
     id BIGINT AUTO_INCREMENT COMMENT '关联ID',
-    company_id BIGINT NOT NULL COMMENT '公司ID(租户ID,冗余)',
+    tenant_id BIGINT NOT NULL COMMENT '租户ID(冗余)',
     role_id BIGINT NOT NULL COMMENT '角色ID',
     menu_id BIGINT NOT NULL COMMENT '菜单ID',
     created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
@@ -262,16 +262,16 @@ CREATE TABLE IF NOT EXISTS iam_role_menu (
     updated_by BIGINT NOT NULL DEFAULT 0 COMMENT '更新人ID',
     deleted_by BIGINT NOT NULL DEFAULT 0 COMMENT '删除人ID',
     PRIMARY KEY (`id`),
-    UNIQUE KEY uk_role_menu (company_id, role_id, menu_id),
-    INDEX idx_company_role (company_id, role_id),
-    INDEX idx_company_menu (company_id, menu_id),
+    UNIQUE KEY uk_tenant_role_menu (tenant_id, role_id, menu_id),
+    INDEX idx_tenant_role (tenant_id, role_id),
+    INDEX idx_tenant_menu (tenant_id, menu_id),
     INDEX idx_deleted_at (deleted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色菜单关联表';
 
 -- 操作日志表
 CREATE TABLE IF NOT EXISTS iam_operation_log (
     id BIGINT AUTO_INCREMENT COMMENT '日志ID',
-    company_id BIGINT NOT NULL COMMENT '公司ID(租户ID)',
+    tenant_id BIGINT NOT NULL COMMENT '租户ID',
     user_id BIGINT COMMENT '操作人ID',
     username VARCHAR(32) COMMENT '操作人账号',
     module VARCHAR(32) COMMENT '操作模块',
@@ -293,9 +293,9 @@ CREATE TABLE IF NOT EXISTS iam_operation_log (
     updated_by BIGINT NOT NULL DEFAULT 0 COMMENT '更新人ID',
     deleted_by BIGINT NOT NULL DEFAULT 0 COMMENT '删除人ID',
     PRIMARY KEY (`id`),
-    INDEX idx_company_user (company_id, user_id),
-    INDEX idx_company_created (company_id, created_at),
-    INDEX idx_company_module (company_id, module),
+    INDEX idx_tenant_user (tenant_id, user_id),
+    INDEX idx_tenant_created (tenant_id, created_at),
+    INDEX idx_tenant_module (tenant_id, module),
     INDEX idx_request_id (request_id),
     INDEX idx_deleted_at (deleted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='操作日志表';
@@ -303,7 +303,7 @@ CREATE TABLE IF NOT EXISTS iam_operation_log (
 -- 登录日志表
 CREATE TABLE IF NOT EXISTS iam_login_log (
     id BIGINT AUTO_INCREMENT COMMENT '日志ID',
-    company_id BIGINT NOT NULL COMMENT '公司ID(租户ID)',
+    tenant_id BIGINT NOT NULL COMMENT '租户ID',
     user_id BIGINT COMMENT '用户ID',
     username VARCHAR(32) COMMENT '用户名',
     login_type VARCHAR(16) COMMENT '登录类型: password/sms/wechat',
@@ -320,7 +320,7 @@ CREATE TABLE IF NOT EXISTS iam_login_log (
     updated_by BIGINT NOT NULL DEFAULT 0 COMMENT '更新人ID',
     deleted_by BIGINT NOT NULL DEFAULT 0 COMMENT '删除人ID',
     PRIMARY KEY (`id`),
-    INDEX idx_company_user (company_id, user_id),
-    INDEX idx_company_created (company_id, created_at),
+    INDEX idx_tenant_user (tenant_id, user_id),
+    INDEX idx_tenant_created (tenant_id, created_at),
     INDEX idx_deleted_at (deleted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='登录日志表';

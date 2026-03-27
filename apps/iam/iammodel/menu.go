@@ -8,7 +8,7 @@ import (
 type MenuEntity struct {
 	gorm.Model
 	CacheType     string `gorm:"column:cache_type;type:varchar(16);;default disabled;comment: 缓存类型: enabled-启用 disabled-禁用"`
-	CompanyID     uint   `gorm:"column:company_id;type:bigint;not null;default '';comment: 所属公司ID(租户ID)"`
+	TenantID      uint   `gorm:"column:tenant_id;type:bigint;not null;default '';comment: 所属租户ID"`
 	ComponentPath string `gorm:"column:component_path;type:varchar(255);;default '';comment: 组件路径"`
 	CreatedBy     uint   `gorm:"column:created_by;type:bigint;not null;default 0;comment: 创建人ID"`
 	DeletedBy     uint   `gorm:"column:deleted_by;type:bigint;not null;default 0;comment: 删除人ID"`

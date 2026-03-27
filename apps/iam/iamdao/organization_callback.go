@@ -16,58 +16,58 @@ import (
 )
 
 const (
-	tenantCreateCallbackName = "iam:tenant:create"
-	tenantQueryCallbackName  = "iam:tenant:query"
-	tenantUpdateCallbackName = "iam:tenant:update"
-	tenantDeleteCallbackName = "iam:tenant:delete"
+	organizationCreateCallbackName = "iam:organization:create"
+	organizationQueryCallbackName  = "iam:organization:query"
+	organizationUpdateCallbackName = "iam:organization:update"
+	organizationDeleteCallbackName = "iam:organization:delete"
 )
 
-type tenantScopeKind string
+type organizationScopeKind string
 
 const (
-	tenantScopeNone    tenantScopeKind = ""
-	tenantScopeCompany tenantScopeKind = "company"
-	tenantScopeTenant  tenantScopeKind = "tenant"
+	organizationScopeNone   organizationScopeKind = ""
+	organizationScopeTenant organizationScopeKind = "tenant"
+	organizationScopeOrg    organizationScopeKind = "organization"
 )
 
 var (
-	registerTenantCallbackOnce sync.Once
+	registerOrganizationCallbackOnce sync.Once
 
-	tableScopeMap = map[string]tenantScopeKind{
-		"iam_company":         tenantScopeTenant,
-		"iam_tenant_config":   tenantScopeTenant,
-		"iam_user":            tenantScopeCompany,
-		"iam_role":            tenantScopeCompany,
-		"iam_menu":            tenantScopeCompany,
-		"iam_department":      tenantScopeCompany,
-		"iam_user_role":       tenantScopeCompany,
-		"iam_user_department": tenantScopeCompany,
-		"iam_role_menu":       tenantScopeCompany,
+	tableScopeMap = map[string]organizationScopeKind{
+		"iam_tenant":              organizationScopeOrg,
+		"iam_organization_config": organizationScopeOrg,
+		"iam_user":                organizationScopeTenant,
+		"iam_role":                organizationScopeTenant,
+		"iam_menu":                organizationScopeTenant,
+		"iam_department":          organizationScopeTenant,
+		"iam_user_role":           organizationScopeTenant,
+		"iam_user_department":     organizationScopeTenant,
+		"iam_role_menu":           organizationScopeTenant,
 	}
 )
 
-func RegisterTenantCallbacks() error {
+func RegisterOrganizationCallbacks() error {
 	var callbackErr error
-	registerTenantCallbackOnce.Do(func() {
+	registerOrganizationCallbackOnce.Do(func() {
 		db := dbclient.IamDB(context.Background())
 		if db == nil {
 			callbackErr = fmt.Errorf("iam db is nil")
 			return
 		}
 
-		if err := db.Callback().Query().Before("gorm:query").Register(tenantQueryCallbackName, tenantScopeCallback); err != nil {
+		if err := db.Callback().Query().Before("gorm:query").Register(organizationQueryCallbackName, organizationScopeCallback); err != nil {
 			callbackErr = err
 			return
 		}
-		if err := db.Callback().Create().Before("gorm:create").Register(tenantCreateCallbackName, tenantCreateScopeCallback); err != nil {
+		if err := db.Callback().Create().Before("gorm:create").Register(organizationCreateCallbackName, organizationCreateScopeCallback); err != nil {
 			callbackErr = err
 			return
 		}
-		if err := db.Callback().Update().Before("gorm:update").Register(tenantUpdateCallbackName, tenantUpdateScopeCallback); err != nil {
+		if err := db.Callback().Update().Before("gorm:update").Register(organizationUpdateCallbackName, organizationUpdateScopeCallback); err != nil {
 			callbackErr = err
 			return
 		}
-		if err := db.Callback().Delete().Before("gorm:delete").Register(tenantDeleteCallbackName, tenantScopeCallback); err != nil {
+		if err := db.Callback().Delete().Before("gorm:delete").Register(organizationDeleteCallbackName, organizationScopeCallback); err != nil {
 			callbackErr = err
 			return
 		}
@@ -75,7 +75,7 @@ func RegisterTenantCallbacks() error {
 	return callbackErr
 }
 
-func tenantCreateScopeCallback(tx *gorm.DB) {
+func organizationCreateScopeCallback(tx *gorm.DB) {
 	if tx == nil || tx.Statement == nil || tx.Statement.Unscoped {
 		return
 	}
@@ -87,7 +87,7 @@ func tenantCreateScopeCallback(tx *gorm.DB) {
 		return
 	}
 	mainScopeKind := resolveMainScopeKind(tx.Statement.Schema, mainTableName)
-	if mainScopeKind == tenantScopeNone {
+	if mainScopeKind == organizationScopeNone {
 		return
 	}
 
@@ -103,7 +103,7 @@ func tenantCreateScopeCallback(tx *gorm.DB) {
 	}
 }
 
-func tenantUpdateScopeCallback(tx *gorm.DB) {
+func organizationUpdateScopeCallback(tx *gorm.DB) {
 	if tx == nil || tx.Statement == nil || tx.Statement.Unscoped {
 		return
 	}
@@ -120,10 +120,10 @@ func tenantUpdateScopeCallback(tx *gorm.DB) {
 		}
 	}
 
-	tenantScopeCallback(tx)
+	organizationScopeCallback(tx)
 }
 
-func tenantScopeCallback(tx *gorm.DB) {
+func organizationScopeCallback(tx *gorm.DB) {
 	if tx == nil || tx.Statement == nil || tx.Statement.Unscoped {
 		return
 	}
@@ -135,7 +135,7 @@ func tenantScopeCallback(tx *gorm.DB) {
 
 	fromClause, hasFrom := getFromClause(tx)
 	if hasFrom {
-		if err := applyJoinTenantScope(tx, scope, &fromClause); err != nil {
+		if err := applyJoinOrganizationScope(tx, scope, &fromClause); err != nil {
 			tx.AddError(err)
 			return
 		}
@@ -148,7 +148,7 @@ func tenantScopeCallback(tx *gorm.DB) {
 	}
 
 	mainScopeKind := resolveMainScopeKind(tx.Statement.Schema, mainTableName)
-	if mainScopeKind == tenantScopeNone {
+	if mainScopeKind == organizationScopeNone {
 		return
 	}
 
@@ -169,7 +169,7 @@ func getFromClause(tx *gorm.DB) (clause.From, bool) {
 	return fromExpr, true
 }
 
-func applyJoinTenantScope(tx *gorm.DB, scope tenantctx.Scope, from *clause.From) error {
+func applyJoinOrganizationScope(tx *gorm.DB, scope tenantctx.Scope, from *clause.From) error {
 	if from == nil || len(from.Joins) == 0 {
 		return nil
 	}
@@ -182,7 +182,7 @@ func applyJoinTenantScope(tx *gorm.DB, scope tenantctx.Scope, from *clause.From)
 
 		tableName := normalizeTableName(joinItem.Table.Name)
 		scopeKind := resolveScopeByTableName(tableName)
-		if scopeKind == tenantScopeNone {
+		if scopeKind == organizationScopeNone {
 			continue
 		}
 
@@ -218,23 +218,23 @@ func resolveMainTable(tx *gorm.DB, hasFrom bool, from clause.From) (tableName st
 	return name, name
 }
 
-func resolveMainScopeKind(schemaRef *schema.Schema, tableName string) tenantScopeKind {
+func resolveMainScopeKind(schemaRef *schema.Schema, tableName string) organizationScopeKind {
 	if schemaRef != nil {
-		if _, ok := schemaRef.FieldsByDBName["company_id"]; ok {
-			return tenantScopeCompany
-		}
 		if _, ok := schemaRef.FieldsByDBName["tenant_id"]; ok {
-			return tenantScopeTenant
+			return organizationScopeTenant
+		}
+		if _, ok := schemaRef.FieldsByDBName["organization_id"]; ok {
+			return organizationScopeOrg
 		}
 	}
 	return resolveScopeByTableName(tableName)
 }
 
-func resolveScopeByTableName(tableName string) tenantScopeKind {
+func resolveScopeByTableName(tableName string) organizationScopeKind {
 	return tableScopeMap[normalizeTableName(tableName)]
 }
 
-func appendScopeExpression(tx *gorm.DB, qualifier string, scopeKind tenantScopeKind, scope tenantctx.Scope) error {
+func appendScopeExpression(tx *gorm.DB, qualifier string, scopeKind organizationScopeKind, scope tenantctx.Scope) error {
 	expr, err := buildScopeExpression(qualifier, scopeKind, scope)
 	if err != nil {
 		return err
@@ -243,41 +243,41 @@ func appendScopeExpression(tx *gorm.DB, qualifier string, scopeKind tenantScopeK
 	return nil
 }
 
-func buildScopeExpression(qualifier string, scopeKind tenantScopeKind, scope tenantctx.Scope) (clause.Expression, error) {
+func buildScopeExpression(qualifier string, scopeKind organizationScopeKind, scope tenantctx.Scope) (clause.Expression, error) {
 	switch scopeKind {
-	case tenantScopeCompany:
-		if scope.CompanyID == 0 {
-			return nil, code.GetError(code.TenantContextMissingError)
-		}
-		return clause.Eq{Column: clause.Column{Table: qualifier, Name: "company_id"}, Value: scope.CompanyID}, nil
-	case tenantScopeTenant:
+	case organizationScopeTenant:
 		if scope.TenantID == 0 {
 			return nil, code.GetError(code.TenantContextMissingError)
 		}
 		return clause.Eq{Column: clause.Column{Table: qualifier, Name: "tenant_id"}, Value: scope.TenantID}, nil
+	case organizationScopeOrg:
+		if scope.OrganizationID == 0 {
+			return nil, code.GetError(code.TenantContextMissingError)
+		}
+		return clause.Eq{Column: clause.Column{Table: qualifier, Name: "organization_id"}, Value: scope.OrganizationID}, nil
 	default:
 		return nil, nil
 	}
 }
 
-func fillCreateScopeValue(tx *gorm.DB, qualifier string, scopeKind tenantScopeKind, scope tenantctx.Scope) error {
+func fillCreateScopeValue(tx *gorm.DB, qualifier string, scopeKind organizationScopeKind, scope tenantctx.Scope) error {
 	switch scopeKind {
-	case tenantScopeCompany:
-		if scope.CompanyID == 0 {
-			return code.GetError(code.TenantContextMissingError)
-		}
-		return setScopeFieldValue(tx, qualifier, "company_id", scope.CompanyID)
-	case tenantScopeTenant:
+	case organizationScopeTenant:
 		if scope.TenantID == 0 {
 			return code.GetError(code.TenantContextMissingError)
 		}
 		return setScopeFieldValue(tx, qualifier, "tenant_id", scope.TenantID)
+	case organizationScopeOrg:
+		if scope.OrganizationID == 0 {
+			return code.GetError(code.TenantContextMissingError)
+		}
+		return setScopeFieldValue(tx, qualifier, "organization_id", scope.OrganizationID)
 	default:
 		return nil
 	}
 }
 
-func validatePlatformAdminCreateScope(tx *gorm.DB, qualifier string, scopeKind tenantScopeKind, scope tenantctx.Scope) error {
+func validatePlatformAdminCreateScope(tx *gorm.DB, qualifier string, scopeKind organizationScopeKind, scope tenantctx.Scope) error {
 	fieldName := scopeFieldName(scopeKind)
 	if fieldName == "" {
 		return nil
@@ -289,10 +289,10 @@ func validatePlatformAdminCreateScope(tx *gorm.DB, qualifier string, scopeKind t
 
 	scopeValue := uint(0)
 	switch scopeKind {
-	case tenantScopeCompany:
-		scopeValue = scope.CompanyID
-	case tenantScopeTenant:
+	case organizationScopeTenant:
 		scopeValue = scope.TenantID
+	case organizationScopeOrg:
+		scopeValue = scope.OrganizationID
 	}
 	if scopeValue == 0 {
 		return code.GetError(code.TenantContextMissingError)
@@ -300,7 +300,7 @@ func validatePlatformAdminCreateScope(tx *gorm.DB, qualifier string, scopeKind t
 	return setScopeFieldValue(tx, qualifier, fieldName, scopeValue)
 }
 
-func validateScopeMutation(dest any, scopeKind tenantScopeKind) error {
+func validateScopeMutation(dest any, scopeKind organizationScopeKind) error {
 	fieldName := scopeFieldName(scopeKind)
 	if fieldName == "" {
 		return nil
@@ -311,12 +311,12 @@ func validateScopeMutation(dest any, scopeKind tenantScopeKind) error {
 	return nil
 }
 
-func scopeFieldName(scopeKind tenantScopeKind) string {
+func scopeFieldName(scopeKind organizationScopeKind) string {
 	switch scopeKind {
-	case tenantScopeCompany:
-		return "company_id"
-	case tenantScopeTenant:
+	case organizationScopeTenant:
 		return "tenant_id"
+	case organizationScopeOrg:
+		return "organization_id"
 	default:
 		return ""
 	}

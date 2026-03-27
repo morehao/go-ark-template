@@ -1,30 +1,30 @@
-package dtotenant
+package dtoorganization
 
 import (
-	"github.com/morehao/goark/apps/iam/object/objtenant"
+	"github.com/morehao/goark/apps/iam/object/objorganization"
 	"github.com/morehao/golib/biz/gobject"
 )
 
-type TenantCreateReq struct {
-	objtenant.TenantBaseInfo
+type OrganizationCreateReq struct {
+	objorganization.OrganizationBaseInfo
 }
 
-type TenantUpdateReq struct {
+type OrganizationUpdateReq struct {
 	// ID 数据自增 ID
 	ID uint `json:"id" validate:"required" label:"数据自增id"`
-	objtenant.TenantBaseInfo
+	objorganization.OrganizationBaseInfo
 }
 
-type TenantDetailReq struct {
+type OrganizationDetailReq struct {
 	// ID 数据自增 ID
 	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"`
 }
 
-type TenantPageListReq struct {
+type OrganizationPageListReq struct {
 	gobject.PageQuery
 }
 
-type TenantDeleteReq struct {
+type OrganizationDeleteReq struct {
 	// ID 数据自增 ID
 	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"`
 }

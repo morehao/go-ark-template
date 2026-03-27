@@ -9,9 +9,9 @@ import (
 
 type UserRoleCond struct {
 	*genericdao.BaseCond
-	UserID    uint
-	RoleID    uint
-	CompanyID uint
+	UserID   uint
+	RoleID   uint
+	TenantID uint
 }
 
 func (c *UserRoleCond) BuildCondition(db *gorm.DB, tableName string) {
@@ -24,8 +24,8 @@ func (c *UserRoleCond) BuildCondition(db *gorm.DB, tableName string) {
 	if c.RoleID > 0 {
 		db.Where("role_id = ?", c.RoleID)
 	}
-	if c.CompanyID > 0 {
-		db.Where("company_id = ?", c.CompanyID)
+	if c.TenantID > 0 {
+		db.Where("tenant_id = ?", c.TenantID)
 	}
 }
 

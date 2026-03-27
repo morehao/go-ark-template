@@ -10,43 +10,43 @@ import (
 type stdCtxKey string
 
 const (
-	stdCtxTenantIDKey  stdCtxKey = "iam_std_tenant_id"
-	stdCtxCompanyIDKey stdCtxKey = "iam_std_company_id"
-	stdCtxUserTypeKey  stdCtxKey = "iam_std_user_type"
+	stdCtxOrganizationIDKey stdCtxKey = "iam_std_organization_id"
+	stdCtxTenantIDKey       stdCtxKey = "iam_std_tenant_id"
+	stdCtxUserTypeKey       stdCtxKey = "iam_std_user_type"
 )
 
 type Scope struct {
-	TenantID  uint
-	CompanyID uint
-	UserType  string
+	OrganizationID uint
+	TenantID       uint
+	UserType       string
 }
 
 const (
-	HeaderTenantID  = "X-Tenant-ID"
-	HeaderCompanyID = "X-Company-ID"
-	HeaderUserType  = "X-User-Type"
+	HeaderOrganizationID = "X-Organization-ID"
+	HeaderTenantID       = "X-Tenant-ID"
+	HeaderUserType       = "X-User-Type"
 
-	CtxTenantID  = "iam_tenant_id"
-	CtxCompanyID = "iam_company_id"
-	CtxUserType  = "iam_user_type"
+	CtxOrganizationID = "iam_organization_id"
+	CtxTenantID       = "iam_tenant_id"
+	CtxUserType       = "iam_user_type"
 
 	UserTypePlatformAdmin = "platform_admin"
 )
 
 func SetFromHeader(ctx *gin.Context) {
+	if organizationID := parseUintHeader(ctx.GetHeader(HeaderOrganizationID)); organizationID > 0 {
+		ctx.Set(CtxOrganizationID, organizationID)
+	}
 	if tenantID := parseUintHeader(ctx.GetHeader(HeaderTenantID)); tenantID > 0 {
 		ctx.Set(CtxTenantID, tenantID)
-	}
-	if companyID := parseUintHeader(ctx.GetHeader(HeaderCompanyID)); companyID > 0 {
-		ctx.Set(CtxCompanyID, companyID)
 	}
 	if userType := ctx.GetHeader(HeaderUserType); userType != "" {
 		ctx.Set(CtxUserType, userType)
 	}
 }
 
-func GetTenantID(ctx *gin.Context) uint {
-	v, ok := ctx.Get(CtxTenantID)
+func GetOrganizationID(ctx *gin.Context) uint {
+	v, ok := ctx.Get(CtxOrganizationID)
 	if !ok {
 		return 0
 	}
@@ -56,8 +56,8 @@ func GetTenantID(ctx *gin.Context) uint {
 	return 0
 }
 
-func GetCompanyID(ctx *gin.Context) uint {
-	v, ok := ctx.Get(CtxCompanyID)
+func GetTenantID(ctx *gin.Context) uint {
+	v, ok := ctx.Get(CtxTenantID)
 	if !ok {
 		return 0
 	}
@@ -84,11 +84,11 @@ func InjectToRequestContext(ctx *gin.Context) context.Context {
 		stdCtx = ctx.Request.Context()
 	}
 
+	if organizationID := GetOrganizationID(ctx); organizationID > 0 {
+		stdCtx = context.WithValue(stdCtx, stdCtxOrganizationIDKey, organizationID)
+	}
 	if tenantID := GetTenantID(ctx); tenantID > 0 {
 		stdCtx = context.WithValue(stdCtx, stdCtxTenantIDKey, tenantID)
-	}
-	if companyID := GetCompanyID(ctx); companyID > 0 {
-		stdCtx = context.WithValue(stdCtx, stdCtxCompanyIDKey, companyID)
 	}
 	if userType := GetUserType(ctx); userType != "" {
 		stdCtx = context.WithValue(stdCtx, stdCtxUserTypeKey, userType)
@@ -106,19 +106,19 @@ func FromStdContext(ctx context.Context) (Scope, bool) {
 		ok    bool
 	)
 
+	if v, found := readUintValue(ctx.Value(stdCtxOrganizationIDKey)); found {
+		scope.OrganizationID = v
+		ok = true
+	} else if v, found := readUintValue(ctx.Value(CtxOrganizationID)); found {
+		scope.OrganizationID = v
+		ok = true
+	}
+
 	if v, found := readUintValue(ctx.Value(stdCtxTenantIDKey)); found {
 		scope.TenantID = v
 		ok = true
 	} else if v, found := readUintValue(ctx.Value(CtxTenantID)); found {
 		scope.TenantID = v
-		ok = true
-	}
-
-	if v, found := readUintValue(ctx.Value(stdCtxCompanyIDKey)); found {
-		scope.CompanyID = v
-		ok = true
-	} else if v, found := readUintValue(ctx.Value(CtxCompanyID)); found {
-		scope.CompanyID = v
 		ok = true
 	}
 

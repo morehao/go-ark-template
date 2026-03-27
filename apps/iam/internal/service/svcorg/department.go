@@ -2,7 +2,7 @@ package svcorg
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam/core/tenant"
+	"github.com/morehao/goark/apps/iam/core/organization"
 	"github.com/morehao/goark/apps/iam/iamdao"
 	"github.com/morehao/goark/apps/iam/iammodel"
 	"github.com/morehao/goark/apps/iam/internal/dto/dtoorg"
@@ -65,7 +65,7 @@ func (svc *departmentSvc) Delete(ctx *gin.Context, req *dtoorg.DepartmentDeleteR
 	if departmentEntity == nil || departmentEntity.ID == 0 {
 		return code.GetError(code.DepartmentNotExistError)
 	}
-	if err = tenant.CheckCompanyAccess(ctx, departmentEntity.CompanyID); err != nil {
+	if err = organization.CheckTenantAccess(ctx, departmentEntity.TenantID); err != nil {
 		return err
 	}
 
@@ -86,7 +86,7 @@ func (svc *departmentSvc) Update(ctx *gin.Context, req *dtoorg.DepartmentUpdateR
 	if departmentEntity == nil || departmentEntity.ID == 0 {
 		return code.GetError(code.DepartmentNotExistError)
 	}
-	if err = tenant.CheckCompanyAccess(ctx, departmentEntity.CompanyID); err != nil {
+	if err = organization.CheckTenantAccess(ctx, departmentEntity.TenantID); err != nil {
 		return err
 	}
 	updateMap := map[string]any{
@@ -117,13 +117,13 @@ func (svc *departmentSvc) Detail(ctx *gin.Context, req *dtoorg.DepartmentDetailR
 	if departmentEntity == nil || departmentEntity.ID == 0 {
 		return nil, code.GetError(code.DepartmentNotExistError)
 	}
-	if err = tenant.CheckCompanyAccess(ctx, departmentEntity.CompanyID); err != nil {
+	if err = organization.CheckTenantAccess(ctx, departmentEntity.TenantID); err != nil {
 		return nil, err
 	}
 	resp := &dtoorg.DepartmentDetailResp{
 		ID: departmentEntity.ID,
 		DepartmentBaseInfo: objorg.DepartmentBaseInfo{
-			CompanyID: departmentEntity.CompanyID,
+			TenantID:  departmentEntity.TenantID,
 			DeptCode:  departmentEntity.DeptCode,
 			DeptLevel: departmentEntity.DeptLevel,
 			DeptName:  departmentEntity.DeptName,
@@ -159,7 +159,7 @@ func (svc *departmentSvc) PageList(ctx *gin.Context, req *dtoorg.DepartmentPageL
 		list = append(list, dtoorg.DepartmentPageListItem{
 			ID: v.ID,
 			DepartmentBaseInfo: objorg.DepartmentBaseInfo{
-				CompanyID: v.CompanyID,
+				TenantID:  v.TenantID,
 				DeptCode:  v.DeptCode,
 				DeptLevel: v.DeptLevel,
 				DeptName:  v.DeptName,

@@ -5,18 +5,16 @@ import (
 	"github.com/morehao/goark/apps/iam/internal/controller/ctrorg"
 )
 
-// companyRouter 初始化公司管理路由信息
-func companyRouter(routerGroup *gin.RouterGroup) {
-	companyCtr := ctrorg.NewCompanyCtr()
+func tenantRouter(routerGroup *gin.RouterGroup) {
+	tenantCtr := ctrorg.NewTenantCtr()
 
-	routerGroup.POST("/company/create", companyCtr.Create)
-	routerGroup.POST("/company/delete", companyCtr.Delete)
-	routerGroup.POST("/company/update", companyCtr.Update)
-	routerGroup.GET("/company/detail", companyCtr.Detail)
-	routerGroup.POST("/company/pageList", companyCtr.PageList)
+	routerGroup.POST("/tenant/create", tenantCtr.Create)
+	routerGroup.POST("/tenant/delete", tenantCtr.Delete)
+	routerGroup.POST("/tenant/update", tenantCtr.Update)
+	routerGroup.GET("/tenant/detail", tenantCtr.Detail)
+	routerGroup.POST("/tenant/pageList", tenantCtr.PageList)
 }
 
-// departmentRouter 初始化部门管理路由信息
 func departmentRouter(routerGroup *gin.RouterGroup) {
 	departmentCtr := ctrorg.NewDepartmentCtr()
 	routerGroup.POST("/department/create", departmentCtr.Create)

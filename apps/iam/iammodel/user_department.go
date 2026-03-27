@@ -7,7 +7,7 @@ import (
 // UserDepartmentEntity 用户部门关系表结构体
 type UserDepartmentEntity struct {
 	gorm.Model
-	CompanyID uint   `gorm:"column:company_id;type:bigint;not null;default '';comment: 公司ID(租户ID,冗余)"`
+	TenantID  uint   `gorm:"column:tenant_id;type:bigint;not null;default '';comment: 租户ID(冗余)"`
 	CreatedBy uint   `gorm:"column:created_by;type:bigint;not null;default 0;comment: 创建人ID"`
 	DeletedBy uint   `gorm:"column:deleted_by;type:bigint;not null;default 0;comment: 删除人ID"`
 	DeptID    uint   `gorm:"column:dept_id;type:bigint;not null;default '';comment: 部门ID"`

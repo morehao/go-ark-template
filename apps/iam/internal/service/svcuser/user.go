@@ -5,10 +5,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/morehao/goark/apps/iam/config"
-	"github.com/morehao/goark/apps/iam/core/tenant"
+	"github.com/morehao/goark/apps/iam/core/organization"
 	"github.com/morehao/goark/apps/iam/iamdao"
 	"github.com/morehao/goark/apps/iam/iammodel"
 	"github.com/morehao/goark/apps/iam/internal/dto/dtouser"
+	"github.com/morehao/goark/apps/iam/internal/tenantctx"
 	"github.com/morehao/goark/apps/iam/object/objuser"
 	"github.com/morehao/goark/pkg/code"
 	"github.com/morehao/goark/pkg/dbclient"
@@ -40,7 +41,7 @@ func NewUserSvc() UserSvc {
 
 // Create 创建用户管理
 func (svc *userSvc) Create(ctx *gin.Context, req *dtouser.UserCreateReq) (*dtouser.UserCreateResp, error) {
-	companyID := gincontext.GetCompanyID(ctx)
+	tenantID := tenantctx.GetTenantID(ctx)
 	operatorID := gincontext.GetUserID(ctx)
 
 	mobile := strings.TrimSpace(req.Mobile)
@@ -58,7 +59,7 @@ func (svc *userSvc) Create(ctx *gin.Context, req *dtouser.UserCreateReq) (*dtous
 		UpdatedBy:    operatorID,
 	}
 	userEntity := &iammodel.UserEntity{
-		CompanyID:   companyID,
+		TenantID:    tenantID,
 		DeptID:      req.DeptID,
 		EmployeeNo:  req.EmployeeNo,
 		JobLevel:    req.JobLevel,
@@ -141,7 +142,7 @@ func (svc *userSvc) Delete(ctx *gin.Context, req *dtouser.UserDeleteReq) error {
 	if userEntity == nil || userEntity.ID == 0 {
 		return code.GetError(code.UserNotExistError)
 	}
-	if err = tenant.CheckCompanyAccess(ctx, userEntity.CompanyID); err != nil {
+	if err = organization.CheckTenantAccess(ctx, userEntity.TenantID); err != nil {
 		return err
 	}
 
@@ -162,7 +163,7 @@ func (svc *userSvc) Update(ctx *gin.Context, req *dtouser.UserUpdateReq) error {
 	if userEntity == nil || userEntity.ID == 0 {
 		return code.GetError(code.UserNotExistError)
 	}
-	if err = tenant.CheckCompanyAccess(ctx, userEntity.CompanyID); err != nil {
+	if err = organization.CheckTenantAccess(ctx, userEntity.TenantID); err != nil {
 		return err
 	}
 	updateMap := map[string]any{
@@ -195,13 +196,13 @@ func (svc *userSvc) Detail(ctx *gin.Context, req *dtouser.UserDetailReq) (*dtous
 	if userEntity == nil || userEntity.ID == 0 {
 		return nil, code.GetError(code.UserNotExistError)
 	}
-	if err = tenant.CheckCompanyAccess(ctx, userEntity.CompanyID); err != nil {
+	if err = organization.CheckTenantAccess(ctx, userEntity.TenantID); err != nil {
 		return nil, err
 	}
 	resp := &dtouser.UserDetailResp{
 		ID: userEntity.ID,
 		UserBaseInfo: objuser.UserBaseInfo{
-			CompanyID:   userEntity.CompanyID,
+			TenantID:    userEntity.TenantID,
 			DeptID:      userEntity.DeptID,
 			EmployeeNo:  userEntity.EmployeeNo,
 			EntryDate:   userEntity.EntryDate.Unix(),
@@ -241,7 +242,7 @@ func (svc *userSvc) PageList(ctx *gin.Context, req *dtouser.UserPageListReq) (*d
 		list = append(list, dtouser.UserPageListItem{
 			ID: v.ID,
 			UserBaseInfo: objuser.UserBaseInfo{
-				CompanyID:   v.CompanyID,
+				TenantID:    v.TenantID,
 				DeptID:      v.DeptID,
 				EmployeeNo:  v.EmployeeNo,
 				EntryDate:   v.EntryDate.Unix(),

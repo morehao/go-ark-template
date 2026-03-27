@@ -1,8 +1,8 @@
 package objuser
 
 type UserBaseInfo struct {
-	// CompanyID 所属公司ID(租户ID), 0表示平台管理员账号
-	CompanyID uint `json:"companyID" form:"companyID"`
+	// TenantID 所属租户ID, 0表示平台管理员账号
+	TenantID uint `json:"tenantID" form:"tenantID"`
 	// DeptID 主部门ID(冗余字段,方便查询,实际关联关系在iam_user_department表)
 	DeptID uint `json:"deptID" form:"deptID"`
 	// EmployeeNo 工号
@@ -23,8 +23,8 @@ type UserBaseInfo struct {
 	Position string `json:"position" form:"position"`
 	// Status 状态: active-正常 locked-锁定 disabled-禁用
 	Status string `json:"status" form:"status"`
-	// UserType 用户类型: normal-普通用户 company_admin-公司管理员 platform_admin-平台管理员(可管理所有公司)
+	// UserType 用户类型: normal-普通用户 tenant_admin-租户管理员 platform_admin-平台管理员(可管理所有租户)
 	UserType string `json:"userType" form:"userType"`
-	// Username 用户名(公司用户:公司内唯一,平台管理员:全局唯一,需应用层保证)
+	// Username 用户名(租户用户:租户内唯一,平台管理员:全局唯一,需应用层保证)
 	Username string `json:"username" form:"username"`
 }

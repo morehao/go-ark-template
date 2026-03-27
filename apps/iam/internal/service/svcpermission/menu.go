@@ -2,7 +2,7 @@ package svcpermission
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam/core/tenant"
+	"github.com/morehao/goark/apps/iam/core/organization"
 	"github.com/morehao/goark/apps/iam/iamdao"
 	"github.com/morehao/goark/apps/iam/iammodel"
 	"github.com/morehao/goark/apps/iam/internal/dto/dtopermission"
@@ -70,7 +70,7 @@ func (svc *menuSvc) Delete(ctx *gin.Context, req *dtopermission.MenuDeleteReq) e
 	if menuEntity == nil || menuEntity.ID == 0 {
 		return code.GetError(code.MenuNotExistError)
 	}
-	if err = tenant.CheckCompanyAccess(ctx, menuEntity.CompanyID); err != nil {
+	if err = organization.CheckTenantAccess(ctx, menuEntity.TenantID); err != nil {
 		return err
 	}
 
@@ -91,7 +91,7 @@ func (svc *menuSvc) Update(ctx *gin.Context, req *dtopermission.MenuUpdateReq) e
 	if menuEntity == nil || menuEntity.ID == 0 {
 		return code.GetError(code.MenuNotExistError)
 	}
-	if err = tenant.CheckCompanyAccess(ctx, menuEntity.CompanyID); err != nil {
+	if err = organization.CheckTenantAccess(ctx, menuEntity.TenantID); err != nil {
 		return err
 	}
 	updateMap := map[string]any{
@@ -127,14 +127,14 @@ func (svc *menuSvc) Detail(ctx *gin.Context, req *dtopermission.MenuDetailReq) (
 	if menuEntity == nil || menuEntity.ID == 0 {
 		return nil, code.GetError(code.MenuNotExistError)
 	}
-	if err = tenant.CheckCompanyAccess(ctx, menuEntity.CompanyID); err != nil {
+	if err = organization.CheckTenantAccess(ctx, menuEntity.TenantID); err != nil {
 		return nil, err
 	}
 	resp := &dtopermission.MenuDetailResp{
 		ID: menuEntity.ID,
 		MenuBaseInfo: objpermission.MenuBaseInfo{
 			CacheType:     menuEntity.CacheType,
-			CompanyID:     menuEntity.CompanyID,
+			TenantID:      menuEntity.TenantID,
 			ComponentPath: menuEntity.ComponentPath,
 			Icon:          menuEntity.Icon,
 			LinkType:      menuEntity.LinkType,
@@ -175,7 +175,7 @@ func (svc *menuSvc) PageList(ctx *gin.Context, req *dtopermission.MenuPageListRe
 			ID: v.ID,
 			MenuBaseInfo: objpermission.MenuBaseInfo{
 				CacheType:     v.CacheType,
-				CompanyID:     v.CompanyID,
+				TenantID:      v.TenantID,
 				ComponentPath: v.ComponentPath,
 				Icon:          v.Icon,
 				LinkType:      v.LinkType,

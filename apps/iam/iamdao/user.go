@@ -9,9 +9,9 @@ import (
 
 type UserCond struct {
 	*genericdao.BaseCond
-	Username  string
-	CompanyID uint
-	Status    string
+	Username string
+	TenantID uint
+	Status   string
 }
 
 func (c *UserCond) BuildCondition(db *gorm.DB, tableName string) {
@@ -21,8 +21,8 @@ func (c *UserCond) BuildCondition(db *gorm.DB, tableName string) {
 	if c.Username != "" {
 		db.Where("username = ?", c.Username)
 	}
-	if c.CompanyID > 0 {
-		db.Where("company_id = ?", c.CompanyID)
+	if c.TenantID > 0 {
+		db.Where("tenant_id = ?", c.TenantID)
 	}
 	if c.Status != "" {
 		db.Where("status = ?", c.Status)

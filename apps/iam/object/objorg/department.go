@@ -1,8 +1,8 @@
 package objorg
 
 type DepartmentBaseInfo struct {
-	// CompanyID 所属公司ID(租户ID)
-	CompanyID uint `json:"companyID" form:"companyID"`
+	// TenantID 所属租户ID
+	TenantID uint `json:"tenantID" form:"tenantID"`
 	// DeptCode 部门编码
 	DeptCode string `json:"deptCode" form:"deptCode"`
 	// DeptLevel 部门层级

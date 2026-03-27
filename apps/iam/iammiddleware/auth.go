@@ -36,7 +36,7 @@ func Auth() gin.HandlerFunc {
 			ctx.Set(tenantctx.CtxUserType, claims.CustomData.Username)
 		}
 
-		if err := setTenantContextFromToken(ctx); err != nil {
+		if err := setOrganizationContextFromToken(ctx); err != nil {
 			gincontext.Fail(ctx, err)
 			ctx.Abort()
 			return
@@ -84,7 +84,7 @@ func extractToken(ctx *gin.Context) string {
 	return parts[1]
 }
 
-func setTenantContextFromToken(ctx *gin.Context) error {
+func setOrganizationContextFromToken(ctx *gin.Context) error {
 	userID := gincontext.GetUserID(ctx)
 	if userID == 0 {
 		return code.GetError(code.TenantContextMissingError)
@@ -102,26 +102,26 @@ func setTenantContextFromToken(ctx *gin.Context) error {
 		ctx.Set(tenantctx.CtxUserType, userEntity.UserType)
 	}
 
-	if userEntity.CompanyID > 0 {
-		ctx.Set(tenantctx.CtxCompanyID, userEntity.CompanyID)
+	if userEntity.TenantID > 0 {
+		ctx.Set(tenantctx.CtxTenantID, userEntity.TenantID)
 	}
 
 	if userEntity.UserType == tenantctx.UserTypePlatformAdmin {
 		return nil
 	}
 
-	if userEntity.CompanyID == 0 {
+	if userEntity.TenantID == 0 {
 		return code.GetError(code.TenantContextMissingError)
 	}
 
-	companyEntity, err := iamdao.NewCompanyDao().GetByID(ctx, userEntity.CompanyID)
+	tenantEntity, err := iamdao.NewTenantDao().GetByID(ctx, userEntity.TenantID)
 	if err != nil {
 		return err
 	}
-	if companyEntity == nil || companyEntity.ID == 0 || companyEntity.TenantID == 0 {
+	if tenantEntity == nil || tenantEntity.ID == 0 || tenantEntity.OrganizationID == 0 {
 		return code.GetError(code.TenantContextMissingError)
 	}
 
-	ctx.Set(tenantctx.CtxTenantID, companyEntity.TenantID)
+	ctx.Set(tenantctx.CtxOrganizationID, tenantEntity.OrganizationID)
 	return nil
 }

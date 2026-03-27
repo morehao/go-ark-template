@@ -1,8 +1,8 @@
 package objpermission
 
 type UserRoleBaseInfo struct {
-	// CompanyID 公司ID(租户ID,冗余)
-	CompanyID uint `json:"companyID" form:"companyID"`
+	// TenantID 租户ID(冗余)
+	TenantID uint `json:"tenantID" form:"tenantID"`
 	// RoleID 角色ID
 	RoleID uint `json:"roleID" form:"roleID"`
 	// UserID 用户ID

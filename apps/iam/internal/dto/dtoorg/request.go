@@ -5,27 +5,24 @@ import (
 	"github.com/morehao/golib/biz/gobject"
 )
 
-type CompanyCreateReq struct {
-	objorg.CompanyBaseInfo
+type TenantCreateReq struct {
+	objorg.TenantBaseInfo
 }
 
-type CompanyUpdateReq struct {
-	// ID 数据自增 ID
+type TenantUpdateReq struct {
 	ID uint `json:"id" validate:"required" label:"数据自增id"`
-	objorg.CompanyBaseInfo
+	objorg.TenantBaseInfo
 }
 
-type CompanyDetailReq struct {
-	// ID 数据自增 ID
+type TenantDetailReq struct {
 	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"`
 }
 
-type CompanyPageListReq struct {
+type TenantPageListReq struct {
 	gobject.PageQuery
 }
 
-type CompanyDeleteReq struct {
-	// ID 数据自增 ID
+type TenantDeleteReq struct {
 	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"`
 }
 
@@ -33,18 +30,15 @@ type DepartmentCreateReq struct {
 	objorg.DepartmentBaseInfo
 }
 type DepartmentUpdateReq struct {
-	// ID 数据自增 ID
 	ID uint `json:"id" validate:"required" label:"数据自增id"`
 	objorg.DepartmentBaseInfo
 }
 type DepartmentDetailReq struct {
-	// ID 数据自增 ID
 	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"`
 }
 type DepartmentPageListReq struct {
 	gobject.PageQuery
 }
 type DepartmentDeleteReq struct {
-	// ID 数据自增 ID
 	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"`
 }

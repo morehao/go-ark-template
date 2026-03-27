@@ -9,18 +9,18 @@ import (
 
 type RoleCond struct {
 	*genericdao.BaseCond
-	CompanyID uint
-	RoleName  string
-	RoleCode  string
-	Status    string
+	TenantID uint
+	RoleName string
+	RoleCode string
+	Status   string
 }
 
 func (c *RoleCond) BuildCondition(db *gorm.DB, tableName string) {
 	if c.BaseCond != nil {
 		c.BaseCond.BuildCondition(db, tableName)
 	}
-	if c.CompanyID > 0 {
-		db.Where("company_id = ?", c.CompanyID)
+	if c.TenantID > 0 {
+		db.Where("tenant_id = ?", c.TenantID)
 	}
 	if c.RoleName != "" {
 		db.Where("role_name = ?", c.RoleName)
