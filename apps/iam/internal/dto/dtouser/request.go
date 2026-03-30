@@ -7,9 +7,16 @@ import (
 
 type UserCreateReq struct {
 	objuser.UserBaseInfo
-	Mobile   string `json:"mobile" form:"mobile"`
-	Email    string `json:"email" form:"email"`
+	// Mobile 手机号
+	Mobile string `json:"mobile" form:"mobile"`
+	// Email 邮箱
+	Email string `json:"email" form:"email"`
+	// RealName 真实姓名
 	RealName string `json:"realName" form:"realName"`
+	// PrimaryDeptID 主部门ID，未传入时自动使用租户顶级部门
+	PrimaryDeptID uint `json:"primaryDeptID" form:"primaryDeptID"`
+	// SecondaryDeptIDs 其他关联部门ID列表（第二部门）
+	SecondaryDeptIDs []uint `json:"secondaryDeptIDs" form:"secondaryDeptIDs"`
 }
 
 type UserUpdateReq struct {

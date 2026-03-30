@@ -11,9 +11,11 @@ type DepartmentCond struct {
 	*genericdao.BaseCond
 	TenantID uint
 	ParentID uint
-	DeptName string
-	DeptCode string
-	Status   string
+	// ParentIDNil 是否显式查询 ParentID（包括 ParentID=0 的情况）
+	ParentIDNil bool
+	DeptName    string
+	DeptCode    string
+	Status      string
 }
 
 func (c *DepartmentCond) BuildCondition(db *gorm.DB, tableName string) {
@@ -23,7 +25,9 @@ func (c *DepartmentCond) BuildCondition(db *gorm.DB, tableName string) {
 	if c.TenantID > 0 {
 		db.Where("tenant_id = ?", c.TenantID)
 	}
-	if c.ParentID > 0 {
+	if c.ParentIDNil {
+		db.Where("parent_id = ?", c.ParentID)
+	} else if c.ParentID > 0 {
 		db.Where("parent_id = ?", c.ParentID)
 	}
 	if c.DeptName != "" {

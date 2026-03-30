@@ -12,7 +12,7 @@ type UserDepartmentCond struct {
 	UserID   uint
 	DeptID   uint
 	TenantID uint
-	DeptType string
+	DeptType iammodel.UserDeptType
 }
 
 func (c *UserDepartmentCond) BuildCondition(db *gorm.DB, tableName string) {

@@ -7,6 +7,7 @@ import (
 	"github.com/morehao/goark/apps/iam/core/organization"
 	"github.com/morehao/goark/apps/iam/core/user"
 	"github.com/morehao/goark/apps/iam/iamdao"
+	"github.com/morehao/goark/apps/iam/iammodel"
 	"github.com/morehao/goark/apps/iam/internal/dto/dtouser"
 	"github.com/morehao/goark/apps/iam/internal/tenantctx"
 	"github.com/morehao/goark/apps/iam/object/objuser"
@@ -42,13 +43,22 @@ func (svc *userSvc) Create(ctx *gin.Context, req *dtouser.UserCreateReq) (*dtous
 	tenantID := tenantctx.GetTenantID(ctx)
 	operatorID := gincontext.GetUserID(ctx)
 
+	primaryDeptID, err := svc.getOrCreatePrimaryDeptID(ctx, tenantID, req.PrimaryDeptID)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := svc.checkUsernameUnique(ctx, tenantID, req.Username); err != nil {
+		return nil, err
+	}
+
 	params := &user.CreatePersonParams{
 		Mobile:      strings.TrimSpace(req.Mobile),
 		Email:       strings.TrimSpace(req.Email),
 		RealName:    req.RealName,
 		OperatorID:  operatorID,
 		TenantID:    tenantID,
-		DeptID:      req.DeptID,
+		DeptID:      primaryDeptID,
 		Username:    req.Username,
 		UserType:    req.UserType,
 		Status:      req.Status,
@@ -63,7 +73,13 @@ func (svc *userSvc) Create(ctx *gin.Context, req *dtouser.UserCreateReq) (*dtous
 	txErr := dbclient.IamDB(ctx).Transaction(func(tx *gorm.DB) error {
 		var err error
 		result, err = user.CreatePersonWithUser(ctx, tx, params)
-		return err
+		if err != nil {
+			return err
+		}
+		if err := svc.createUserDeptRelations(ctx, tx, tenantID, result.UserID, primaryDeptID, req.SecondaryDeptIDs, operatorID); err != nil {
+			return err
+		}
+		return nil
 	})
 	if txErr != nil {
 		glog.Errorf(ctx, "[svcuser.Create] Transaction fail, err:%v", txErr)
@@ -71,7 +87,7 @@ func (svc *userSvc) Create(ctx *gin.Context, req *dtouser.UserCreateReq) (*dtous
 	}
 
 	return &dtouser.UserCreateResp{
-		ID:       result.UserID,
+		UserID:   result.UserID,
 		PersonID: result.PersonID,
 	}, nil
 }
@@ -210,4 +226,78 @@ func (svc *userSvc) PageList(ctx *gin.Context, req *dtouser.UserPageListReq) (*d
 		List:  list,
 		Total: total,
 	}, nil
+}
+
+func (svc *userSvc) getOrCreatePrimaryDeptID(ctx *gin.Context, tenantID uint, primaryDeptID uint) (uint, error) {
+	if primaryDeptID > 0 {
+		return primaryDeptID, nil
+	}
+	deptEntity, err := iamdao.NewDepartmentDao().GetByCond(ctx, &iamdao.DepartmentCond{
+		TenantID:    tenantID,
+		ParentID:    0,
+		ParentIDNil: true,
+	})
+	if err != nil {
+		glog.Errorf(ctx, "[svcuser.getOrCreatePrimaryDeptID] GetByCond fail, err:%v, tenantID:%d", err, tenantID)
+		return 0, code.GetError(code.UserCreateError)
+	}
+	if deptEntity == nil || deptEntity.ID == 0 {
+		glog.Errorf(ctx, "[svcuser.getOrCreatePrimaryDeptID] root dept not found, tenantID:%d", tenantID)
+		return 0, code.GetError(code.UserCreateError)
+	}
+	return deptEntity.ID, nil
+}
+
+func (svc *userSvc) checkUsernameUnique(ctx *gin.Context, tenantID uint, username string) error {
+	if username == "" {
+		return nil
+	}
+	userEntity, err := iamdao.NewUserDao().GetByCond(ctx, &iamdao.UserCond{
+		TenantID: tenantID,
+		Username: username,
+	})
+	if err != nil {
+		glog.Errorf(ctx, "[svcuser.checkUsernameUnique] GetByCond fail, err:%v, tenantID:%d, username:%s", err, tenantID, username)
+		return code.GetError(code.UserCreateError)
+	}
+	if userEntity != nil && userEntity.ID > 0 {
+		return code.GetError(code.UsernameDuplicateError)
+	}
+	return nil
+}
+
+func (svc *userSvc) createUserDeptRelations(ctx *gin.Context, tx *gorm.DB, tenantID uint, userID uint, primaryDeptID uint, secondaryDeptIDs []uint, operatorID uint) error {
+	userDeptDao := iamdao.NewUserDepartmentDao().WithTx(tx)
+
+	primaryDeptEntity := &iammodel.UserDepartmentEntity{
+		TenantID:  tenantID,
+		UserID:    userID,
+		DeptID:    primaryDeptID,
+		DeptType:  iammodel.UserDeptTypePrimary,
+		CreatedBy: operatorID,
+		UpdatedBy: operatorID,
+	}
+	if err := userDeptDao.Insert(ctx, primaryDeptEntity); err != nil {
+		glog.Errorf(ctx, "[svcuser.createUserDeptRelations] Insert primary dept fail, err:%v, userID:%d, deptID:%d", err, userID, primaryDeptID)
+		return code.GetError(code.UserCreateError)
+	}
+
+	for _, deptID := range secondaryDeptIDs {
+		if deptID == primaryDeptID {
+			continue
+		}
+		secondaryDeptEntity := &iammodel.UserDepartmentEntity{
+			TenantID:  tenantID,
+			UserID:    userID,
+			DeptID:    deptID,
+			DeptType:  iammodel.UserDeptTypeSecondary,
+			CreatedBy: operatorID,
+			UpdatedBy: operatorID,
+		}
+		if err := userDeptDao.Insert(ctx, secondaryDeptEntity); err != nil {
+			glog.Errorf(ctx, "[svcuser.createUserDeptRelations] Insert secondary dept fail, err:%v, userID:%d, deptID:%d", err, userID, deptID)
+			return code.GetError(code.UserCreateError)
+		}
+	}
+	return nil
 }

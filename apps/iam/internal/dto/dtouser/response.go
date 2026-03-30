@@ -6,7 +6,9 @@ import (
 )
 
 type UserCreateResp struct {
-	ID       uint `json:"id"`
+	// UserID 用户UserID
+	UserID uint `json:"userID"`
+	// PersonID 自然人ID
 	PersonID uint `json:"personID"`
 }
 
