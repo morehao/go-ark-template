@@ -9,6 +9,7 @@ const (
 	UserGetDetailError   = 100503
 	UserGetPageListError = 100504
 	UserNotExistError    = 100505
+	PersonCreateError    = 100506
 )
 
 var userErrorMsgMap = gerror.CodeMsgMap{
@@ -18,4 +19,5 @@ var userErrorMsgMap = gerror.CodeMsgMap{
 	UserGetDetailError:   "查看用户管理失败",
 	UserGetPageListError: "查看用户管理列表失败",
 	UserNotExistError:    "用户管理不存在",
+	PersonCreateError:    "创建自然人失败",
 }

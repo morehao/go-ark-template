@@ -128,7 +128,7 @@ CREATE TABLE IF NOT EXISTS iam_department (
 CREATE TABLE IF NOT EXISTS iam_user (
     id BIGINT AUTO_INCREMENT COMMENT '用户ID',
     person_id BIGINT NOT NULL COMMENT '自然人ID',
-    tenant_id BIGINT NOT NULL DEFAULT 0 COMMENT '所属租户ID, 0表示平台管理员账号',
+    tenant_id BIGINT NOT NULL DEFAULT 0 COMMENT '所属租户ID',
     dept_id BIGINT COMMENT '主部门ID(冗余字段,方便查询,实际关联关系在iam_user_department表)',
     username VARCHAR(32) NOT NULL COMMENT '用户名(租户用户:租户内唯一,平台管理员:全局唯一,需应用层保证)',
     employee_no VARCHAR(32) COMMENT '工号',

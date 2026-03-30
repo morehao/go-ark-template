@@ -6,7 +6,9 @@ import (
 )
 
 type TenantCreateResp struct {
-	ID uint `json:"id"`
+	ID       uint `json:"id"`
+	AdminID  uint `json:"adminID"`
+	PersonID uint `json:"personID"`
 }
 
 type TenantDetailResp struct {

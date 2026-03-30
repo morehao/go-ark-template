@@ -7,6 +7,7 @@ import (
 
 type TenantCreateReq struct {
 	objorg.TenantBaseInfo
+	AdminInfo *objorg.TenantAdminInfo `json:"adminInfo" validate:"required" label:"管理员信息"`
 }
 
 type TenantUpdateReq struct {

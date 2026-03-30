@@ -4,10 +4,9 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam/config"
 	"github.com/morehao/goark/apps/iam/core/organization"
+	"github.com/morehao/goark/apps/iam/core/user"
 	"github.com/morehao/goark/apps/iam/iamdao"
-	"github.com/morehao/goark/apps/iam/iammodel"
 	"github.com/morehao/goark/apps/iam/internal/dto/dtouser"
 	"github.com/morehao/goark/apps/iam/internal/tenantctx"
 	"github.com/morehao/goark/apps/iam/object/objuser"
@@ -16,7 +15,6 @@ import (
 	"github.com/morehao/golib/biz/gcontext/gincontext"
 	"github.com/morehao/golib/biz/genericdao"
 	"github.com/morehao/golib/biz/gobject"
-	"github.com/morehao/golib/gcrypto"
 	"github.com/morehao/golib/glog"
 	"github.com/morehao/golib/gutil"
 	"gorm.io/gorm"
@@ -44,91 +42,38 @@ func (svc *userSvc) Create(ctx *gin.Context, req *dtouser.UserCreateReq) (*dtous
 	tenantID := tenantctx.GetTenantID(ctx)
 	operatorID := gincontext.GetUserID(ctx)
 
-	mobile := strings.TrimSpace(req.Mobile)
-	email := strings.TrimSpace(req.Email)
-	passwordHash := ""
-	if mobile != "" {
-		passwordHash = svc.generatePassword(mobile)
-	}
-	personCreateEntity := &iammodel.PersonEntity{
-		Mobile:       mobile,
-		Email:        email,
-		RealName:     req.RealName,
-		PasswordHash: passwordHash,
-		CreatedBy:    operatorID,
-		UpdatedBy:    operatorID,
-	}
-	userEntity := &iammodel.UserEntity{
+	params := &user.CreatePersonParams{
+		Mobile:      strings.TrimSpace(req.Mobile),
+		Email:       strings.TrimSpace(req.Email),
+		RealName:    req.RealName,
+		OperatorID:  operatorID,
 		TenantID:    tenantID,
 		DeptID:      req.DeptID,
+		Username:    req.Username,
+		UserType:    req.UserType,
+		Status:      req.Status,
 		EmployeeNo:  req.EmployeeNo,
 		JobLevel:    req.JobLevel,
+		Position:    req.Position,
 		LastLoginIp: req.LastLoginIp,
 		LoginCount:  req.LoginCount,
-		Position:    req.Position,
-		Status:      req.Status,
-		UserType:    req.UserType,
-		Username:    req.Username,
-		CreatedBy:   operatorID,
-		UpdatedBy:   operatorID,
 	}
 
-	var userID uint
-	var personID uint
+	var result *user.CreatePersonResult
 	txErr := dbclient.IamDB(ctx).Transaction(func(tx *gorm.DB) error {
 		var err error
-		personID, err = svc.getOrCreatePersonWithTx(ctx, tx, mobile, email, personCreateEntity)
-		if err != nil {
-			return err
-		}
-		userEntity.PersonID = personID
-		if err := iamdao.NewUserDao().WithTx(tx).Insert(ctx, userEntity); err != nil {
-			return err
-		}
-		userID = userEntity.ID
-		return nil
+		result, err = user.CreatePersonWithUser(ctx, tx, params)
+		return err
 	})
 	if txErr != nil {
-		glog.Errorf(ctx, "[svcuser.Create] Transaction fail, err:%v, mobile:%s, email:%s", txErr, mobile, email)
+		glog.Errorf(ctx, "[svcuser.Create] Transaction fail, err:%v", txErr)
 		return nil, code.GetError(code.UserCreateError)
 	}
 
 	return &dtouser.UserCreateResp{
-		ID:       userID,
-		PersonID: personID,
+		ID:       result.UserID,
+		PersonID: result.PersonID,
 	}, nil
-}
-
-func (svc *userSvc) getOrCreatePersonWithTx(ctx *gin.Context, tx *gorm.DB, mobile, email string, personCreateEntity *iammodel.PersonEntity) (uint, error) {
-	personEntity, err := iamdao.NewPersonDao().GetByCond(ctx, &iamdao.PersonCond{
-		Mobile: mobile,
-		Email:  email,
-	})
-	if err != nil {
-		glog.Errorf(ctx, "[svcuser.getOrCreatePerson] daoPerson GetByCond fail, err:%v, mobile:%s, email:%s", err, mobile, email)
-		return 0, code.GetError(code.UserCreateError)
-	}
-	if personEntity != nil && personEntity.ID != 0 {
-		return personEntity.ID, nil
-	}
-	if err := iamdao.NewPersonDao().WithTx(tx).Insert(ctx, personCreateEntity); err != nil {
-		glog.Errorf(ctx, "[svcuser.getOrCreatePerson] daoPerson Insert fail, err:%v, mobile:%s, email:%s", err, mobile, email)
-		return 0, code.GetError(code.UserCreateError)
-	}
-	return personCreateEntity.ID, nil
-}
-
-func (svc *userSvc) generatePassword(mobile string) string {
-	prefix := "pwd"
-	if config.Conf != nil && config.Conf.Password.Prefix != "" {
-		prefix = config.Conf.Password.Prefix
-	}
-	suffix := mobile
-	if len(mobile) > 8 {
-		suffix = mobile[len(mobile)-8:]
-	}
-	hash, _ := gcrypto.GeneratePasswordHash(prefix + suffix)
-	return hash
 }
 
 // Delete 删除用户管理

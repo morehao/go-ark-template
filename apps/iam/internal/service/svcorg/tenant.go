@@ -1,18 +1,24 @@
 package svcorg
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"github.com/morehao/goark/apps/iam/core/organization"
+	"github.com/morehao/goark/apps/iam/core/user"
 	"github.com/morehao/goark/apps/iam/iamdao"
 	"github.com/morehao/goark/apps/iam/iammodel"
 	"github.com/morehao/goark/apps/iam/internal/dto/dtoorg"
 	"github.com/morehao/goark/apps/iam/object/objorg"
 	"github.com/morehao/goark/pkg/code"
+	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
 	"github.com/morehao/golib/biz/genericdao"
 	"github.com/morehao/golib/biz/gobject"
 	"github.com/morehao/golib/glog"
 	"github.com/morehao/golib/gutil"
+	"gorm.io/gorm"
 )
 
 type TenantSvc interface {
@@ -33,6 +39,7 @@ func NewTenantSvc() TenantSvc {
 }
 
 func (svc *tenantSvc) Create(ctx *gin.Context, req *dtoorg.TenantCreateReq) (*dtoorg.TenantCreateResp, error) {
+	operatorID := gincontext.GetUserID(ctx)
 	insertEntity := &iammodel.TenantEntity{
 		Address:                 req.Address,
 		ContactEmail:            req.ContactEmail,
@@ -45,14 +52,74 @@ func (svc *tenantSvc) Create(ctx *gin.Context, req *dtoorg.TenantCreateReq) (*dt
 		TenantCode:              req.TenantCode,
 		TenantName:              req.TenantName,
 		UnifiedSocialCreditCode: req.UnifiedSocialCreditCode,
+		CreatedBy:               operatorID,
+		UpdatedBy:               operatorID,
 	}
 
-	if err := iamdao.NewTenantDao().Insert(ctx, insertEntity); err != nil {
-		glog.Errorf(ctx, "[svcorg.TenantCreate] daoTenant Create fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+	adminInfo := req.AdminInfo
+	mobile := strings.TrimSpace(adminInfo.Mobile)
+	email := strings.TrimSpace(adminInfo.Email)
+
+	var tenantID uint
+	var deptID uint
+	var result *user.CreatePersonResult
+	txErr := dbclient.IamDB(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := iamdao.NewTenantDao().WithTx(tx).Insert(ctx, insertEntity); err != nil {
+			return err
+		}
+		tenantID = insertEntity.ID
+
+		deptEntity := &iammodel.DepartmentEntity{
+			TenantID:  tenantID,
+			DeptCode:  req.TenantCode,
+			DeptName:  req.TenantName,
+			DeptLevel: 1,
+			ParentID:  0,
+			Status:    "active",
+			CreatedBy: operatorID,
+			UpdatedBy: operatorID,
+		}
+		if err := iamdao.NewDepartmentDao().WithTx(tx).Insert(ctx, deptEntity); err != nil {
+			return err
+		}
+		deptID = deptEntity.ID
+
+		deptPathMap := map[string]any{
+			"dept_path": fmt.Sprintf("/%d/", deptEntity.ID),
+		}
+		if err := iamdao.NewDepartmentDao().WithTx(tx).UpdateMap(ctx, deptEntity.ID, deptPathMap); err != nil {
+			return err
+		}
+
+		params := &user.CreatePersonParams{
+			Mobile:     mobile,
+			Email:      email,
+			RealName:   adminInfo.RealName,
+			OperatorID: operatorID,
+			TenantID:   tenantID,
+			DeptID:     deptID,
+			Username:   adminInfo.Username,
+			UserType:   "tenant_admin",
+			Status:     "active",
+		}
+		var err error
+		result, err = user.CreatePersonWithUser(ctx, tx, params)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if txErr != nil {
+		glog.Errorf(ctx, "[svcorg.TenantCreate] Transaction fail, err:%v, req:%s", txErr, gutil.ToJsonString(req))
 		return nil, code.GetError(code.TenantCreateError)
 	}
+
 	return &dtoorg.TenantCreateResp{
-		ID: insertEntity.ID,
+		ID:       tenantID,
+		AdminID:  result.UserID,
+		PersonID: result.PersonID,
 	}, nil
 }
 
