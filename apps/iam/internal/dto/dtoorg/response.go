@@ -45,3 +45,22 @@ type DepartmentPageListResp struct {
 	List  []DepartmentPageListItem `json:"list"`
 	Total int64                    `json:"total"`
 }
+
+type OrganizationCreateResp struct {
+	ID      uint `json:"id"`
+	AdminID uint `json:"adminID"`
+}
+type OrganizationDetailResp struct {
+	ID uint `json:"id" validate:"required"`
+	objorg.OrganizationBaseInfo
+	gobject.OperatorBaseInfo
+}
+type OrganizationPageListItem struct {
+	ID uint `json:"id" validate:"required"`
+	objorg.OrganizationBaseInfo
+	gobject.OperatorBaseInfo
+}
+type OrganizationPageListResp struct {
+	List  []OrganizationPageListItem `json:"list"`
+	Total int64                      `json:"total"`
+}

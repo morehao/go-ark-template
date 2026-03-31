@@ -2,11 +2,11 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam/internal/controller/ctrorganization"
+	"github.com/morehao/goark/apps/iam/internal/controller/ctrorg"
 )
 
 func organizationRouter(routerGroup *gin.RouterGroup) {
-	organizationCtr := ctrorganization.NewOrganizationCtr()
+	organizationCtr := ctrorg.NewOrganizationCtr()
 
 	routerGroup.POST("/organization/create", organizationCtr.Create)
 	routerGroup.POST("/organization/delete", organizationCtr.Delete)

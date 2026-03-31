@@ -43,3 +43,21 @@ type DepartmentPageListReq struct {
 type DepartmentDeleteReq struct {
 	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"`
 }
+
+type OrganizationCreateReq struct {
+	objorg.OrganizationBaseInfo
+	Admin *objorg.OrganizationAdminInfo `json:"admin" validate:"required" label:"管理员信息"`
+}
+type OrganizationUpdateReq struct {
+	ID uint `json:"id" validate:"required" label:"数据自增id"`
+	objorg.OrganizationBaseInfo
+}
+type OrganizationDetailReq struct {
+	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"`
+}
+type OrganizationPageListReq struct {
+	gobject.PageQuery
+}
+type OrganizationDeleteReq struct {
+	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"`
+}
