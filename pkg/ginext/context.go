@@ -1,26 +1,22 @@
 package ginext
 
-import "github.com/gin-gonic/gin"
-
-const (
-	CtxKeyTenantID = "tenantId"
-	CtxKeyOrgID    = "orgId"
-	CtxKeyUserType = "userType"
-	CtxKeyPersonID = "personId"
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/morehao/goark/pkg/contextkeys"
 )
 
 func GetTenantID(c *gin.Context) uint {
-	return c.GetUint(CtxKeyTenantID)
+	return c.GetUint(string(contextkeys.KeyTenantID))
 }
 
 func GetOrgID(c *gin.Context) uint {
-	return c.GetUint(CtxKeyOrgID)
+	return c.GetUint(string(contextkeys.KeyOrgID))
 }
 
 func GetUserType(c *gin.Context) string {
-	return c.GetString(CtxKeyUserType)
+	return c.GetString(string(contextkeys.KeyUserType))
 }
 
 func GetPersonID(c *gin.Context) uint {
-	return c.GetUint(CtxKeyPersonID)
+	return c.GetUint(string(contextkeys.KeyPersonID))
 }
