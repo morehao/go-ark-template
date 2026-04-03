@@ -7,30 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/morehao/goark/apps/iam"
 	"github.com/morehao/goark/apps/iam/config"
-	"github.com/morehao/goark/pkg/contextkeys"
-	"github.com/morehao/goark/pkg/ginext"
 	"github.com/morehao/golib/biz/gmiddleware/ginmiddleware"
 	"github.com/morehao/golib/glog"
 )
-
-func ginContextToStdContext() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		if c.Request != nil {
-			ctx := c.Request.Context()
-			if tenantID := ginext.GetTenantID(c); tenantID > 0 {
-				ctx = context.WithValue(ctx, contextkeys.KeyTenantID, tenantID)
-			}
-			if orgID := ginext.GetOrgID(c); orgID > 0 {
-				ctx = context.WithValue(ctx, contextkeys.KeyOrgID, orgID)
-			}
-			if userType := ginext.GetUserType(c); userType != "" {
-				ctx = context.WithValue(ctx, contextkeys.KeyUserType, userType)
-			}
-			c.Request = c.Request.WithContext(ctx)
-		}
-		c.Next()
-	}
-}
 
 func main() {
 	if err := serverInit(); err != nil {
@@ -45,10 +24,7 @@ func main() {
 	engine.ContextWithFallback = true
 	engine.Use(gin.Recovery())
 	engine.Use(ginmiddleware.AccessLog())
-	// TODO: re-enable JWT middleware once local implementation is ready
-	// engine.Use(ginmiddleware.JWTAuth(config.Conf.JWT.SignKey))
-	engine.Use(ginContextToStdContext())
-	iam.Routers(engine)
+	iam.Routers(engine, config.Conf.JWT.SignKey)
 
 	if err := engine.Run(fmt.Sprintf(":%s", config.Conf.Server.Port)); err != nil {
 		glog.Errorf(context.Background(), "%s run fail, port:%s", iam.AppName, config.Conf.Server.Port)

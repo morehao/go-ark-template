@@ -31,7 +31,8 @@ type PasswordConfig struct {
 }
 
 type JWT struct {
-	SignKey string `yaml:"signKey"`
+	SignKey    string `yaml:"signKey"`
+	ExpireHour int    `yaml:"expireHour"`
 }
 
 type Server struct {

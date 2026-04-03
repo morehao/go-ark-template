@@ -53,3 +53,47 @@ type RolePageListResp struct {
 	// Total 数据总条数
 	Total int64 `json:"total"`
 }
+
+type RoleMenuListResp struct {
+	List []RoleMenuItem `json:"list"`
+}
+
+type RoleMenuItem struct {
+	MenuID     uint   `json:"menuId"`
+	MenuName   string `json:"menuName"`
+	MenuCode   string `json:"menuCode"`
+	MenuType   string `json:"menuType"`
+	Permission string `json:"permission"`
+	ParentID   uint   `json:"parentId"`
+}
+
+type UserRoleListResp struct {
+	List []UserRoleItem `json:"list"`
+}
+
+type UserRoleItem struct {
+	RoleID   uint   `json:"roleId"`
+	RoleName string `json:"roleName"`
+	RoleCode string `json:"roleCode"`
+	RoleType string `json:"roleType"`
+}
+
+type UserPermissionsResp struct {
+	Menus       []MenuTreeNode `json:"menus"`
+	Permissions []string       `json:"permissions"`
+}
+
+type MenuTreeNode struct {
+	ID            uint           `json:"id"`
+	MenuName      string         `json:"menuName"`
+	MenuCode      string         `json:"menuCode"`
+	MenuType      string         `json:"menuType"`
+	ParentID      uint           `json:"parentId"`
+	RoutePath     string         `json:"routePath"`
+	ComponentPath string         `json:"componentPath"`
+	Permission    string         `json:"permission"`
+	Icon          string         `json:"icon"`
+	SortOrder     int32          `json:"sortOrder"`
+	Visibility    string         `json:"visibility"`
+	Children      []MenuTreeNode `json:"children"`
+}

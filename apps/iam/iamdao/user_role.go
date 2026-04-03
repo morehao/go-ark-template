@@ -10,6 +10,7 @@ import (
 type UserRoleCond struct {
 	*genericdao.BaseCond
 	UserID   uint
+	UserIDs  []uint
 	RoleID   uint
 	TenantID uint
 }
@@ -20,6 +21,9 @@ func (c *UserRoleCond) BuildCondition(db *gorm.DB, tableName string) {
 	}
 	if c.UserID > 0 {
 		db.Where("user_id = ?", c.UserID)
+	}
+	if len(c.UserIDs) > 0 {
+		db.Where("user_id IN (?)", c.UserIDs)
 	}
 	if c.RoleID > 0 {
 		db.Where("role_id = ?", c.RoleID)

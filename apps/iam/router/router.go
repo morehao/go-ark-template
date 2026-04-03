@@ -17,7 +17,10 @@ func RegisterRouter(groups *RouterGroups, appName string) {
 	}
 	v1AuthGroup := groups.AuthGroup.Group("/v1")
 	iamGroup := v1AuthGroup.Group("/iam")
-	// v1NoAuth := groups.NoAuthGroup.Group("/v1")
+	v1NoAuthGroup := groups.NoAuthGroup.Group("/v1")
+	iamNoAuthGroup := v1NoAuthGroup.Group("/iam")
+
+	authRouter(iamGroup, iamNoAuthGroup)
 	organizationRouter(iamGroup)
 	tenantRouter(iamGroup)
 	departmentRouter(iamGroup)

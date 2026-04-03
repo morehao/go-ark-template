@@ -40,4 +40,5 @@ func init() {
 	registerError(userErrorMsgMap)
 	registerError(menuErrorMsgMap)
 	registerError(roleErrorMsgMap)
+	registerError(authErrorMsgMap)
 }

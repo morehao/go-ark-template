@@ -10,6 +10,7 @@ import (
 type RoleMenuCond struct {
 	*genericdao.BaseCond
 	RoleID   uint
+	RoleIDs  []uint
 	MenuID   uint
 	TenantID uint
 }
@@ -20,6 +21,9 @@ func (c *RoleMenuCond) BuildCondition(db *gorm.DB, tableName string) {
 	}
 	if c.RoleID > 0 {
 		db.Where("role_id = ?", c.RoleID)
+	}
+	if len(c.RoleIDs) > 0 {
+		db.Where("role_id IN (?)", c.RoleIDs)
 	}
 	if c.MenuID > 0 {
 		db.Where("menu_id = ?", c.MenuID)

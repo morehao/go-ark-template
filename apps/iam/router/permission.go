@@ -22,4 +22,13 @@ func roleRouter(routerGroup *gin.RouterGroup) {
 	routerGroup.POST("/role/update", roleCtr.Update)
 	routerGroup.GET("/role/detail", roleCtr.Detail)
 	routerGroup.POST("/role/pageList", roleCtr.PageList)
+	routerGroup.POST("/role/assignMenus", roleCtr.AssignMenus)
+	routerGroup.POST("/role/removeMenus", roleCtr.RemoveMenus)
+	routerGroup.GET("/role/listMenus", roleCtr.ListMenus)
+
+	authorizationCtr := ctrpermission.NewAuthorizationCtr()
+	routerGroup.POST("/user/assignRoles", authorizationCtr.AssignRoles)
+	routerGroup.POST("/user/removeRoles", authorizationCtr.RemoveRoles)
+	routerGroup.GET("/user/listRoles", authorizationCtr.ListUserRoles)
+	routerGroup.GET("/permission/userPermissions", authorizationCtr.GetUserPermissions)
 }
