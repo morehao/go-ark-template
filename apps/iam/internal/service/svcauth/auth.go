@@ -29,6 +29,8 @@ type AuthSvc interface {
 	GetCurrentUser(ctx *gin.Context) (*dtoauth.CurrentUserResp, error)
 }
 
+const defaultTokenExpireHours = 24
+
 type authSvc struct{}
 
 var _ AuthSvc = (*authSvc)(nil)
@@ -262,12 +264,7 @@ func (svc *authSvc) SwitchTenant(ctx *gin.Context, req *dtoauth.SwitchTenantReq)
 	// Blacklist old token
 	oldToken := extractToken(ctx)
 	if oldToken != "" {
-		expireHour := config.Conf.JWT.ExpireHour
-		if expireHour <= 0 {
-			expireHour = 24
-		}
-		expiry := time.Now().Add(time.Duration(expireHour) * time.Hour)
-		_ = middleware.AddToBlacklist(ctx.Request.Context(), oldToken, expiry)
+		_ = middleware.AddToBlacklist(ctx.Request.Context(), oldToken, tokenExpiry())
 	}
 
 	now := time.Now()
@@ -294,12 +291,7 @@ func (svc *authSvc) Logout(ctx *gin.Context) error {
 		return nil
 	}
 
-	expireHour := config.Conf.JWT.ExpireHour
-	if expireHour <= 0 {
-		expireHour = 24
-	}
-	expiry := time.Now().Add(time.Duration(expireHour) * time.Hour)
-	if err := middleware.AddToBlacklist(ctx.Request.Context(), tokenStr, expiry); err != nil {
+	if err := middleware.AddToBlacklist(ctx.Request.Context(), tokenStr, tokenExpiry()); err != nil {
 		glog.Errorf(ctx, "[svcauth.Logout] AddToBlacklist fail, err:%v", err)
 		return code.GetError(code.LogoutFailedError)
 	}
@@ -341,7 +333,7 @@ func (svc *authSvc) GetCurrentUser(ctx *gin.Context) (*dtoauth.CurrentUserResp, 
 
 func generateToken(signKey string, expireHour int, userID, personID, tenantID, orgID uint, userType string) (string, error) {
 	if expireHour <= 0 {
-		expireHour = 24
+		expireHour = defaultTokenExpireHours
 	}
 	expiresAt := time.Now().Add(time.Duration(expireHour) * time.Hour)
 	customData := middleware.JWTCustomData{
@@ -361,4 +353,12 @@ func extractToken(ctx *gin.Context) string {
 		return ""
 	}
 	return strings.TrimPrefix(authHeader, "Bearer ")
+}
+
+func tokenExpiry() time.Time {
+	expireHour := config.Conf.JWT.ExpireHour
+	if expireHour <= 0 {
+		expireHour = defaultTokenExpireHours
+	}
+	return time.Now().Add(time.Duration(expireHour) * time.Hour)
 }
