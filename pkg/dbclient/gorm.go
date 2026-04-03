@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/morehao/golib/biz/gormplugin"
 	"github.com/morehao/golib/dbaccess/dbgorm"
 	"github.com/morehao/golib/glog"
 	"gorm.io/gorm"
@@ -25,6 +26,15 @@ func InitMultiDB(configs []dbgorm.GormConfig, logConfig *glog.LogConfig) error {
 		return fmt.Errorf("mysql config is empty")
 	}
 
+	tenantPlugin := gormplugin.NewPlugin(
+		"iam_tenant",
+		"iam_organization",
+		"iam_organization_config",
+		"iam_menu",
+		"iam_role",
+		"iam_role_menu",
+	)
+
 	var opts []dbgorm.Option
 	if logConfig != nil {
 		opts = append(opts, dbgorm.WithLogConfig(logConfig))
@@ -33,6 +43,9 @@ func InitMultiDB(configs []dbgorm.GormConfig, logConfig *glog.LogConfig) error {
 		client, err := dbgorm.New(&cfg, opts...)
 		if err != nil {
 			return fmt.Errorf("init mysql failed: " + err.Error())
+		}
+		if err := client.Use(tenantPlugin); err != nil {
+			return fmt.Errorf("register tenant plugin failed: " + err.Error())
 		}
 		dbMutex.Lock()
 		dbMap[cfg.Service] = client

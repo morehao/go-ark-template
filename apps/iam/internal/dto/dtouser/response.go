@@ -32,3 +32,13 @@ type UserPageListResp struct {
 	// Total 数据总条数
 	Total int64 `json:"total"`
 }
+
+type UserDepartmentItem struct {
+	DepartmentID   uint   `json:"departmentID"`
+	DepartmentName string `json:"departmentName"`
+	DeptType       string `json:"deptType"`
+}
+
+type UserDepartmentsResp struct {
+	List []UserDepartmentItem `json:"list"`
+}

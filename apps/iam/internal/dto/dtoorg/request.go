@@ -40,6 +40,9 @@ type DepartmentDetailReq struct {
 type DepartmentPageListReq struct {
 	gobject.PageQuery
 }
+type DepartmentTreeReq struct {
+	ParentID *uint `json:"parentID" form:"parentID" label:"父部门ID"`
+}
 type DepartmentDeleteReq struct {
 	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"`
 }
@@ -57,6 +60,7 @@ type OrganizationDetailReq struct {
 }
 type OrganizationPageListReq struct {
 	gobject.PageQuery
+	Name string `json:"name" form:"name" label:"组织名称"`
 }
 type OrganizationDeleteReq struct {
 	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"`

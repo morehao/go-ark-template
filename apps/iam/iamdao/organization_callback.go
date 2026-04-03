@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 	"sync"
 
-	"github.com/morehao/goark/apps/iam/internal/tenantctx"
 	"github.com/morehao/goark/pkg/code"
 	"github.com/morehao/goark/pkg/dbclient"
+	"github.com/morehao/golib/biz/gcontext"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
@@ -29,6 +30,83 @@ const (
 	organizationScopeTenant organizationScopeKind = "tenant"
 	organizationScopeOrg    organizationScopeKind = "organization"
 )
+
+type Scope struct {
+	OrganizationID uint
+	TenantID       uint
+	UserType       string
+}
+
+func GetScope(ctx context.Context) (Scope, bool) {
+	if ctx == nil {
+		return Scope{}, false
+	}
+	var scope Scope
+	ok := false
+
+	if v := ctx.Value(gcontext.KeyTenantID); v != nil {
+		if id, found := readUintValue(v); found {
+			scope.TenantID = id
+			ok = true
+		}
+	}
+	if v := ctx.Value(gcontext.KeyOrgID); v != nil {
+		if id, found := readUintValue(v); found {
+			scope.OrganizationID = id
+			ok = true
+		}
+	}
+	if v := ctx.Value(gcontext.KeyUserType); v != nil {
+		if ut, found := readStringValue(v); found {
+			scope.UserType = ut
+		}
+	}
+	return scope, ok
+}
+
+func (s Scope) IsPlatformAdmin() bool {
+	return s.UserType == "platform_admin"
+}
+
+func readUintValue(v any) (uint, bool) {
+	switch value := v.(type) {
+	case uint:
+		return value, true
+	case uint64:
+		return uint(value), true
+	case uint32:
+		return uint(value), true
+	case int:
+		if value < 0 {
+			return 0, false
+		}
+		return uint(value), true
+	case int64:
+		if value < 0 {
+			return 0, false
+		}
+		return uint(value), true
+	case string:
+		if value == "" {
+			return 0, false
+		}
+		parsed, err := strconv.ParseUint(value, 10, 64)
+		if err != nil {
+			return 0, false
+		}
+		return uint(parsed), true
+	default:
+		return 0, false
+	}
+}
+
+func readStringValue(v any) (string, bool) {
+	value, ok := v.(string)
+	if !ok || value == "" {
+		return "", false
+	}
+	return value, true
+}
 
 var (
 	registerOrganizationCallbackOnce sync.Once
@@ -80,7 +158,7 @@ func organizationCreateScopeCallback(tx *gorm.DB) {
 		return
 	}
 
-	scope, _ := tenantctx.FromStdContext(tx.Statement.Context)
+	scope, _ := GetScope(tx.Statement.Context)
 
 	mainTableName, mainQualifier := resolveMainTable(tx, false, clause.From{})
 	if mainTableName == "" {
@@ -108,7 +186,7 @@ func organizationUpdateScopeCallback(tx *gorm.DB) {
 		return
 	}
 
-	scope, _ := tenantctx.FromStdContext(tx.Statement.Context)
+	scope, _ := GetScope(tx.Statement.Context)
 	if !scope.IsPlatformAdmin() {
 		mainTableName, _ := resolveMainTable(tx, false, clause.From{})
 		if mainTableName != "" {
@@ -128,7 +206,7 @@ func organizationScopeCallback(tx *gorm.DB) {
 		return
 	}
 
-	scope, _ := tenantctx.FromStdContext(tx.Statement.Context)
+	scope, _ := GetScope(tx.Statement.Context)
 	if scope.IsPlatformAdmin() {
 		return
 	}
@@ -169,7 +247,7 @@ func getFromClause(tx *gorm.DB) (clause.From, bool) {
 	return fromExpr, true
 }
 
-func applyJoinOrganizationScope(tx *gorm.DB, scope tenantctx.Scope, from *clause.From) error {
+func applyJoinOrganizationScope(tx *gorm.DB, scope Scope, from *clause.From) error {
 	if from == nil || len(from.Joins) == 0 {
 		return nil
 	}
@@ -234,7 +312,7 @@ func resolveScopeByTableName(tableName string) organizationScopeKind {
 	return tableScopeMap[normalizeTableName(tableName)]
 }
 
-func appendScopeExpression(tx *gorm.DB, qualifier string, scopeKind organizationScopeKind, scope tenantctx.Scope) error {
+func appendScopeExpression(tx *gorm.DB, qualifier string, scopeKind organizationScopeKind, scope Scope) error {
 	expr, err := buildScopeExpression(qualifier, scopeKind, scope)
 	if err != nil {
 		return err
@@ -243,7 +321,7 @@ func appendScopeExpression(tx *gorm.DB, qualifier string, scopeKind organization
 	return nil
 }
 
-func buildScopeExpression(qualifier string, scopeKind organizationScopeKind, scope tenantctx.Scope) (clause.Expression, error) {
+func buildScopeExpression(qualifier string, scopeKind organizationScopeKind, scope Scope) (clause.Expression, error) {
 	switch scopeKind {
 	case organizationScopeTenant:
 		if scope.TenantID == 0 {
@@ -260,7 +338,7 @@ func buildScopeExpression(qualifier string, scopeKind organizationScopeKind, sco
 	}
 }
 
-func fillCreateScopeValue(tx *gorm.DB, qualifier string, scopeKind organizationScopeKind, scope tenantctx.Scope) error {
+func fillCreateScopeValue(tx *gorm.DB, qualifier string, scopeKind organizationScopeKind, scope Scope) error {
 	switch scopeKind {
 	case organizationScopeTenant:
 		if scope.TenantID == 0 {
@@ -277,7 +355,7 @@ func fillCreateScopeValue(tx *gorm.DB, qualifier string, scopeKind organizationS
 	}
 }
 
-func validatePlatformAdminCreateScope(tx *gorm.DB, qualifier string, scopeKind organizationScopeKind, scope tenantctx.Scope) error {
+func validatePlatformAdminCreateScope(tx *gorm.DB, qualifier string, scopeKind organizationScopeKind, scope Scope) error {
 	fieldName := scopeFieldName(scopeKind)
 	if fieldName == "" {
 		return nil

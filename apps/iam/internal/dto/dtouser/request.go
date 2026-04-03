@@ -38,3 +38,18 @@ type UserDeleteReq struct {
 	// ID 数据自增 ID
 	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"`
 }
+
+type UserDepartmentAssignReq struct {
+	UserID       uint   `json:"userID" validate:"required" label:"用户ID"`
+	DepartmentID uint   `json:"departmentID" validate:"required" label:"部门ID"`
+	DeptType     string `json:"deptType" validate:"required" label:"部门类型: primary-secondary"`
+}
+
+type UserDepartmentRemoveReq struct {
+	UserID       uint `json:"userID" validate:"required" label:"用户ID"`
+	DepartmentID uint `json:"departmentID" validate:"required" label:"部门ID"`
+}
+
+type UserDepartmentsReq struct {
+	UserID uint `json:"userID" form:"userID" validate:"required" label:"用户ID"`
+}

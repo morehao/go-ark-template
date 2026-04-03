@@ -1,9 +1,12 @@
 package testsetup
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/gin-gonic/gin"
+	"github.com/morehao/goark/apps/iam/iamdao"
+	"github.com/morehao/golib/biz/gcontext"
 	"github.com/morehao/golib/biz/testkit"
 )
 
@@ -57,29 +60,33 @@ func Done(appName string) {
 	Close(appName)
 }
 
-type Option = testkit.Option
-
-var (
-	WithUserID            = testkit.WithUserID
-	WithCompanyID         = testkit.WithCompanyID
-	WithRequestID         = testkit.WithRequestID
-	WithKeyValue          = testkit.WithKeyValue
-	WithHeader            = testkit.WithHeader
-	WithHeaders           = testkit.WithHeaders
-	WithMethod            = testkit.WithMethod
-	WithURL               = testkit.WithURL
-	WithQueryParam        = testkit.WithQueryParam
-	WithQueryParams       = testkit.WithQueryParams
-	WithContentType       = testkit.WithContentType
-	WithJSON              = testkit.WithJSON
-	WithFormData          = testkit.WithFormData
-	WithMultipartFormData = testkit.WithMultipartFormData
-	WithAuth              = testkit.WithAuth
-	WithBearerToken       = testkit.WithBearerToken
-	WithClientIP          = testkit.WithClientIP
-	WithBody              = testkit.WithBody
-)
-
-func NewContext(opts ...Option) *gin.Context {
+func NewContext(opts ...testkit.Option) *gin.Context {
 	return testkit.NewContext(opts...)
+}
+
+func WithAuthByUserID(userID uint) testkit.Option {
+	return func(ctx *gin.Context) {
+		userEntity, err := iamdao.NewUserDao().GetByID(ctx, userID)
+		if err != nil {
+			panic(fmt.Sprintf("WithAuthByUserID: get user failed, userID=%d, err=%v", userID, err))
+		}
+		if userEntity == nil || userEntity.ID == 0 {
+			panic(fmt.Sprintf("WithAuthByUserID: user not found, userID=%d", userID))
+		}
+
+		ctx.Set(gcontext.KeyUserID, userID)
+		ctx.Set(gcontext.KeyTenantID, userEntity.TenantID)
+		ctx.Set(gcontext.KeyDeptID, userEntity.DeptID)
+		ctx.Set(gcontext.KeyPersonID, userEntity.PersonID)
+
+		if userEntity.TenantID > 0 {
+			tenantEntity, err := iamdao.NewTenantDao().GetByID(ctx, userEntity.TenantID)
+			if err != nil {
+				panic(fmt.Sprintf("WithAuthByUserID: get tenant failed, tenantID=%d, err=%v", userEntity.TenantID, err))
+			}
+			if tenantEntity != nil && tenantEntity.OrganizationID > 0 {
+				ctx.Set(gcontext.KeyOrgID, tenantEntity.OrganizationID)
+			}
+		}
+	}
 }

@@ -22,4 +22,5 @@ func departmentRouter(routerGroup *gin.RouterGroup) {
 	routerGroup.POST("/department/update", departmentCtr.Update)
 	routerGroup.GET("/department/detail", departmentCtr.Detail)
 	routerGroup.POST("/department/pageList", departmentCtr.PageList)
+	routerGroup.GET("/department/tree", departmentCtr.Tree)
 }

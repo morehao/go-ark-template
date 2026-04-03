@@ -2,7 +2,7 @@ package svcorg
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam/core/organization"
+	org "github.com/morehao/goark/apps/iam/core/organization"
 	"github.com/morehao/goark/apps/iam/core/user"
 	"github.com/morehao/goark/apps/iam/iamdao"
 	"github.com/morehao/goark/apps/iam/iammodel"
@@ -58,13 +58,13 @@ func (svc *organizationSvc) Create(ctx *gin.Context, req *dtoorg.OrganizationCre
 		}
 
 		if req.Admin != nil && req.Admin.Username != "" {
-			platformTenant, err := organization.GetPlatformTenant(ctx)
+			platformTenant, err := org.GetPlatformTenant(ctx)
 			if err != nil || platformTenant == nil || platformTenant.ID == 0 {
 				glog.Errorf(ctx, "[svcorg.OrganizationCreate] GetPlatformTenant fail, err:%v", err)
 				return code.GetError(code.TenantCreateError)
 			}
 
-			platformDept, err := organization.GetPlatformDept(ctx, platformTenant.ID)
+			platformDept, err := org.GetPlatformDept(ctx, platformTenant.ID)
 			if err != nil || platformDept == nil || platformDept.ID == 0 {
 				glog.Errorf(ctx, "[svcorg.OrganizationCreate] GetPlatformDept fail, err:%v", err)
 				return code.GetError(code.TenantCreateError)
@@ -110,9 +110,6 @@ func (svc *organizationSvc) Delete(ctx *gin.Context, req *dtoorg.OrganizationDel
 	if organizationEntity == nil || organizationEntity.ID == 0 {
 		return code.GetError(code.TenantNotExistError)
 	}
-	if err = organization.CheckOrganizationAccess(ctx, organizationEntity.ID); err != nil {
-		return err
-	}
 
 	if err = iamdao.NewOrganizationDao().Delete(ctx, req.ID, userID); err != nil {
 		glog.Errorf(ctx, "[svcorg.OrganizationDelete] daoOrganization Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
@@ -122,9 +119,6 @@ func (svc *organizationSvc) Delete(ctx *gin.Context, req *dtoorg.OrganizationDel
 }
 
 func (svc *organizationSvc) Update(ctx *gin.Context, req *dtoorg.OrganizationUpdateReq) error {
-	if err := organization.CheckOrganizationAccess(ctx, req.ID); err != nil {
-		return err
-	}
 	updateMap := map[string]any{
 		"domain":            req.Domain,
 		"logo":              req.Logo,
@@ -142,9 +136,6 @@ func (svc *organizationSvc) Update(ctx *gin.Context, req *dtoorg.OrganizationUpd
 }
 
 func (svc *organizationSvc) Detail(ctx *gin.Context, req *dtoorg.OrganizationDetailReq) (*dtoorg.OrganizationDetailResp, error) {
-	if err := organization.CheckOrganizationAccess(ctx, req.ID); err != nil {
-		return nil, err
-	}
 	organizationEntity, err := iamdao.NewOrganizationDao().GetByID(ctx, req.ID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.OrganizationDetail] daoOrganization GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
@@ -178,6 +169,7 @@ func (svc *organizationSvc) PageList(ctx *gin.Context, req *dtoorg.OrganizationP
 			Page:     req.Page,
 			PageSize: req.PageSize,
 		},
+		Name: req.Name,
 	}
 	organizationEntityList, total, err := iamdao.NewOrganizationDao().GetPageListByCond(ctx, cond)
 	if err != nil {

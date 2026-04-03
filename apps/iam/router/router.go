@@ -16,11 +16,12 @@ func RegisterRouter(groups *RouterGroups, appName string) {
 		ginrouter.RegisterSwagger(groups.AuthGroup, appName)
 	}
 	v1AuthGroup := groups.AuthGroup.Group("/v1")
+	iamGroup := v1AuthGroup.Group("/iam")
 	// v1NoAuth := groups.NoAuthGroup.Group("/v1")
-	organizationRouter(v1AuthGroup)
-	tenantRouter(v1AuthGroup)
-	departmentRouter(v1AuthGroup)
-	userRouter(v1AuthGroup)
-	menuRouter(v1AuthGroup)
-	roleRouter(v1AuthGroup)
+	organizationRouter(iamGroup)
+	tenantRouter(iamGroup)
+	departmentRouter(iamGroup)
+	userRouter(iamGroup)
+	menuRouter(iamGroup)
+	roleRouter(iamGroup)
 }

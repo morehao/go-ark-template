@@ -4,12 +4,10 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam/core/organization"
 	"github.com/morehao/goark/apps/iam/core/user"
 	"github.com/morehao/goark/apps/iam/iamdao"
 	"github.com/morehao/goark/apps/iam/iammodel"
 	"github.com/morehao/goark/apps/iam/internal/dto/dtouser"
-	"github.com/morehao/goark/apps/iam/internal/tenantctx"
 	"github.com/morehao/goark/apps/iam/object/objuser"
 	"github.com/morehao/goark/pkg/code"
 	"github.com/morehao/goark/pkg/dbclient"
@@ -27,6 +25,9 @@ type UserSvc interface {
 	Update(ctx *gin.Context, req *dtouser.UserUpdateReq) error
 	Detail(ctx *gin.Context, req *dtouser.UserDetailReq) (*dtouser.UserDetailResp, error)
 	PageList(ctx *gin.Context, req *dtouser.UserPageListReq) (*dtouser.UserPageListResp, error)
+	AssignDepartment(ctx *gin.Context, req *dtouser.UserDepartmentAssignReq) error
+	RemoveDepartment(ctx *gin.Context, req *dtouser.UserDepartmentRemoveReq) error
+	ListDepartments(ctx *gin.Context, req *dtouser.UserDepartmentsReq) (*dtouser.UserDepartmentsResp, error)
 }
 
 type userSvc struct {
@@ -40,7 +41,7 @@ func NewUserSvc() UserSvc {
 
 // Create 创建用户管理
 func (svc *userSvc) Create(ctx *gin.Context, req *dtouser.UserCreateReq) (*dtouser.UserCreateResp, error) {
-	tenantID := tenantctx.GetTenantID(ctx)
+	tenantID := gincontext.GetTenantID(ctx)
 	operatorID := gincontext.GetUserID(ctx)
 
 	primaryDeptID, err := svc.getOrCreatePrimaryDeptID(ctx, tenantID, req.PrimaryDeptID)
@@ -103,9 +104,6 @@ func (svc *userSvc) Delete(ctx *gin.Context, req *dtouser.UserDeleteReq) error {
 	if userEntity == nil || userEntity.ID == 0 {
 		return code.GetError(code.UserNotExistError)
 	}
-	if err = organization.CheckTenantAccess(ctx, userEntity.TenantID); err != nil {
-		return err
-	}
 
 	if err = iamdao.NewUserDao().Delete(ctx, req.ID, userID); err != nil {
 		glog.Errorf(ctx, "[svcuser.Delete] daoUser Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
@@ -123,9 +121,6 @@ func (svc *userSvc) Update(ctx *gin.Context, req *dtouser.UserUpdateReq) error {
 	}
 	if userEntity == nil || userEntity.ID == 0 {
 		return code.GetError(code.UserNotExistError)
-	}
-	if err = organization.CheckTenantAccess(ctx, userEntity.TenantID); err != nil {
-		return err
 	}
 	updateMap := map[string]any{
 		"dept_id":       req.DeptID,
@@ -156,9 +151,6 @@ func (svc *userSvc) Detail(ctx *gin.Context, req *dtouser.UserDetailReq) (*dtous
 	// 判断是否存在
 	if userEntity == nil || userEntity.ID == 0 {
 		return nil, code.GetError(code.UserNotExistError)
-	}
-	if err = organization.CheckTenantAccess(ctx, userEntity.TenantID); err != nil {
-		return nil, err
 	}
 	resp := &dtouser.UserDetailResp{
 		ID: userEntity.ID,
@@ -300,4 +292,136 @@ func (svc *userSvc) createUserDeptRelations(ctx *gin.Context, tx *gorm.DB, tenan
 		}
 	}
 	return nil
+}
+
+func (svc *userSvc) AssignDepartment(ctx *gin.Context, req *dtouser.UserDepartmentAssignReq) error {
+	operatorID := gincontext.GetUserID(ctx)
+	tenantID := gincontext.GetTenantID(ctx)
+
+	userEntity, err := iamdao.NewUserDao().GetByID(ctx, req.UserID)
+	if err != nil || userEntity == nil || userEntity.ID == 0 {
+		glog.Errorf(ctx, "[svcuser.AssignDepartment] user not found, userID:%d", req.UserID)
+		return code.GetError(code.UserNotExistError)
+	}
+
+	deptEntity, err := iamdao.NewDepartmentDao().GetByID(ctx, req.DepartmentID)
+	if err != nil || deptEntity == nil || deptEntity.ID == 0 {
+		glog.Errorf(ctx, "[svcuser.AssignDepartment] department not found, departmentID:%d", req.DepartmentID)
+		return code.GetError(code.DepartmentNotExistError)
+	}
+
+	if deptEntity.TenantID != tenantID {
+		return code.GetError(code.TenantScopeForbiddenError)
+	}
+
+	userDeptDao := iamdao.NewUserDepartmentDao()
+	cond := &iamdao.UserDepartmentCond{
+		UserID:   req.UserID,
+		DeptID:   req.DepartmentID,
+		TenantID: tenantID,
+	}
+	existingDepts, _, err := userDeptDao.GetPageListByCond(ctx, cond)
+	if err != nil {
+		glog.Errorf(ctx, "[svcuser.AssignDepartment] GetPageListByCond fail, err:%v", err)
+		return code.GetError(code.UserUpdateError)
+	}
+
+	if len(existingDepts) > 0 {
+		return nil
+	}
+
+	deptType := iammodel.UserDeptType(req.DeptType)
+	if deptType == iammodel.UserDeptTypePrimary {
+		primaryCond := &iamdao.UserDepartmentCond{
+			UserID:   req.UserID,
+			TenantID: tenantID,
+			DeptType: iammodel.UserDeptTypePrimary,
+		}
+		primaryDepts, _, _ := userDeptDao.GetPageListByCond(ctx, primaryCond)
+		for _, pd := range primaryDepts {
+			updateMap := map[string]any{
+				"dept_type": iammodel.UserDeptTypeSecondary,
+			}
+			if err := userDeptDao.UpdateMap(ctx, pd.ID, updateMap); err != nil {
+				glog.Errorf(ctx, "[svcuser.AssignDepartment] update primary to secondary fail, err:%v", err)
+			}
+		}
+	}
+
+	userDeptEntity := &iammodel.UserDepartmentEntity{
+		TenantID:  tenantID,
+		UserID:    req.UserID,
+		DeptID:    req.DepartmentID,
+		DeptType:  deptType,
+		CreatedBy: operatorID,
+		UpdatedBy: operatorID,
+	}
+	if err := userDeptDao.Insert(ctx, userDeptEntity); err != nil {
+		glog.Errorf(ctx, "[svcuser.AssignDepartment] Insert fail, err:%v", err)
+		return code.GetError(code.UserUpdateError)
+	}
+
+	return nil
+}
+
+func (svc *userSvc) RemoveDepartment(ctx *gin.Context, req *dtouser.UserDepartmentRemoveReq) error {
+	tenantID := gincontext.GetTenantID(ctx)
+
+	userDeptDao := iamdao.NewUserDepartmentDao()
+	cond := &iamdao.UserDepartmentCond{
+		UserID:   req.UserID,
+		DeptID:   req.DepartmentID,
+		TenantID: tenantID,
+	}
+	existingDepts, _, err := userDeptDao.GetPageListByCond(ctx, cond)
+	if err != nil {
+		glog.Errorf(ctx, "[svcuser.RemoveDepartment] GetPageListByCond fail, err:%v", err)
+		return code.GetError(code.UserUpdateError)
+	}
+
+	if len(existingDepts) == 0 {
+		return nil
+	}
+
+	userID := gincontext.GetUserID(ctx)
+	for _, dept := range existingDepts {
+		if err := userDeptDao.Delete(ctx, dept.ID, userID); err != nil {
+			glog.Errorf(ctx, "[svcuser.RemoveDepartment] Delete fail, err:%v", err)
+			return code.GetError(code.UserUpdateError)
+		}
+	}
+
+	return nil
+}
+
+func (svc *userSvc) ListDepartments(ctx *gin.Context, req *dtouser.UserDepartmentsReq) (*dtouser.UserDepartmentsResp, error) {
+	tenantID := gincontext.GetTenantID(ctx)
+
+	userDeptDao := iamdao.NewUserDepartmentDao()
+	cond := &iamdao.UserDepartmentCond{
+		UserID:   req.UserID,
+		TenantID: tenantID,
+	}
+	userDepts, _, err := userDeptDao.GetPageListByCond(ctx, cond)
+	if err != nil {
+		glog.Errorf(ctx, "[svcuser.ListDepartments] GetPageListByCond fail, err:%v", err)
+		return nil, code.GetError(code.UserGetDetailError)
+	}
+
+	list := make([]dtouser.UserDepartmentItem, 0, len(userDepts))
+	for _, ud := range userDepts {
+		deptEntity, err := iamdao.NewDepartmentDao().GetByID(ctx, ud.DeptID)
+		if err != nil || deptEntity == nil {
+			continue
+		}
+		list = append(list, dtouser.UserDepartmentItem{
+			DepartmentID:   ud.DeptID,
+			DepartmentName: deptEntity.DeptName,
+			DeptType:       string(ud.DeptType),
+		})
+	}
+
+	return &dtouser.UserDepartmentsResp{
+		List: list,
+	}, nil
 }

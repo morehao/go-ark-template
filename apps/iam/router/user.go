@@ -5,7 +5,6 @@ import (
 	"github.com/morehao/goark/apps/iam/internal/controller/ctruser"
 )
 
-// userRouter 初始化用户管理路由信息
 func userRouter(routerGroup *gin.RouterGroup) {
 	userCtr := ctruser.NewUserCtr()
 
@@ -14,4 +13,7 @@ func userRouter(routerGroup *gin.RouterGroup) {
 	routerGroup.POST("/user/update", userCtr.Update)
 	routerGroup.GET("/user/detail", userCtr.Detail)
 	routerGroup.POST("/user/pageList", userCtr.PageList)
+	routerGroup.POST("/user/assignDepartment", userCtr.AssignDepartment)
+	routerGroup.POST("/user/removeDepartment", userCtr.RemoveDepartment)
+	routerGroup.GET("/user/listDepartments", userCtr.ListDepartments)
 }

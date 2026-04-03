@@ -76,12 +76,14 @@ func (i *baseAppInitializer) initResources() error {
 		}
 	}
 
-	var esLogConfig *glog.LogConfig
-	if c, ok := i.Log["es"]; ok {
-		esLogConfig = &c
-	}
-	if err := dbclient.InitMultiEs(i.ESConfigs, esLogConfig); err != nil {
-		return fmt.Errorf("init elasticsearch: %w", err)
+	if len(i.ESConfigs) > 0 {
+		var esLogConfig *glog.LogConfig
+		if c, ok := i.Log["es"]; ok {
+			esLogConfig = &c
+		}
+		if err := dbclient.InitMultiEs(i.ESConfigs, esLogConfig); err != nil {
+			return fmt.Errorf("init elasticsearch: %w", err)
+		}
 	}
 
 	return nil

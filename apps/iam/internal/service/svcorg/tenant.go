@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam/core/organization"
 	"github.com/morehao/goark/apps/iam/core/user"
 	"github.com/morehao/goark/apps/iam/iamdao"
 	"github.com/morehao/goark/apps/iam/iammodel"
@@ -133,9 +132,6 @@ func (svc *tenantSvc) Delete(ctx *gin.Context, req *dtoorg.TenantDeleteReq) erro
 	if tenantEntity == nil || tenantEntity.ID == 0 {
 		return code.GetError(code.TenantNotExistError)
 	}
-	if err = organization.CheckOrganizationAccess(ctx, tenantEntity.OrganizationID); err != nil {
-		return err
-	}
 
 	if err = iamdao.NewTenantDao().Delete(ctx, req.ID, userID); err != nil {
 		glog.Errorf(ctx, "[svcorg.Delete] daoTenant Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
@@ -152,9 +148,6 @@ func (svc *tenantSvc) Update(ctx *gin.Context, req *dtoorg.TenantUpdateReq) erro
 	}
 	if tenantEntity == nil || tenantEntity.ID == 0 {
 		return code.GetError(code.TenantNotExistError)
-	}
-	if err = organization.CheckOrganizationAccess(ctx, tenantEntity.OrganizationID); err != nil {
-		return err
 	}
 	updateMap := map[string]any{
 		"address":                    req.Address,
@@ -185,9 +178,6 @@ func (svc *tenantSvc) Detail(ctx *gin.Context, req *dtoorg.TenantDetailReq) (*dt
 	if tenantEntity == nil || tenantEntity.ID == 0 {
 		return nil, code.GetError(code.TenantNotExistError)
 	}
-	if err = organization.CheckOrganizationAccess(ctx, tenantEntity.OrganizationID); err != nil {
-		return nil, err
-	}
 	resp := &dtoorg.TenantDetailResp{
 		ID: tenantEntity.ID,
 		TenantBaseInfo: objorg.TenantBaseInfo{
@@ -212,12 +202,21 @@ func (svc *tenantSvc) Detail(ctx *gin.Context, req *dtoorg.TenantDetailReq) (*dt
 }
 
 func (svc *tenantSvc) PageList(ctx *gin.Context, req *dtoorg.TenantPageListReq) (*dtoorg.TenantPageListResp, error) {
+	tenantID := gincontext.GetTenantID(ctx)
+
+	isPlatformAdmin := gincontext.GetUserType(ctx) == "platform_admin"
+
 	cond := &iamdao.TenantCond{
 		BaseCond: &genericdao.BaseCond{
 			Page:     req.Page,
 			PageSize: req.PageSize,
 		},
 	}
+
+	if !isPlatformAdmin && tenantID > 0 {
+		cond.ID = tenantID
+	}
+
 	tenantEntityList, total, err := iamdao.NewTenantDao().GetPageListByCond(ctx, cond)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.TenantPageList] daoTenant GetPageListByCond fail, err:%v, req:%s", err, gutil.ToJsonString(req))

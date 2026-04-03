@@ -2,7 +2,6 @@ package svcpermission
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam/core/organization"
 	"github.com/morehao/goark/apps/iam/iamdao"
 	"github.com/morehao/goark/apps/iam/iammodel"
 	"github.com/morehao/goark/apps/iam/internal/dto/dtopermission"
@@ -70,9 +69,6 @@ func (svc *menuSvc) Delete(ctx *gin.Context, req *dtopermission.MenuDeleteReq) e
 	if menuEntity == nil || menuEntity.ID == 0 {
 		return code.GetError(code.MenuNotExistError)
 	}
-	if err = organization.CheckTenantAccess(ctx, menuEntity.TenantID); err != nil {
-		return err
-	}
 
 	if err = iamdao.NewMenuDao().Delete(ctx, req.ID, userID); err != nil {
 		glog.Errorf(ctx, "[svcpermission.Delete] daoMenu Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
@@ -90,9 +86,6 @@ func (svc *menuSvc) Update(ctx *gin.Context, req *dtopermission.MenuUpdateReq) e
 	}
 	if menuEntity == nil || menuEntity.ID == 0 {
 		return code.GetError(code.MenuNotExistError)
-	}
-	if err = organization.CheckTenantAccess(ctx, menuEntity.TenantID); err != nil {
-		return err
 	}
 	updateMap := map[string]any{
 		"cache_type":     req.CacheType,
@@ -126,9 +119,6 @@ func (svc *menuSvc) Detail(ctx *gin.Context, req *dtopermission.MenuDetailReq) (
 	// 判断是否存在
 	if menuEntity == nil || menuEntity.ID == 0 {
 		return nil, code.GetError(code.MenuNotExistError)
-	}
-	if err = organization.CheckTenantAccess(ctx, menuEntity.TenantID); err != nil {
-		return nil, err
 	}
 	resp := &dtopermission.MenuDetailResp{
 		ID: menuEntity.ID,

@@ -46,6 +46,17 @@ type DepartmentPageListResp struct {
 	Total int64                    `json:"total"`
 }
 
+type DepartmentTreeNode struct {
+	ID uint `json:"id"`
+	objorg.DepartmentBaseInfo
+	gobject.OperatorBaseInfo
+	Children []DepartmentTreeNode `json:"children"`
+}
+
+type DepartmentTreeResp struct {
+	List []DepartmentTreeNode `json:"list"`
+}
+
 type OrganizationCreateResp struct {
 	ID      uint `json:"id"`
 	AdminID uint `json:"adminID"`

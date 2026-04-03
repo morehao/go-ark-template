@@ -181,6 +181,46 @@ func (ctr *userCtr) Create(ctx *gin.Context) {
 }
 ```
 
+### API 路由规范
+
+- **路径格式**: `/{版本}/{app}/{模块}/{操作}`，如 `/v1/iam/user/create`
+- **版本号**: 放在路径最前，使用 `/v1/`, `/v2/` 等格式
+- **App 标识**: 用于区分不同应用，如 `iam`, `demo`
+- **模块名**: 对应业务模块，如 `user`, `role`, `menu`
+- **操作名**: 使用驼峰命名，如 `create`, `update`, `detail`, `pageList`, `assignDepartment`
+
+**路由层级限制为4层**，避免使用多层嵌套路径。
+
+#### 路由示例
+
+| 模块 | 操作 | 完整路径 |
+|------|------|----------|
+| user | 创建 | `/v1/iam/user/create` |
+| user | 分配部门 | `/v1/iam/user/assignDepartment` |
+| role | 列表 | `/v1/iam/role/pageList` |
+
+#### 路由注册
+
+在 `router/router.go` 中注册路由，先按版本分组，再按应用分组：
+
+```go
+v1AuthGroup := groups.AuthGroup.Group("/v1")
+iamGroup := v1AuthGroup.Group("/iam")
+
+userRouter(iamGroup)
+roleRouter(iamGroup)
+```
+
+在各个路由文件中使用 gin 的路由注册方法：
+
+```go
+func userRouter(routerGroup *gin.RouterGroup) {
+    routerGroup.POST("/user/create", userCtr.Create)
+    routerGroup.POST("/user/delete", userCtr.Delete)
+    routerGroup.GET("/user/detail", userCtr.Detail)
+}
+```
+
 ### Swagger 文档
 
 使用 Swag Go 注解，需包含以下注释：
@@ -192,7 +232,7 @@ func (ctr *userCtr) Create(ctx *gin.Context) {
 // @Produce application/json
 // @Param req body dtouser.UserCreateReq true "创建用户管理"
 // @Success 200 {object} gincontext.DtoRender{data=dtouser.UserCreateResp}
-// @Router /demo/v1/user/create [post]
+// @Router /v1/demo/user/create [post]
 ```
 
 生成文档：

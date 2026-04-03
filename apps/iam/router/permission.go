@@ -5,7 +5,6 @@ import (
 	"github.com/morehao/goark/apps/iam/internal/controller/ctrpermission"
 )
 
-// menuRouter 初始化菜单管理路由信息
 func menuRouter(routerGroup *gin.RouterGroup) {
 	menuCtr := ctrpermission.NewMenuCtr()
 
@@ -16,7 +15,6 @@ func menuRouter(routerGroup *gin.RouterGroup) {
 	routerGroup.POST("/menu/pageList", menuCtr.PageList)
 }
 
-// roleRouter 初始化角色管理路由信息
 func roleRouter(routerGroup *gin.RouterGroup) {
 	roleCtr := ctrpermission.NewRoleCtr()
 	routerGroup.POST("/role/create", roleCtr.Create)

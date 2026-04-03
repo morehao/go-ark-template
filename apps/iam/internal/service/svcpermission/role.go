@@ -2,7 +2,6 @@ package svcpermission
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam/core/organization"
 	"github.com/morehao/goark/apps/iam/iamdao"
 	"github.com/morehao/goark/apps/iam/iammodel"
 	"github.com/morehao/goark/apps/iam/internal/dto/dtopermission"
@@ -64,9 +63,6 @@ func (svc *roleSvc) Delete(ctx *gin.Context, req *dtopermission.RoleDeleteReq) e
 	if roleEntity == nil || roleEntity.ID == 0 {
 		return code.GetError(code.RoleNotExistError)
 	}
-	if err = organization.CheckTenantAccess(ctx, roleEntity.TenantID); err != nil {
-		return err
-	}
 
 	if err = iamdao.NewRoleDao().Delete(ctx, req.ID, userID); err != nil {
 		glog.Errorf(ctx, "[svcpermission.Delete] daoRole Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
@@ -84,9 +80,6 @@ func (svc *roleSvc) Update(ctx *gin.Context, req *dtopermission.RoleUpdateReq) e
 	}
 	if roleEntity == nil || roleEntity.ID == 0 {
 		return code.GetError(code.RoleNotExistError)
-	}
-	if err = organization.CheckTenantAccess(ctx, roleEntity.TenantID); err != nil {
-		return err
 	}
 	updateMap := map[string]any{
 		"data_scope":  req.DataScope,
@@ -114,9 +107,6 @@ func (svc *roleSvc) Detail(ctx *gin.Context, req *dtopermission.RoleDetailReq) (
 	// 判断是否存在
 	if roleEntity == nil || roleEntity.ID == 0 {
 		return nil, code.GetError(code.RoleNotExistError)
-	}
-	if err = organization.CheckTenantAccess(ctx, roleEntity.TenantID); err != nil {
-		return nil, err
 	}
 	resp := &dtopermission.RoleDetailResp{
 		ID: roleEntity.ID,

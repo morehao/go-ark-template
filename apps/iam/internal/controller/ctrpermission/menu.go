@@ -34,7 +34,7 @@ func NewMenuCtr() MenuCtr {
 // @Produce application/json
 // @Param req body dtopermission.MenuCreateReq true "创建菜单管理"
 // @Success 200 {object} gincontext.DtoRender{data=dtopermission.MenuCreateResp} "{"code": 0,"data": "ok","msg": "success"}"
-// @Router /iam/v1/menu/create [post]
+// @Router /v1/iam/menu/create [post]
 func (ctr *menuCtr) Create(ctx *gin.Context) {
 	var req dtopermission.MenuCreateReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -57,7 +57,7 @@ func (ctr *menuCtr) Create(ctx *gin.Context) {
 // @Produce application/json
 // @Param req body dtopermission.MenuDeleteReq true "删除菜单管理"
 // @Success 200 {object} gincontext.DtoRender{data=string} "{"code": 0,"data": "ok","msg": "删除成功"}"
-// @Router /iam/v1/menu/delete [post]
+// @Router /v1/iam/menu/delete [post]
 func (ctr *menuCtr) Delete(ctx *gin.Context) {
 	var req dtopermission.MenuDeleteReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -80,7 +80,7 @@ func (ctr *menuCtr) Delete(ctx *gin.Context) {
 // @Produce application/json
 // @Param req body dtopermission.MenuUpdateReq true "修改菜单管理"
 // @Success 200 {object} gincontext.DtoRender{data=string} "{"code": 0,"data": "ok","msg": "修改成功"}"
-// @Router /iam/v1/menu/update [post]
+// @Router /v1/iam/menu/update [post]
 func (ctr *menuCtr) Update(ctx *gin.Context) {
 	var req dtopermission.MenuUpdateReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -102,7 +102,7 @@ func (ctr *menuCtr) Update(ctx *gin.Context) {
 // @Produce application/json
 // @Param req query dtopermission.MenuDetailReq true "菜单管理详情"
 // @Success 200 {object} gincontext.DtoRender{data=dtopermission.MenuDetailResp} "{"code": 0,"data": "ok","msg": "success"}"
-// @Router /iam/v1/menu/detail [get]
+// @Router /v1/iam/menu/detail [get]
 func (ctr *menuCtr) Detail(ctx *gin.Context) {
 	var req dtopermission.MenuDetailReq
 	if err := ctx.ShouldBindQuery(&req); err != nil {
@@ -125,7 +125,7 @@ func (ctr *menuCtr) Detail(ctx *gin.Context) {
 // @Produce application/json
 // @Param req query dtopermission.MenuPageListReq true "菜单管理列表"
 // @Success 200 {object} gincontext.DtoRender{data=dtopermission.MenuPageListResp} "{"code": 0,"data": "ok","msg": "success"}"
-// @Router /iam/v1/menu/pageList [post]
+// @Router /v1/iam/menu/pageList [post]
 func (ctr *menuCtr) PageList(ctx *gin.Context) {
 	var req dtopermission.MenuPageListReq
 	if err := ctx.ShouldBindQuery(&req); err != nil {
