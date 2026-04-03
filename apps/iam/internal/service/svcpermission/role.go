@@ -189,7 +189,7 @@ func (svc *roleSvc) AssignMenus(ctx *gin.Context, req *dtopermission.RoleAssignM
 		roleMenuDao := iamdao.NewRoleMenuDao().WithTx(tx)
 
 		// 删除该角色的所有已有菜单关联
-		existingList, err := iamdao.NewRoleMenuDao().GetListByCond(ctx, &iamdao.RoleMenuCond{
+		existingList, err := roleMenuDao.GetListByCond(ctx, &iamdao.RoleMenuCond{
 			RoleID:   req.RoleID,
 			TenantID: tenantID,
 		})

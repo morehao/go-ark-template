@@ -27,6 +27,7 @@ const (
 )
 
 // JWTCustomData JWT自定义数据，字段名需与ginmiddleware.JWTAuth解析后设置到gin.Context的key一致
+// 注意：在多租户登录的临时token中，UserID字段存储的是personID，TenantID为0，UserType为"temp"
 type JWTCustomData struct {
 	UserID   uint   `json:"userId"`
 	UserType string `json:"userType"`
@@ -206,7 +207,7 @@ func (svc *authSvc) Logout(ctx *gin.Context) error {
 		return nil
 	}
 
-	key := tokenBlacklistKeyPrefix + svc.hashToken(token)
+	key := tokenBlacklistKeyPrefix + hashToken(token)
 	if err := dbclient.RedisCli.Set(ctx.Request.Context(), key, "1", tokenExpireDuration).Err(); err != nil {
 		glog.Errorf(ctx, "[svcauth.Logout] Redis Set fail, err:%v", err)
 		return code.GetError(code.AuthLogoutError)
@@ -223,8 +224,7 @@ func IsTokenBlacklisted(ctx *gin.Context, token string) bool {
 	if token == "" {
 		return false
 	}
-	h := sha256.Sum256([]byte(token))
-	key := tokenBlacklistKeyPrefix + fmt.Sprintf("%x", h)
+	key := tokenBlacklistKeyPrefix + hashToken(token)
 	exists, err := dbclient.RedisCli.Exists(ctx.Request.Context(), key).Result()
 	if err != nil {
 		return false
@@ -353,7 +353,7 @@ func (svc *authSvc) updateLoginInfo(ctx *gin.Context, userEntity *iammodel.UserE
 	}
 }
 
-func (svc *authSvc) hashToken(token string) string {
+func hashToken(token string) string {
 	h := sha256.Sum256([]byte(token))
 	return fmt.Sprintf("%x", h)
 }

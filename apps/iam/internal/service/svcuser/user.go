@@ -445,7 +445,7 @@ func (svc *userSvc) AssignRoles(ctx *gin.Context, req *dtouser.UserAssignRolesRe
 		userRoleDao := iamdao.NewUserRoleDao().WithTx(tx)
 
 		// 删除该用户的所有已有角色关联
-		existingList, err := iamdao.NewUserRoleDao().GetListByCond(ctx, &iamdao.UserRoleCond{
+		existingList, err := userRoleDao.GetListByCond(ctx, &iamdao.UserRoleCond{
 			UserID:   req.UserID,
 			TenantID: tenantID,
 		})
