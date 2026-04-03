@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/morehao/goark/apps/demo/config"
-	"github.com/morehao/golib/biz/testkit"
+	"github.com/morehao/goark/pkg/testkit"
 )
 
 type demoappInitializer struct {

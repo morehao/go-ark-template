@@ -6,7 +6,7 @@ import (
 	"github.com/morehao/goark/apps/iam/iamdao"
 	"github.com/morehao/goark/apps/iam/iammodel"
 	"github.com/morehao/goark/pkg/code"
-	"github.com/morehao/golib/gcrypto"
+	"github.com/morehao/goark/pkg/cryptoutil"
 	"github.com/morehao/golib/glog"
 	"gorm.io/gorm"
 )
@@ -95,7 +95,7 @@ func GeneratePassword(identities ...string) (string, error) {
 	if suffix == "" {
 		return "", code.GetError(code.PersonCreateError)
 	}
-	hash, err := gcrypto.GeneratePasswordHash(prefix + suffix)
+	hash, err := cryptoutil.GeneratePasswordHash(prefix + suffix)
 	if err != nil {
 		return "", code.GetError(code.PersonCreateError)
 	}

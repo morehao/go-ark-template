@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/morehao/goark/apps/iam/config"
-	"github.com/morehao/golib/biz/testkit"
+	"github.com/morehao/goark/pkg/testkit"
 )
 
 type iamappInitializer struct {

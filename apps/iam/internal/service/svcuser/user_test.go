@@ -5,7 +5,7 @@ import (
 
 	"github.com/morehao/goark/apps/iam/internal/dto/dtouser"
 	"github.com/morehao/goark/pkg/testsetup"
-	"github.com/morehao/golib/gcrypto"
+	"github.com/morehao/goark/pkg/cryptoutil"
 	"github.com/morehao/golib/gutil"
 	"github.com/stretchr/testify/assert"
 )
@@ -14,7 +14,7 @@ func TestGeneratePassword(t *testing.T) {
 	email := "admin@platform.com"
 	plainPassword := "pwd" + email
 
-	hash, err := gcrypto.GeneratePasswordHash(plainPassword)
+	hash, err := cryptoutil.GeneratePasswordHash(plainPassword)
 	if err != nil {
 		t.Fatalf("GeneratePasswordHash failed: %v", err)
 	}
@@ -23,7 +23,7 @@ func TestGeneratePassword(t *testing.T) {
 	t.Logf("Plain password: %s", plainPassword)
 	t.Logf("Password hash: %s", hash)
 
-	if err := gcrypto.ComparePasswordHash(hash, plainPassword); err != nil {
+	if err := cryptoutil.ComparePasswordHash(hash, plainPassword); err != nil {
 		t.Errorf("ComparePasswordHash failed: %v", err)
 	}
 }

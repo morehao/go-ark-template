@@ -10,7 +10,7 @@ import (
 
 	"github.com/morehao/goark/pkg/code"
 	"github.com/morehao/goark/pkg/dbclient"
-	"github.com/morehao/golib/biz/gcontext"
+	"github.com/morehao/goark/pkg/contextkeys"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
@@ -44,19 +44,19 @@ func GetScope(ctx context.Context) (Scope, bool) {
 	var scope Scope
 	ok := false
 
-	if v := ctx.Value(gcontext.KeyTenantID); v != nil {
+	if v := ctx.Value(contextkeys.KeyTenantID); v != nil {
 		if id, found := readUintValue(v); found {
 			scope.TenantID = id
 			ok = true
 		}
 	}
-	if v := ctx.Value(gcontext.KeyOrgID); v != nil {
+	if v := ctx.Value(contextkeys.KeyOrgID); v != nil {
 		if id, found := readUintValue(v); found {
 			scope.OrganizationID = id
 			ok = true
 		}
 	}
-	if v := ctx.Value(gcontext.KeyUserType); v != nil {
+	if v := ctx.Value(contextkeys.KeyUserType); v != nil {
 		if ut, found := readStringValue(v); found {
 			scope.UserType = ut
 		}

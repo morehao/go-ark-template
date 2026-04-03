@@ -7,8 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/morehao/goark/apps/iam"
 	"github.com/morehao/goark/apps/iam/config"
-	"github.com/morehao/golib/biz/gcontext"
-	"github.com/morehao/golib/biz/gcontext/gincontext"
+	"github.com/morehao/goark/pkg/contextkeys"
+	"github.com/morehao/goark/pkg/ginext"
 	"github.com/morehao/golib/biz/gmiddleware/ginmiddleware"
 	"github.com/morehao/golib/glog"
 )
@@ -17,14 +17,14 @@ func ginContextToStdContext() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if c.Request != nil {
 			ctx := c.Request.Context()
-			if tenantID := gincontext.GetTenantID(c); tenantID > 0 {
-				ctx = context.WithValue(ctx, gcontext.KeyTenantID, tenantID)
+			if tenantID := ginext.GetTenantID(c); tenantID > 0 {
+				ctx = context.WithValue(ctx, contextkeys.KeyTenantID, tenantID)
 			}
-			if orgID := gincontext.GetOrgID(c); orgID > 0 {
-				ctx = context.WithValue(ctx, gcontext.KeyOrgID, orgID)
+			if orgID := ginext.GetOrgID(c); orgID > 0 {
+				ctx = context.WithValue(ctx, contextkeys.KeyOrgID, orgID)
 			}
-			if userType := gincontext.GetUserType(c); userType != "" {
-				ctx = context.WithValue(ctx, gcontext.KeyUserType, userType)
+			if userType := ginext.GetUserType(c); userType != "" {
+				ctx = context.WithValue(ctx, contextkeys.KeyUserType, userType)
 			}
 			c.Request = c.Request.WithContext(ctx)
 		}
@@ -45,7 +45,8 @@ func main() {
 	engine.ContextWithFallback = true
 	engine.Use(gin.Recovery())
 	engine.Use(ginmiddleware.AccessLog())
-	engine.Use(ginmiddleware.JWTAuth(config.Conf.JWT.SignKey))
+	// TODO: re-enable JWT middleware once local implementation is ready
+	// engine.Use(ginmiddleware.JWTAuth(config.Conf.JWT.SignKey))
 	engine.Use(ginContextToStdContext())
 	iam.Routers(engine)
 

@@ -11,6 +11,7 @@ import (
 	"github.com/morehao/goark/apps/iam/object/objuser"
 	"github.com/morehao/goark/pkg/code"
 	"github.com/morehao/goark/pkg/dbclient"
+	"github.com/morehao/goark/pkg/ginext"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
 	"github.com/morehao/golib/biz/genericdao"
 	"github.com/morehao/golib/biz/gobject"
@@ -41,7 +42,7 @@ func NewUserSvc() UserSvc {
 
 // Create 创建用户管理
 func (svc *userSvc) Create(ctx *gin.Context, req *dtouser.UserCreateReq) (*dtouser.UserCreateResp, error) {
-	tenantID := gincontext.GetTenantID(ctx)
+	tenantID := ginext.GetTenantID(ctx)
 	operatorID := gincontext.GetUserID(ctx)
 
 	primaryDeptID, err := svc.getOrCreatePrimaryDeptID(ctx, tenantID, req.PrimaryDeptID)
@@ -296,7 +297,7 @@ func (svc *userSvc) createUserDeptRelations(ctx *gin.Context, tx *gorm.DB, tenan
 
 func (svc *userSvc) AssignDepartment(ctx *gin.Context, req *dtouser.UserDepartmentAssignReq) error {
 	operatorID := gincontext.GetUserID(ctx)
-	tenantID := gincontext.GetTenantID(ctx)
+	tenantID := ginext.GetTenantID(ctx)
 
 	userEntity, err := iamdao.NewUserDao().GetByID(ctx, req.UserID)
 	if err != nil || userEntity == nil || userEntity.ID == 0 {
@@ -365,7 +366,7 @@ func (svc *userSvc) AssignDepartment(ctx *gin.Context, req *dtouser.UserDepartme
 }
 
 func (svc *userSvc) RemoveDepartment(ctx *gin.Context, req *dtouser.UserDepartmentRemoveReq) error {
-	tenantID := gincontext.GetTenantID(ctx)
+	tenantID := ginext.GetTenantID(ctx)
 
 	userDeptDao := iamdao.NewUserDepartmentDao()
 	cond := &iamdao.UserDepartmentCond{
@@ -395,7 +396,7 @@ func (svc *userSvc) RemoveDepartment(ctx *gin.Context, req *dtouser.UserDepartme
 }
 
 func (svc *userSvc) ListDepartments(ctx *gin.Context, req *dtouser.UserDepartmentsReq) (*dtouser.UserDepartmentsResp, error) {
-	tenantID := gincontext.GetTenantID(ctx)
+	tenantID := ginext.GetTenantID(ctx)
 
 	userDeptDao := iamdao.NewUserDepartmentDao()
 	cond := &iamdao.UserDepartmentCond{

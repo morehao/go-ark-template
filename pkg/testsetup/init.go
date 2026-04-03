@@ -6,8 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/morehao/goark/apps/iam/iamdao"
-	"github.com/morehao/golib/biz/gcontext"
-	"github.com/morehao/golib/biz/testkit"
+	"github.com/morehao/goark/pkg/contextkeys"
+	"github.com/morehao/goark/pkg/testkit"
 )
 
 type Initializer = testkit.Initializer
@@ -74,10 +74,10 @@ func WithAuthByUserID(userID uint) testkit.Option {
 			panic(fmt.Sprintf("WithAuthByUserID: user not found, userID=%d", userID))
 		}
 
-		ctx.Set(gcontext.KeyUserID, userID)
-		ctx.Set(gcontext.KeyTenantID, userEntity.TenantID)
-		ctx.Set(gcontext.KeyDeptID, userEntity.DeptID)
-		ctx.Set(gcontext.KeyPersonID, userEntity.PersonID)
+		ctx.Set(string(contextkeys.KeyUserID), userID)
+		ctx.Set(string(contextkeys.KeyTenantID), userEntity.TenantID)
+		ctx.Set(string(contextkeys.KeyDeptID), userEntity.DeptID)
+		ctx.Set(string(contextkeys.KeyPersonID), userEntity.PersonID)
 
 		if userEntity.TenantID > 0 {
 			tenantEntity, err := iamdao.NewTenantDao().GetByID(ctx, userEntity.TenantID)
@@ -85,7 +85,7 @@ func WithAuthByUserID(userID uint) testkit.Option {
 				panic(fmt.Sprintf("WithAuthByUserID: get tenant failed, tenantID=%d, err=%v", userEntity.TenantID, err))
 			}
 			if tenantEntity != nil && tenantEntity.OrganizationID > 0 {
-				ctx.Set(gcontext.KeyOrgID, tenantEntity.OrganizationID)
+				ctx.Set(string(contextkeys.KeyOrgID), tenantEntity.OrganizationID)
 			}
 		}
 	}

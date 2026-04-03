@@ -12,6 +12,7 @@ import (
 	"github.com/morehao/goark/apps/iam/object/objorg"
 	"github.com/morehao/goark/pkg/code"
 	"github.com/morehao/goark/pkg/dbclient"
+	"github.com/morehao/goark/pkg/ginext"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
 	"github.com/morehao/golib/biz/genericdao"
 	"github.com/morehao/golib/biz/gobject"
@@ -202,9 +203,9 @@ func (svc *tenantSvc) Detail(ctx *gin.Context, req *dtoorg.TenantDetailReq) (*dt
 }
 
 func (svc *tenantSvc) PageList(ctx *gin.Context, req *dtoorg.TenantPageListReq) (*dtoorg.TenantPageListResp, error) {
-	tenantID := gincontext.GetTenantID(ctx)
+	tenantID := ginext.GetTenantID(ctx)
 
-	isPlatformAdmin := gincontext.GetUserType(ctx) == "platform_admin"
+	isPlatformAdmin := ginext.GetUserType(ctx) == "platform_admin"
 
 	cond := &iamdao.TenantCond{
 		BaseCond: &genericdao.BaseCond{

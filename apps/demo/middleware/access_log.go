@@ -73,7 +73,7 @@ func AccessLog() gin.HandlerFunc {
 
 		keysAndValues := []interface{}{
 			glog.KeyHost, ctx.Request.Host,
-			glog.KeyClientIp, gincontext.GetClientIP(ctx),
+			glog.KeyClientIp, gincontext.GetClientIp(ctx),
 			glog.KeyHandle, ctx.HandlerName(),
 			glog.KeyProto, ctx.Request.Proto,
 			glog.KeyRefer, ctx.Request.Referer(),

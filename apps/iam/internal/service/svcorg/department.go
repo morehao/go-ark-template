@@ -9,6 +9,7 @@ import (
 	"github.com/morehao/goark/apps/iam/internal/dto/dtoorg"
 	"github.com/morehao/goark/apps/iam/object/objorg"
 	"github.com/morehao/goark/pkg/code"
+	"github.com/morehao/goark/pkg/ginext"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
 	"github.com/morehao/golib/biz/genericdao"
 	"github.com/morehao/golib/biz/gobject"
@@ -38,7 +39,7 @@ func NewDepartmentSvc() DepartmentSvc {
 func (svc *departmentSvc) Create(ctx *gin.Context, req *dtoorg.DepartmentCreateReq) (*dtoorg.DepartmentCreateResp, error) {
 	operatorID := gincontext.GetUserID(ctx)
 
-	tenantID := gincontext.GetTenantID(ctx)
+	tenantID := ginext.GetTenantID(ctx)
 
 	var deptLevel int32 = 1
 	var deptPath string = "/"
@@ -169,7 +170,7 @@ func (svc *departmentSvc) Detail(ctx *gin.Context, req *dtoorg.DepartmentDetailR
 
 // PageList 分页获取部门管理列表
 func (svc *departmentSvc) PageList(ctx *gin.Context, req *dtoorg.DepartmentPageListReq) (*dtoorg.DepartmentPageListResp, error) {
-	tenantID := gincontext.GetTenantID(ctx)
+	tenantID := ginext.GetTenantID(ctx)
 
 	cond := &iamdao.DepartmentCond{
 		BaseCond: &genericdao.BaseCond{
@@ -210,7 +211,7 @@ func (svc *departmentSvc) PageList(ctx *gin.Context, req *dtoorg.DepartmentPageL
 }
 
 func (svc *departmentSvc) Tree(ctx *gin.Context, req *dtoorg.DepartmentTreeReq) (*dtoorg.DepartmentTreeResp, error) {
-	tenantID := gincontext.GetTenantID(ctx)
+	tenantID := ginext.GetTenantID(ctx)
 
 	cond := &iamdao.DepartmentCond{
 		TenantID: tenantID,
