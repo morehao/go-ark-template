@@ -13,6 +13,8 @@ type RoleCtr interface {
 	Update(ctx *gin.Context)
 	Detail(ctx *gin.Context)
 	PageList(ctx *gin.Context)
+	AssignMenus(ctx *gin.Context)
+	ListMenus(ctx *gin.Context)
 }
 
 type roleCtr struct {
@@ -139,4 +141,47 @@ func (ctr *roleCtr) PageList(ctx *gin.Context) {
 	} else {
 		gincontext.Success(ctx, res)
 	}
+}
+
+// AssignMenus 角色分配菜单
+// @Tags 角色管理
+// @Summary 角色分配菜单
+// @accept application/json
+// @Produce application/json
+// @Param req body dtopermission.RoleAssignMenusReq true "角色分配菜单"
+// @Success 200 {object} gincontext.DtoRender{data=string} "{"code": 0,"data": "ok","msg": "分配成功"}"
+// @Router /v1/iam/role/assignMenus [post]
+func (ctr *roleCtr) AssignMenus(ctx *gin.Context) {
+	var req dtopermission.RoleAssignMenusReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	if err := ctr.roleSvc.AssignMenus(ctx, &req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	gincontext.Success(ctx, "分配成功")
+}
+
+// ListMenus 查询角色菜单列表
+// @Tags 角色管理
+// @Summary 查询角色菜单列表
+// @accept application/json
+// @Produce application/json
+// @Param req query dtopermission.RoleListMenusReq true "查询角色菜单"
+// @Success 200 {object} gincontext.DtoRender{data=dtopermission.RoleMenuListResp} "{"code": 0,"data": "ok","msg": "success"}"
+// @Router /v1/iam/role/listMenus [get]
+func (ctr *roleCtr) ListMenus(ctx *gin.Context) {
+	var req dtopermission.RoleListMenusReq
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	res, err := ctr.roleSvc.ListMenus(ctx, &req)
+	if err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	gincontext.Success(ctx, res)
 }

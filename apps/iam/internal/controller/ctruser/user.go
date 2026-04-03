@@ -16,6 +16,9 @@ type UserCtr interface {
 	AssignDepartment(ctx *gin.Context)
 	RemoveDepartment(ctx *gin.Context)
 	ListDepartments(ctx *gin.Context)
+	AssignRoles(ctx *gin.Context)
+	RemoveRoles(ctx *gin.Context)
+	ListRoles(ctx *gin.Context)
 }
 
 type userCtr struct {
@@ -201,6 +204,70 @@ func (ctr *userCtr) ListDepartments(ctx *gin.Context) {
 		return
 	}
 	res, err := ctr.userSvc.ListDepartments(ctx, &req)
+	if err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	gincontext.Success(ctx, res)
+}
+
+// AssignRoles 分配用户角色
+// @Tags 用户管理
+// @Summary 分配用户角色
+// @accept application/json
+// @Produce application/json
+// @Param req body dtouser.UserAssignRolesReq true "分配用户角色"
+// @Success 200 {object} gincontext.DtoRender{data=string} "{"code": 0,"data": "ok","msg": "分配成功"}"
+// @Router /v1/iam/user/assignRoles [post]
+func (ctr *userCtr) AssignRoles(ctx *gin.Context) {
+	var req dtouser.UserAssignRolesReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	if err := ctr.userSvc.AssignRoles(ctx, &req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	gincontext.Success(ctx, "分配成功")
+}
+
+// RemoveRoles 移除用户角色
+// @Tags 用户管理
+// @Summary 移除用户角色
+// @accept application/json
+// @Produce application/json
+// @Param req body dtouser.UserRemoveRolesReq true "移除用户角色"
+// @Success 200 {object} gincontext.DtoRender{data=string} "{"code": 0,"data": "ok","msg": "移除成功"}"
+// @Router /v1/iam/user/removeRoles [post]
+func (ctr *userCtr) RemoveRoles(ctx *gin.Context) {
+	var req dtouser.UserRemoveRolesReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	if err := ctr.userSvc.RemoveRoles(ctx, &req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	gincontext.Success(ctx, "移除成功")
+}
+
+// ListRoles 查询用户角色列表
+// @Tags 用户管理
+// @Summary 查询用户角色列表
+// @accept application/json
+// @Produce application/json
+// @Param req query dtouser.UserRolesReq true "查询用户角色列表"
+// @Success 200 {object} gincontext.DtoRender{data=dtouser.UserRolesResp} "{"code": 0,"data": "ok","msg": "success"}"
+// @Router /v1/iam/user/listRoles [get]
+func (ctr *userCtr) ListRoles(ctx *gin.Context) {
+	var req dtouser.UserRolesReq
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	res, err := ctr.userSvc.ListRoles(ctx, &req)
 	if err != nil {
 		gincontext.Fail(ctx, err)
 		return

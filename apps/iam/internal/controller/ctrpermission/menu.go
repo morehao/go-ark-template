@@ -13,6 +13,7 @@ type MenuCtr interface {
 	Update(ctx *gin.Context)
 	Detail(ctx *gin.Context)
 	PageList(ctx *gin.Context)
+	Tree(ctx *gin.Context)
 }
 
 type menuCtr struct {
@@ -139,4 +140,26 @@ func (ctr *menuCtr) PageList(ctx *gin.Context) {
 	} else {
 		gincontext.Success(ctx, res)
 	}
+}
+
+// Tree 获取菜单树
+// @Tags 菜单管理
+// @Summary 获取菜单树
+// @accept application/json
+// @Produce application/json
+// @Param req query dtopermission.MenuTreeReq true "菜单树"
+// @Success 200 {object} gincontext.DtoRender{data=dtopermission.MenuTreeResp} "{"code": 0,"data": "ok","msg": "success"}"
+// @Router /v1/iam/menu/tree [get]
+func (ctr *menuCtr) Tree(ctx *gin.Context) {
+	var req dtopermission.MenuTreeReq
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	res, err := ctr.menuSvc.Tree(ctx, &req)
+	if err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	gincontext.Success(ctx, res)
 }

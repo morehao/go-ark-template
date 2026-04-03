@@ -7,11 +7,13 @@ import (
 	"github.com/morehao/goark/apps/iam/internal/dto/dtopermission"
 	"github.com/morehao/goark/apps/iam/object/objpermission"
 	"github.com/morehao/goark/pkg/code"
+	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
 	"github.com/morehao/golib/biz/genericdao"
 	"github.com/morehao/golib/biz/gobject"
 	"github.com/morehao/golib/glog"
 	"github.com/morehao/golib/gutil"
+	"gorm.io/gorm"
 )
 
 type RoleSvc interface {
@@ -20,6 +22,8 @@ type RoleSvc interface {
 	Update(ctx *gin.Context, req *dtopermission.RoleUpdateReq) error
 	Detail(ctx *gin.Context, req *dtopermission.RoleDetailReq) (*dtopermission.RoleDetailResp, error)
 	PageList(ctx *gin.Context, req *dtopermission.RolePageListReq) (*dtopermission.RolePageListResp, error)
+	AssignMenus(ctx *gin.Context, req *dtopermission.RoleAssignMenusReq) error
+	ListMenus(ctx *gin.Context, req *dtopermission.RoleListMenusReq) (*dtopermission.RoleMenuListResp, error)
 }
 
 type roleSvc struct {
@@ -163,5 +167,118 @@ func (svc *roleSvc) PageList(ctx *gin.Context, req *dtopermission.RolePageListRe
 	return &dtopermission.RolePageListResp{
 		List:  list,
 		Total: total,
+	}, nil
+}
+
+// AssignMenus 角色分配菜单(全量替换)
+func (svc *roleSvc) AssignMenus(ctx *gin.Context, req *dtopermission.RoleAssignMenusReq) error {
+	operatorID := gincontext.GetUserID(ctx)
+	tenantID := gincontext.GetTenantID(ctx)
+
+	// 检查角色是否存在
+	roleEntity, err := iamdao.NewRoleDao().GetByID(ctx, req.RoleID)
+	if err != nil {
+		glog.Errorf(ctx, "[svcpermission.AssignMenus] daoRole GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+		return code.GetError(code.RoleUpdateError)
+	}
+	if roleEntity == nil || roleEntity.ID == 0 {
+		return code.GetError(code.RoleNotExistError)
+	}
+
+	txErr := dbclient.IamDB(ctx).Transaction(func(tx *gorm.DB) error {
+		roleMenuDao := iamdao.NewRoleMenuDao().WithTx(tx)
+
+		// 删除该角色的所有已有菜单关联
+		existingList, err := iamdao.NewRoleMenuDao().GetListByCond(ctx, &iamdao.RoleMenuCond{
+			RoleID:   req.RoleID,
+			TenantID: tenantID,
+		})
+		if err != nil {
+			glog.Errorf(ctx, "[svcpermission.AssignMenus] GetListByCond fail, err:%v, roleID:%d", err, req.RoleID)
+			return code.GetError(code.RoleUpdateError)
+		}
+		for _, existing := range existingList {
+			if err := roleMenuDao.Delete(ctx, existing.ID, operatorID); err != nil {
+				glog.Errorf(ctx, "[svcpermission.AssignMenus] Delete fail, err:%v, id:%d", err, existing.ID)
+				return code.GetError(code.RoleUpdateError)
+			}
+		}
+
+		// 批量插入新的菜单关联
+		for _, menuID := range req.MenuIDs {
+			entity := &iammodel.RoleMenuEntity{
+				TenantID:  tenantID,
+				RoleID:    req.RoleID,
+				MenuID:    menuID,
+				CreatedBy: operatorID,
+				UpdatedBy: operatorID,
+			}
+			if err := roleMenuDao.Insert(ctx, entity); err != nil {
+				glog.Errorf(ctx, "[svcpermission.AssignMenus] Insert fail, err:%v, roleID:%d, menuID:%d", err, req.RoleID, menuID)
+				return code.GetError(code.RoleUpdateError)
+			}
+		}
+		return nil
+	})
+	if txErr != nil {
+		glog.Errorf(ctx, "[svcpermission.AssignMenus] Transaction fail, err:%v", txErr)
+		return code.GetError(code.RoleUpdateError)
+	}
+	return nil
+}
+
+// ListMenus 查询角色已分配的菜单列表
+func (svc *roleSvc) ListMenus(ctx *gin.Context, req *dtopermission.RoleListMenusReq) (*dtopermission.RoleMenuListResp, error) {
+	// 查询角色是否存在
+	roleEntity, err := iamdao.NewRoleDao().GetByID(ctx, req.RoleID)
+	if err != nil {
+		glog.Errorf(ctx, "[svcpermission.ListMenus] daoRole GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+		return nil, code.GetError(code.RoleGetDetailError)
+	}
+	if roleEntity == nil || roleEntity.ID == 0 {
+		return nil, code.GetError(code.RoleNotExistError)
+	}
+
+	// 查询角色菜单关联
+	roleMenuList, err := iamdao.NewRoleMenuDao().GetListByCond(ctx, &iamdao.RoleMenuCond{
+		RoleID: req.RoleID,
+	})
+	if err != nil {
+		glog.Errorf(ctx, "[svcpermission.ListMenus] daoRoleMenu GetListByCond fail, err:%v, roleID:%d", err, req.RoleID)
+		return nil, code.GetError(code.RoleGetDetailError)
+	}
+
+	list := make([]dtopermission.RoleMenuListItem, 0, len(roleMenuList))
+	for _, rm := range roleMenuList {
+		menuEntity, err := iamdao.NewMenuDao().GetByID(ctx, rm.MenuID)
+		if err != nil || menuEntity == nil || menuEntity.ID == 0 {
+			continue
+		}
+		list = append(list, dtopermission.RoleMenuListItem{
+			ID: menuEntity.ID,
+			MenuBaseInfo: objpermission.MenuBaseInfo{
+				CacheType:     menuEntity.CacheType,
+				TenantID:      menuEntity.TenantID,
+				ComponentPath: menuEntity.ComponentPath,
+				Icon:          menuEntity.Icon,
+				LinkType:      menuEntity.LinkType,
+				MenuCode:      menuEntity.MenuCode,
+				MenuName:      menuEntity.MenuName,
+				MenuType:      menuEntity.MenuType,
+				ParentID:      menuEntity.ParentID,
+				Permission:    menuEntity.Permission,
+				RoutePath:     menuEntity.RoutePath,
+				SortOrder:     menuEntity.SortOrder,
+				Status:        menuEntity.Status,
+				Visibility:    menuEntity.Visibility,
+			},
+			OperatorBaseInfo: gobject.OperatorBaseInfo{
+				UpdatedAt: menuEntity.UpdatedAt.Unix(),
+			},
+		})
+	}
+
+	return &dtopermission.RoleMenuListResp{
+		List: list,
 	}, nil
 }

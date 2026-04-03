@@ -13,6 +13,7 @@ func menuRouter(routerGroup *gin.RouterGroup) {
 	routerGroup.POST("/menu/update", menuCtr.Update)
 	routerGroup.GET("/menu/detail", menuCtr.Detail)
 	routerGroup.POST("/menu/pageList", menuCtr.PageList)
+	routerGroup.GET("/menu/tree", menuCtr.Tree)
 }
 
 func roleRouter(routerGroup *gin.RouterGroup) {
@@ -22,4 +23,6 @@ func roleRouter(routerGroup *gin.RouterGroup) {
 	routerGroup.POST("/role/update", roleCtr.Update)
 	routerGroup.GET("/role/detail", roleCtr.Detail)
 	routerGroup.POST("/role/pageList", roleCtr.PageList)
+	routerGroup.POST("/role/assignMenus", roleCtr.AssignMenus)
+	routerGroup.GET("/role/listMenus", roleCtr.ListMenus)
 }

@@ -53,3 +53,25 @@ type UserDepartmentRemoveReq struct {
 type UserDepartmentsReq struct {
 	UserID uint `json:"userID" form:"userID" validate:"required" label:"用户ID"`
 }
+
+// UserAssignRolesReq 用户分配角色请求
+type UserAssignRolesReq struct {
+	// UserID 用户ID
+	UserID uint `json:"userId" validate:"required" label:"用户ID"`
+	// RoleIDs 角色ID列表
+	RoleIDs []uint `json:"roleIds" validate:"required" label:"角色ID列表"`
+}
+
+// UserRemoveRolesReq 用户移除角色请求
+type UserRemoveRolesReq struct {
+	// UserID 用户ID
+	UserID uint `json:"userId" validate:"required" label:"用户ID"`
+	// RoleIDs 角色ID列表
+	RoleIDs []uint `json:"roleIds" validate:"required" label:"角色ID列表"`
+}
+
+// UserRolesReq 查询用户角色请求
+type UserRolesReq struct {
+	// UserID 用户ID
+	UserID uint `json:"userId" form:"userId" validate:"required" label:"用户ID"`
+}

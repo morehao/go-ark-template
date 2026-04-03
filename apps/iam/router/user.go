@@ -16,4 +16,7 @@ func userRouter(routerGroup *gin.RouterGroup) {
 	routerGroup.POST("/user/assignDepartment", userCtr.AssignDepartment)
 	routerGroup.POST("/user/removeDepartment", userCtr.RemoveDepartment)
 	routerGroup.GET("/user/listDepartments", userCtr.ListDepartments)
+	routerGroup.POST("/user/assignRoles", userCtr.AssignRoles)
+	routerGroup.POST("/user/removeRoles", userCtr.RemoveRoles)
+	routerGroup.GET("/user/listRoles", userCtr.ListRoles)
 }

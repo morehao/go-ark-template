@@ -28,6 +28,9 @@ type UserSvc interface {
 	AssignDepartment(ctx *gin.Context, req *dtouser.UserDepartmentAssignReq) error
 	RemoveDepartment(ctx *gin.Context, req *dtouser.UserDepartmentRemoveReq) error
 	ListDepartments(ctx *gin.Context, req *dtouser.UserDepartmentsReq) (*dtouser.UserDepartmentsResp, error)
+	AssignRoles(ctx *gin.Context, req *dtouser.UserAssignRolesReq) error
+	RemoveRoles(ctx *gin.Context, req *dtouser.UserRemoveRolesReq) error
+	ListRoles(ctx *gin.Context, req *dtouser.UserRolesReq) (*dtouser.UserRolesResp, error)
 }
 
 type userSvc struct {
@@ -422,6 +425,118 @@ func (svc *userSvc) ListDepartments(ctx *gin.Context, req *dtouser.UserDepartmen
 	}
 
 	return &dtouser.UserDepartmentsResp{
+		List: list,
+	}, nil
+}
+
+// AssignRoles 分配用户角色(全量替换)
+func (svc *userSvc) AssignRoles(ctx *gin.Context, req *dtouser.UserAssignRolesReq) error {
+	operatorID := gincontext.GetUserID(ctx)
+	tenantID := gincontext.GetTenantID(ctx)
+
+	// 检查用户是否存在
+	userEntity, err := iamdao.NewUserDao().GetByID(ctx, req.UserID)
+	if err != nil || userEntity == nil || userEntity.ID == 0 {
+		glog.Errorf(ctx, "[svcuser.AssignRoles] user not found, userID:%d", req.UserID)
+		return code.GetError(code.UserNotExistError)
+	}
+
+	txErr := dbclient.IamDB(ctx).Transaction(func(tx *gorm.DB) error {
+		userRoleDao := iamdao.NewUserRoleDao().WithTx(tx)
+
+		// 删除该用户的所有已有角色关联
+		existingList, err := iamdao.NewUserRoleDao().GetListByCond(ctx, &iamdao.UserRoleCond{
+			UserID:   req.UserID,
+			TenantID: tenantID,
+		})
+		if err != nil {
+			glog.Errorf(ctx, "[svcuser.AssignRoles] GetListByCond fail, err:%v, userID:%d", err, req.UserID)
+			return code.GetError(code.UserUpdateError)
+		}
+		for _, existing := range existingList {
+			if err := userRoleDao.Delete(ctx, existing.ID, operatorID); err != nil {
+				glog.Errorf(ctx, "[svcuser.AssignRoles] Delete fail, err:%v, id:%d", err, existing.ID)
+				return code.GetError(code.UserUpdateError)
+			}
+		}
+
+		// 批量插入新的角色关联
+		for _, roleID := range req.RoleIDs {
+			entity := &iammodel.UserRoleEntity{
+				TenantID:  tenantID,
+				UserID:    req.UserID,
+				RoleID:    roleID,
+				CreatedBy: operatorID,
+				UpdatedBy: operatorID,
+			}
+			if err := userRoleDao.Insert(ctx, entity); err != nil {
+				glog.Errorf(ctx, "[svcuser.AssignRoles] Insert fail, err:%v, userID:%d, roleID:%d", err, req.UserID, roleID)
+				return code.GetError(code.UserUpdateError)
+			}
+		}
+		return nil
+	})
+	if txErr != nil {
+		glog.Errorf(ctx, "[svcuser.AssignRoles] Transaction fail, err:%v", txErr)
+		return code.GetError(code.UserUpdateError)
+	}
+	return nil
+}
+
+// RemoveRoles 移除用户角色
+func (svc *userSvc) RemoveRoles(ctx *gin.Context, req *dtouser.UserRemoveRolesReq) error {
+	operatorID := gincontext.GetUserID(ctx)
+	tenantID := gincontext.GetTenantID(ctx)
+
+	userRoleDao := iamdao.NewUserRoleDao()
+	for _, roleID := range req.RoleIDs {
+		existingList, err := userRoleDao.GetListByCond(ctx, &iamdao.UserRoleCond{
+			UserID:   req.UserID,
+			RoleID:   roleID,
+			TenantID: tenantID,
+		})
+		if err != nil {
+			glog.Errorf(ctx, "[svcuser.RemoveRoles] GetListByCond fail, err:%v, userID:%d, roleID:%d", err, req.UserID, roleID)
+			return code.GetError(code.UserUpdateError)
+		}
+		for _, existing := range existingList {
+			if err := userRoleDao.Delete(ctx, existing.ID, operatorID); err != nil {
+				glog.Errorf(ctx, "[svcuser.RemoveRoles] Delete fail, err:%v, id:%d", err, existing.ID)
+				return code.GetError(code.UserUpdateError)
+			}
+		}
+	}
+	return nil
+}
+
+// ListRoles 查询用户角色列表
+func (svc *userSvc) ListRoles(ctx *gin.Context, req *dtouser.UserRolesReq) (*dtouser.UserRolesResp, error) {
+	tenantID := gincontext.GetTenantID(ctx)
+
+	userRoleList, err := iamdao.NewUserRoleDao().GetListByCond(ctx, &iamdao.UserRoleCond{
+		UserID:   req.UserID,
+		TenantID: tenantID,
+	})
+	if err != nil {
+		glog.Errorf(ctx, "[svcuser.ListRoles] GetListByCond fail, err:%v, userID:%d", err, req.UserID)
+		return nil, code.GetError(code.UserGetDetailError)
+	}
+
+	list := make([]dtouser.UserRoleItem, 0, len(userRoleList))
+	for _, ur := range userRoleList {
+		roleEntity, err := iamdao.NewRoleDao().GetByID(ctx, ur.RoleID)
+		if err != nil || roleEntity == nil || roleEntity.ID == 0 {
+			continue
+		}
+		list = append(list, dtouser.UserRoleItem{
+			RoleID:   roleEntity.ID,
+			RoleName: roleEntity.RoleName,
+			RoleCode: roleEntity.RoleCode,
+			RoleType: roleEntity.RoleType,
+		})
+	}
+
+	return &dtouser.UserRolesResp{
 		List: list,
 	}, nil
 }

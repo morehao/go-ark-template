@@ -11,6 +11,7 @@ type UserCond struct {
 	*genericdao.BaseCond
 	Username string
 	TenantID uint
+	PersonID uint
 	Status   string
 }
 
@@ -23,6 +24,9 @@ func (c *UserCond) BuildCondition(db *gorm.DB, tableName string) {
 	}
 	if c.TenantID > 0 {
 		db.Where("tenant_id = ?", c.TenantID)
+	}
+	if c.PersonID > 0 {
+		db.Where("person_id = ?", c.PersonID)
 	}
 	if c.Status != "" {
 		db.Where("status = ?", c.Status)

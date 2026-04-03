@@ -42,3 +42,21 @@ type UserDepartmentItem struct {
 type UserDepartmentsResp struct {
 	List []UserDepartmentItem `json:"list"`
 }
+
+// UserRoleItem 用户角色列表项
+type UserRoleItem struct {
+	// RoleID 角色ID
+	RoleID uint `json:"roleId"`
+	// RoleName 角色名称
+	RoleName string `json:"roleName"`
+	// RoleCode 角色编码
+	RoleCode string `json:"roleCode"`
+	// RoleType 角色类型
+	RoleType string `json:"roleType"`
+}
+
+// UserRolesResp 用户角色列表响应
+type UserRolesResp struct {
+	// List 角色列表
+	List []UserRoleItem `json:"list"`
+}
