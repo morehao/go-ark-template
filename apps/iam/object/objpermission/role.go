@@ -1,8 +1,8 @@
 package objpermission
 
 type RoleBaseInfo struct {
-	// CompanyID 所属公司ID(租户ID)
-	CompanyID uint `json:"companyID" form:"companyID"`
+	// TenantID 所属租户ID
+	TenantID uint `json:"tenantID" form:"tenantID"`
 	// DataScope 数据权限范围: all-全部 dept_and_sub-本部门及以下 dept-本部门 self-仅本人 custom-自定义
 	DataScope string `json:"dataScope" form:"dataScope"`
 	// Description 角色描述

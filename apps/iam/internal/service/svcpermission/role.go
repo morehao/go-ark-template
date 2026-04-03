@@ -34,7 +34,6 @@ func NewRoleSvc() RoleSvc {
 // Create 创建角色管理
 func (svc *roleSvc) Create(ctx *gin.Context, req *dtopermission.RoleCreateReq) (*dtopermission.RoleCreateResp, error) {
 	insertEntity := &iammodel.RoleEntity{
-		CompanyID:   req.CompanyID,
 		DataScope:   req.DataScope,
 		Description: req.Description,
 		RoleCode:    req.RoleCode,
@@ -56,8 +55,16 @@ func (svc *roleSvc) Create(ctx *gin.Context, req *dtopermission.RoleCreateReq) (
 // Delete 删除角色管理
 func (svc *roleSvc) Delete(ctx *gin.Context, req *dtopermission.RoleDeleteReq) error {
 	userID := gincontext.GetUserID(ctx)
+	roleEntity, err := iamdao.NewRoleDao().GetByID(ctx, req.ID)
+	if err != nil {
+		glog.Errorf(ctx, "[svcpermission.Delete] daoRole GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+		return code.GetError(code.RoleDeleteError)
+	}
+	if roleEntity == nil || roleEntity.ID == 0 {
+		return code.GetError(code.RoleNotExistError)
+	}
 
-	if err := iamdao.NewRoleDao().Delete(ctx, req.ID, userID); err != nil {
+	if err = iamdao.NewRoleDao().Delete(ctx, req.ID, userID); err != nil {
 		glog.Errorf(ctx, "[svcpermission.Delete] daoRole Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.RoleDeleteError)
 	}
@@ -66,8 +73,15 @@ func (svc *roleSvc) Delete(ctx *gin.Context, req *dtopermission.RoleDeleteReq) e
 
 // Update 更新角色管理
 func (svc *roleSvc) Update(ctx *gin.Context, req *dtopermission.RoleUpdateReq) error {
+	roleEntity, err := iamdao.NewRoleDao().GetByID(ctx, req.ID)
+	if err != nil {
+		glog.Errorf(ctx, "[svcpermission.RoleUpdate] daoRole GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+		return code.GetError(code.RoleUpdateError)
+	}
+	if roleEntity == nil || roleEntity.ID == 0 {
+		return code.GetError(code.RoleNotExistError)
+	}
 	updateMap := map[string]any{
-		"company_id":  req.CompanyID,
 		"data_scope":  req.DataScope,
 		"description": req.Description,
 		"role_code":   req.RoleCode,
@@ -76,7 +90,7 @@ func (svc *roleSvc) Update(ctx *gin.Context, req *dtopermission.RoleUpdateReq) e
 		"sort_order":  req.SortOrder,
 		"status":      req.Status,
 	}
-	if err := iamdao.NewRoleDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
+	if err = iamdao.NewRoleDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
 		glog.Errorf(ctx, "[svcpermission.RoleUpdate] daoRole UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.RoleUpdateError)
 	}
@@ -97,7 +111,7 @@ func (svc *roleSvc) Detail(ctx *gin.Context, req *dtopermission.RoleDetailReq) (
 	resp := &dtopermission.RoleDetailResp{
 		ID: roleEntity.ID,
 		RoleBaseInfo: objpermission.RoleBaseInfo{
-			CompanyID:   roleEntity.CompanyID,
+			TenantID:    roleEntity.TenantID,
 			DataScope:   roleEntity.DataScope,
 			Description: roleEntity.Description,
 			RoleCode:    roleEntity.RoleCode,
@@ -132,7 +146,7 @@ func (svc *roleSvc) PageList(ctx *gin.Context, req *dtopermission.RolePageListRe
 		list = append(list, dtopermission.RolePageListItem{
 			ID: v.ID,
 			RoleBaseInfo: objpermission.RoleBaseInfo{
-				CompanyID:   v.CompanyID,
+				TenantID:    v.TenantID,
 				DataScope:   v.DataScope,
 				Description: v.Description,
 				RoleCode:    v.RoleCode,

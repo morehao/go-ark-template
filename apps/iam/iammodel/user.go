@@ -9,7 +9,7 @@ import (
 // UserEntity 用户管理表结构体
 type UserEntity struct {
 	gorm.Model
-	CompanyID   uint       `gorm:"column:company_id;type:bigint;not null;default 0;comment: 所属公司ID(租户ID), 0表示平台管理员账号"`
+	TenantID    uint       `gorm:"column:tenant_id;type:bigint;not null;default 0;comment: 所属租户ID"`
 	CreatedBy   uint       `gorm:"column:created_by;type:bigint;not null;default 0;comment: 创建人ID"`
 	DeletedBy   uint       `gorm:"column:deleted_by;type:bigint;not null;default 0;comment: 删除人ID"`
 	DeptID      uint       `gorm:"column:dept_id;type:bigint;;default '';comment: 主部门ID(冗余字段,方便查询,实际关联关系在iam_user_department表)"`
@@ -23,8 +23,8 @@ type UserEntity struct {
 	Position    string     `gorm:"column:position;type:varchar(64);;default '';comment: 职位"`
 	Status      string     `gorm:"column:status;type:varchar(16);;default active;comment: 状态: active-正常 locked-锁定 disabled-禁用"`
 	UpdatedBy   uint       `gorm:"column:updated_by;type:bigint;not null;default 0;comment: 更新人ID"`
-	UserType    string     `gorm:"column:user_type;type:varchar(16);;default normal;comment: 用户类型: normal-普通用户 company_admin-公司管理员 platform_admin-平台管理员(可管理所有公司)"`
-	Username    string     `gorm:"column:username;type:varchar(32);not null;default '';comment: 用户名(公司用户:公司内唯一,平台管理员:全局唯一,需应用层保证)"`
+	UserType    string     `gorm:"column:user_type;type:varchar(16);;default normal;comment: 用户类型: normal-普通用户 tenant_admin-租户管理员 platform_admin-平台管理员(可管理所有租户)"`
+	Username    string     `gorm:"column:username;type:varchar(32);not null;default '';comment: 用户名(租户用户:租户内唯一,平台管理员:全局唯一,需应用层保证)"`
 }
 
 type UserEntityList []UserEntity

@@ -34,7 +34,7 @@ func NewRoleCtr() RoleCtr {
 // @Produce application/json
 // @Param req body dtopermission.RoleCreateReq true "创建角色管理"
 // @Success 200 {object} gincontext.DtoRender{data=dtopermission.RoleCreateResp} "{"code": 0,"data": "ok","msg": "success"}"
-// @Router /iam/v1/role/create [post]
+// @Router /v1/iam/role/create [post]
 func (ctr *roleCtr) Create(ctx *gin.Context) {
 	var req dtopermission.RoleCreateReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -57,7 +57,7 @@ func (ctr *roleCtr) Create(ctx *gin.Context) {
 // @Produce application/json
 // @Param req body dtopermission.RoleDeleteReq true "删除角色管理"
 // @Success 200 {object} gincontext.DtoRender{data=string} "{"code": 0,"data": "ok","msg": "删除成功"}"
-// @Router /iam/v1/role/delete [post]
+// @Router /v1/iam/role/delete [post]
 func (ctr *roleCtr) Delete(ctx *gin.Context) {
 	var req dtopermission.RoleDeleteReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -80,7 +80,7 @@ func (ctr *roleCtr) Delete(ctx *gin.Context) {
 // @Produce application/json
 // @Param req body dtopermission.RoleUpdateReq true "修改角色管理"
 // @Success 200 {object} gincontext.DtoRender{data=string} "{"code": 0,"data": "ok","msg": "修改成功"}"
-// @Router /iam/v1/role/update [post]
+// @Router /v1/iam/role/update [post]
 func (ctr *roleCtr) Update(ctx *gin.Context) {
 	var req dtopermission.RoleUpdateReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -102,7 +102,7 @@ func (ctr *roleCtr) Update(ctx *gin.Context) {
 // @Produce application/json
 // @Param req query dtopermission.RoleDetailReq true "角色管理详情"
 // @Success 200 {object} gincontext.DtoRender{data=dtopermission.RoleDetailResp} "{"code": 0,"data": "ok","msg": "success"}"
-// @Router /iam/v1/role/detail [get]
+// @Router /v1/iam/role/detail [get]
 func (ctr *roleCtr) Detail(ctx *gin.Context) {
 	var req dtopermission.RoleDetailReq
 	if err := ctx.ShouldBindQuery(&req); err != nil {
@@ -125,7 +125,7 @@ func (ctr *roleCtr) Detail(ctx *gin.Context) {
 // @Produce application/json
 // @Param req query dtopermission.RolePageListReq true "角色管理列表"
 // @Success 200 {object} gincontext.DtoRender{data=dtopermission.RolePageListResp} "{"code": 0,"data": "ok","msg": "success"}"
-// @Router /iam/v1/role/pageList [post]
+// @Router /v1/iam/role/pageList [post]
 func (ctr *roleCtr) PageList(ctx *gin.Context) {
 	var req dtopermission.RolePageListReq
 	if err := ctx.ShouldBindQuery(&req); err != nil {

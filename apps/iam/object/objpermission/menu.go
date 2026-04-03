@@ -3,8 +3,8 @@ package objpermission
 type MenuBaseInfo struct {
 	// CacheType 缓存类型: enabled-启用 disabled-禁用
 	CacheType string `json:"cacheType" form:"cacheType"`
-	// CompanyID 所属公司ID(租户ID)
-	CompanyID uint `json:"companyID" form:"companyID"`
+	// TenantID 所属租户ID
+	TenantID uint `json:"tenantID" form:"tenantID"`
 	// ComponentPath 组件路径
 	ComponentPath string `json:"componentPath" form:"componentPath"`
 	// Icon 菜单图标

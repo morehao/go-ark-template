@@ -3,10 +3,10 @@ package middleware
 import (
 	"bytes"
 	"encoding/hex"
+	"encoding/json"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	jsoniter "github.com/json-iterator/go"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
 	"github.com/morehao/golib/gerror"
 	"github.com/morehao/golib/glog"
@@ -62,7 +62,7 @@ func AccessLog() gin.HandlerFunc {
 			responseBody = respBodyWriter.Body.String()
 			responseBodySize = len(responseBody)
 			if responseBodySize > 0 {
-				if err := jsoniter.Unmarshal([]byte(responseBody), &errInfo); err != nil {
+				if err := json.Unmarshal([]byte(responseBody), &errInfo); err != nil {
 					ctx.Error(err)
 				}
 			}
@@ -73,7 +73,7 @@ func AccessLog() gin.HandlerFunc {
 
 		keysAndValues := []interface{}{
 			glog.KeyHost, ctx.Request.Host,
-			glog.KeyClientIp, gincontext.GetClientIp(ctx),
+			glog.KeyClientIp, gincontext.GetClientIP(ctx),
 			glog.KeyHandle, ctx.HandlerName(),
 			glog.KeyProto, ctx.Request.Proto,
 			glog.KeyRefer, ctx.Request.Referer(),

@@ -1,9 +1,8 @@
 package utils
 
 import (
+	"encoding/json"
 	"fmt"
-
-	jsoniter "github.com/json-iterator/go"
 )
 
 func MapToJson() {
@@ -11,7 +10,7 @@ func MapToJson() {
 	student["name"] = "5lmh.com"
 	student["age"] = 18
 	student["sex"] = "man"
-	b, err := jsoniter.Marshal(student)
+	b, err := json.Marshal(student)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -26,7 +25,7 @@ func JsonToStruct() {
 	}
 	b := []byte(`{"age":"18","name":"5lmh.com","marry":false}`)
 	var p Person
-	err := jsoniter.Unmarshal(b, &p)
+	err := json.Unmarshal(b, &p)
 	if err != nil {
 		fmt.Println(err)
 	}

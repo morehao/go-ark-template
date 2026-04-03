@@ -9,20 +9,20 @@ import (
 
 type MenuCond struct {
 	*genericdao.BaseCond
-	CompanyID uint
-	ParentID  uint
-	MenuName  string
-	MenuCode  string
-	MenuType  string
-	Status    string
+	TenantID uint
+	ParentID uint
+	MenuName string
+	MenuCode string
+	MenuType string
+	Status   string
 }
 
 func (c *MenuCond) BuildCondition(db *gorm.DB, tableName string) {
 	if c.BaseCond != nil {
 		c.BaseCond.BuildCondition(db, tableName)
 	}
-	if c.CompanyID > 0 {
-		db.Where("company_id = ?", c.CompanyID)
+	if c.TenantID > 0 {
+		db.Where("tenant_id = ?", c.TenantID)
 	}
 	if c.ParentID > 0 {
 		db.Where("parent_id = ?", c.ParentID)

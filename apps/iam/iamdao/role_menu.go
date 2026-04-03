@@ -9,9 +9,9 @@ import (
 
 type RoleMenuCond struct {
 	*genericdao.BaseCond
-	RoleID    uint
-	MenuID    uint
-	CompanyID uint
+	RoleID   uint
+	MenuID   uint
+	TenantID uint
 }
 
 func (c *RoleMenuCond) BuildCondition(db *gorm.DB, tableName string) {
@@ -24,8 +24,8 @@ func (c *RoleMenuCond) BuildCondition(db *gorm.DB, tableName string) {
 	if c.MenuID > 0 {
 		db.Where("menu_id = ?", c.MenuID)
 	}
-	if c.CompanyID > 0 {
-		db.Where("company_id = ?", c.CompanyID)
+	if c.TenantID > 0 {
+		db.Where("tenant_id = ?", c.TenantID)
 	}
 }
 

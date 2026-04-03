@@ -2,13 +2,13 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/demo/config"
+	"github.com/morehao/goark/apps/iam/config"
 	"github.com/morehao/golib/biz/grouter/ginrouter"
 )
 
 type RouterGroups struct {
-	AuthGroup	*gin.RouterGroup
-	NoAuthGroup	*gin.RouterGroup
+	AuthGroup   *gin.RouterGroup
+	NoAuthGroup *gin.RouterGroup
 }
 
 func RegisterRouter(groups *RouterGroups, appName string) {
@@ -16,9 +16,12 @@ func RegisterRouter(groups *RouterGroups, appName string) {
 		ginrouter.RegisterSwagger(groups.AuthGroup, appName)
 	}
 	v1AuthGroup := groups.AuthGroup.Group("/v1")
+	iamGroup := v1AuthGroup.Group("/iam")
 	// v1NoAuth := groups.NoAuthGroup.Group("/v1")
-	formatRouter(v1AuthGroup)
-	sseRouter(v1AuthGroup)
-	clientRouter(v1AuthGroup)
-	userRouter(v1AuthGroup)
+	organizationRouter(iamGroup)
+	tenantRouter(iamGroup)
+	departmentRouter(iamGroup)
+	userRouter(iamGroup)
+	menuRouter(iamGroup)
+	roleRouter(iamGroup)
 }

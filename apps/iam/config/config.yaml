@@ -49,3 +49,6 @@ redis_config:
   dial_timeout: 5s
   read_timeout: 3s
   write_timeout: 3s
+
+jwt:
+  signKey: "your-jwt-secret-key"

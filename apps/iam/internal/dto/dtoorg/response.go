@@ -5,51 +5,73 @@ import (
 	"github.com/morehao/golib/biz/gobject"
 )
 
-type CompanyCreateResp struct {
-	// ID 数据自增 ID
-	ID uint `json:"id"`
+type TenantCreateResp struct {
+	ID       uint `json:"id"`
+	AdminID  uint `json:"adminID"`
+	PersonID uint `json:"personID"`
 }
 
-type CompanyDetailResp struct {
-	// ID 数据自增 ID
+type TenantDetailResp struct {
 	ID uint `json:"id" validate:"required"`
-	objorg.CompanyBaseInfo
+	objorg.TenantBaseInfo
 	gobject.OperatorBaseInfo
 }
 
-type CompanyPageListItem struct {
-	// ID 数据自增 ID
+type TenantPageListItem struct {
 	ID uint `json:"id" validate:"required"`
-	objorg.CompanyBaseInfo
+	objorg.TenantBaseInfo
 	gobject.OperatorBaseInfo
 }
 
-type CompanyPageListResp struct {
-	// List 数据列表
-	List []CompanyPageListItem `json:"list"`
-	// Total 数据总条数
-	Total int64 `json:"total"`
+type TenantPageListResp struct {
+	List  []TenantPageListItem `json:"list"`
+	Total int64                `json:"total"`
 }
 
 type DepartmentCreateResp struct {
-	// ID 数据自增 ID
 	ID uint `json:"id"`
 }
 type DepartmentDetailResp struct {
-	// ID 数据自增 ID
 	ID uint `json:"id" validate:"required"`
 	objorg.DepartmentBaseInfo
 	gobject.OperatorBaseInfo
 }
 type DepartmentPageListItem struct {
-	// ID 数据自增 ID
 	ID uint `json:"id" validate:"required"`
 	objorg.DepartmentBaseInfo
 	gobject.OperatorBaseInfo
 }
 type DepartmentPageListResp struct {
-	// List 数据列表
-	List []DepartmentPageListItem `json:"list"`
-	// Total 数据总条数
-	Total int64 `json:"total"`
+	List  []DepartmentPageListItem `json:"list"`
+	Total int64                    `json:"total"`
+}
+
+type DepartmentTreeNode struct {
+	ID uint `json:"id"`
+	objorg.DepartmentBaseInfo
+	gobject.OperatorBaseInfo
+	Children []DepartmentTreeNode `json:"children"`
+}
+
+type DepartmentTreeResp struct {
+	List []DepartmentTreeNode `json:"list"`
+}
+
+type OrganizationCreateResp struct {
+	ID      uint `json:"id"`
+	AdminID uint `json:"adminID"`
+}
+type OrganizationDetailResp struct {
+	ID uint `json:"id" validate:"required"`
+	objorg.OrganizationBaseInfo
+	gobject.OperatorBaseInfo
+}
+type OrganizationPageListItem struct {
+	ID uint `json:"id" validate:"required"`
+	objorg.OrganizationBaseInfo
+	gobject.OperatorBaseInfo
+}
+type OrganizationPageListResp struct {
+	List  []OrganizationPageListItem `json:"list"`
+	Total int64                      `json:"total"`
 }

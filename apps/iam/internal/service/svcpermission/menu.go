@@ -35,7 +35,6 @@ func NewMenuSvc() MenuSvc {
 func (svc *menuSvc) Create(ctx *gin.Context, req *dtopermission.MenuCreateReq) (*dtopermission.MenuCreateResp, error) {
 	insertEntity := &iammodel.MenuEntity{
 		CacheType:     req.CacheType,
-		CompanyID:     req.CompanyID,
 		ComponentPath: req.ComponentPath,
 		Icon:          req.Icon,
 		LinkType:      req.LinkType,
@@ -62,8 +61,16 @@ func (svc *menuSvc) Create(ctx *gin.Context, req *dtopermission.MenuCreateReq) (
 // Delete 删除菜单管理
 func (svc *menuSvc) Delete(ctx *gin.Context, req *dtopermission.MenuDeleteReq) error {
 	userID := gincontext.GetUserID(ctx)
+	menuEntity, err := iamdao.NewMenuDao().GetByID(ctx, req.ID)
+	if err != nil {
+		glog.Errorf(ctx, "[svcpermission.Delete] daoMenu GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+		return code.GetError(code.MenuDeleteError)
+	}
+	if menuEntity == nil || menuEntity.ID == 0 {
+		return code.GetError(code.MenuNotExistError)
+	}
 
-	if err := iamdao.NewMenuDao().Delete(ctx, req.ID, userID); err != nil {
+	if err = iamdao.NewMenuDao().Delete(ctx, req.ID, userID); err != nil {
 		glog.Errorf(ctx, "[svcpermission.Delete] daoMenu Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.MenuDeleteError)
 	}
@@ -72,9 +79,16 @@ func (svc *menuSvc) Delete(ctx *gin.Context, req *dtopermission.MenuDeleteReq) e
 
 // Update 更新菜单管理
 func (svc *menuSvc) Update(ctx *gin.Context, req *dtopermission.MenuUpdateReq) error {
+	menuEntity, err := iamdao.NewMenuDao().GetByID(ctx, req.ID)
+	if err != nil {
+		glog.Errorf(ctx, "[svcpermission.MenuUpdate] daoMenu GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+		return code.GetError(code.MenuUpdateError)
+	}
+	if menuEntity == nil || menuEntity.ID == 0 {
+		return code.GetError(code.MenuNotExistError)
+	}
 	updateMap := map[string]any{
 		"cache_type":     req.CacheType,
-		"company_id":     req.CompanyID,
 		"component_path": req.ComponentPath,
 		"icon":           req.Icon,
 		"link_type":      req.LinkType,
@@ -88,7 +102,7 @@ func (svc *menuSvc) Update(ctx *gin.Context, req *dtopermission.MenuUpdateReq) e
 		"status":         req.Status,
 		"visibility":     req.Visibility,
 	}
-	if err := iamdao.NewMenuDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
+	if err = iamdao.NewMenuDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
 		glog.Errorf(ctx, "[svcpermission.MenuUpdate] daoMenu UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.MenuUpdateError)
 	}
@@ -110,7 +124,7 @@ func (svc *menuSvc) Detail(ctx *gin.Context, req *dtopermission.MenuDetailReq) (
 		ID: menuEntity.ID,
 		MenuBaseInfo: objpermission.MenuBaseInfo{
 			CacheType:     menuEntity.CacheType,
-			CompanyID:     menuEntity.CompanyID,
+			TenantID:      menuEntity.TenantID,
 			ComponentPath: menuEntity.ComponentPath,
 			Icon:          menuEntity.Icon,
 			LinkType:      menuEntity.LinkType,
@@ -151,7 +165,7 @@ func (svc *menuSvc) PageList(ctx *gin.Context, req *dtopermission.MenuPageListRe
 			ID: v.ID,
 			MenuBaseInfo: objpermission.MenuBaseInfo{
 				CacheType:     v.CacheType,
-				CompanyID:     v.CompanyID,
+				TenantID:      v.TenantID,
 				ComponentPath: v.ComponentPath,
 				Icon:          v.Icon,
 				LinkType:      v.LinkType,
