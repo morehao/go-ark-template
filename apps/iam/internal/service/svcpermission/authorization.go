@@ -73,7 +73,6 @@ func (svc *authorizationSvc) AssignRolesToUser(ctx *gin.Context, req *dtopermiss
 
 // RemoveRolesFromUser 移除用户角色
 func (svc *authorizationSvc) RemoveRolesFromUser(ctx *gin.Context, req *dtopermission.UserRemoveRolesReq) error {
-	userID := gincontext.GetUserID(ctx)
 	tenantID := ginext.GetTenantID(ctx)
 	userRoleDao := iamdao.NewUserRoleDao()
 
@@ -94,7 +93,7 @@ func (svc *authorizationSvc) RemoveRolesFromUser(ctx *gin.Context, req *dtopermi
 
 	for _, e := range existingList {
 		if roleIDSet[e.RoleID] {
-			if err := userRoleDao.Delete(ctx, e.ID, userID); err != nil {
+			if err := userRoleDao.Delete(ctx, e.ID, gincontext.GetUserID(ctx)); err != nil {
 				glog.Errorf(ctx, "[svcpermission.RemoveRolesFromUser] userRoleDao Delete fail, err:%v, id:%d", err, e.ID)
 				return code.GetError(code.UserRemoveRolesError)
 			}

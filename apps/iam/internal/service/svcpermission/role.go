@@ -214,7 +214,6 @@ func (svc *roleSvc) AssignMenus(ctx *gin.Context, req *dtopermission.RoleAssignM
 
 // RemoveMenus 移除角色菜单
 func (svc *roleSvc) RemoveMenus(ctx *gin.Context, req *dtopermission.RoleRemoveMenusReq) error {
-	userID := gincontext.GetUserID(ctx)
 	tenantID := ginext.GetTenantID(ctx)
 	roleMenuDao := iamdao.NewRoleMenuDao()
 
@@ -235,7 +234,7 @@ func (svc *roleSvc) RemoveMenus(ctx *gin.Context, req *dtopermission.RoleRemoveM
 
 	for _, e := range existingList {
 		if menuIDSet[e.MenuID] {
-			if err := roleMenuDao.Delete(ctx, e.ID, userID); err != nil {
+			if err := roleMenuDao.Delete(ctx, e.ID, gincontext.GetUserID(ctx)); err != nil {
 				glog.Errorf(ctx, "[svcpermission.RemoveMenus] roleMenuDao Delete fail, err:%v, id:%d", err, e.ID)
 				return code.GetError(code.RoleRemoveMenusError)
 			}
