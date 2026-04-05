@@ -2,15 +2,17 @@ package router
 
 import (
 	"github.com/morehao/goark/apps/iam/internal/controller/ctrorg"
-	"github.com/morehao/golib/biz/grouter/ginrouter"
+	"github.com/morehao/golib/biz/gconstant"
+	"github.com/morehao/golib/biz/gserver/ginserver"
 )
 
-func organizationRouter(groups *ginrouter.RouterGroups) {
+func organizationRouter(groups *ginserver.RouterGroups) {
 	organizationCtr := ctrorg.NewOrganizationCtr()
+	v1RouterGroup := groups.MustGetGroup(gconstant.ApiVersionV1)
 
-	groups.V1.POST("/organization/create", organizationCtr.Create)
-	groups.V1.POST("/organization/delete", organizationCtr.Delete)
-	groups.V1.POST("/organization/update", organizationCtr.Update)
-	groups.V1.GET("/organization/detail", organizationCtr.Detail)
-	groups.V1.POST("/organization/pageList", organizationCtr.PageList)
+	v1RouterGroup.POST("/organization/create", organizationCtr.Create)
+	v1RouterGroup.POST("/organization/delete", organizationCtr.Delete)
+	v1RouterGroup.POST("/organization/update", organizationCtr.Update)
+	v1RouterGroup.GET("/organization/detail", organizationCtr.Detail)
+	v1RouterGroup.POST("/organization/pageList", organizationCtr.PageList)
 }

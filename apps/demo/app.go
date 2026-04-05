@@ -1,27 +1,23 @@
 package demo
 
 import (
-	"fmt"
-
 	"github.com/gin-gonic/gin"
 	"github.com/morehao/goark/apps/demo/config"
 	_ "github.com/morehao/goark/apps/demo/docs"
 	"github.com/morehao/goark/apps/demo/internal/router"
 	"github.com/morehao/golib/biz/gconstant"
-	"github.com/morehao/golib/biz/grouter/ginrouter"
+	"github.com/morehao/golib/biz/gserver/gindocs"
+	"github.com/morehao/golib/biz/gserver/ginserver"
 )
 
 const AppName = "demo"
 
 func Routers(engine *gin.Engine) {
+	routerGroups := ginserver.NewRouterGroups(engine, AppName, ginserver.Version{
+		Name: gconstant.ApiVersionV1,
+	})
 	if config.Conf.Server.Env == "dev" {
-		swaggerGroup := engine.Group("/" + AppName)
-		ginrouter.RegisterSwagger(swaggerGroup, AppName)
+		gindocs.Register(routerGroups.MustGetGroup(gconstant.ApiVersionV1), AppName)
 	}
-	v1Group := engine.Group(fmt.Sprintf("%s/%s", gconstant.ApiVersionV1, AppName))
-
-	routerGroups := &ginrouter.RouterGroups{
-		V1: v1Group,
-	}
-	router.RegisterRouter(routerGroups, AppName)
+	router.RegisterRouter(routerGroups)
 }

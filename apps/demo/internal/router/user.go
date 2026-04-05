@@ -2,16 +2,18 @@ package router
 
 import (
 	"github.com/morehao/goark/apps/demo/internal/controller/ctruser"
-	"github.com/morehao/golib/biz/grouter/ginrouter"
+	"github.com/morehao/golib/biz/gconstant"
+	"github.com/morehao/golib/biz/gserver/ginserver"
 )
 
 // userRouter 初始化用户管理路由信息
-func userRouter(groups *ginrouter.RouterGroups) {
+func userRouter(groups *ginserver.RouterGroups) {
 	userCtr := ctruser.NewUserCtr()
+	v1RouterGroup := groups.MustGetGroup(gconstant.ApiVersionV1)
 
-	groups.V1.POST("/user/create", userCtr.Create)
-	groups.V1.POST("/user/delete", userCtr.Delete)
-	groups.V1.POST("/user/update", userCtr.Update)
-	groups.V1.GET("/user/detail", userCtr.Detail)
-	groups.V1.POST("/user/pageList", userCtr.PageList)
+	v1RouterGroup.POST("/user/create", userCtr.Create)
+	v1RouterGroup.POST("/user/delete", userCtr.Delete)
+	v1RouterGroup.POST("/user/update", userCtr.Update)
+	v1RouterGroup.GET("/user/detail", userCtr.Detail)
+	v1RouterGroup.POST("/user/pageList", userCtr.PageList)
 }

@@ -85,7 +85,7 @@ go install github.com/swaggo/swag/cmd/swag@latest
 make swag APP=demo
 ```
 访问接口文档
-开发环境访问 `http://localhost:8099/v1/demo/redocs` 即可查看接口文档。
+开发环境访问 `http://localhost:8099/demo/redocs` 即可查看接口文档。
 
 ## 项目部署
 构建镜像

@@ -2,21 +2,23 @@ package router
 
 import (
 	"github.com/morehao/goark/apps/iam/internal/controller/ctruser"
-	"github.com/morehao/golib/biz/grouter/ginrouter"
+	"github.com/morehao/golib/biz/gconstant"
+	"github.com/morehao/golib/biz/gserver/ginserver"
 )
 
-func userRouter(groups *ginrouter.RouterGroups) {
+func userRouter(groups *ginserver.RouterGroups) {
 	userCtr := ctruser.NewUserCtr()
+	v1RouterGroup := groups.MustGetGroup(gconstant.ApiVersionV1)
 
-	groups.V1.POST("/user/create", userCtr.Create)
-	groups.V1.POST("/user/delete", userCtr.Delete)
-	groups.V1.POST("/user/update", userCtr.Update)
-	groups.V1.GET("/user/detail", userCtr.Detail)
-	groups.V1.POST("/user/pageList", userCtr.PageList)
-	groups.V1.POST("/user/assignDepartment", userCtr.AssignDepartment)
-	groups.V1.POST("/user/removeDepartment", userCtr.RemoveDepartment)
-	groups.V1.GET("/user/listDepartments", userCtr.ListDepartments)
-	groups.V1.POST("/user/assignRoles", userCtr.AssignRoles)
-	groups.V1.POST("/user/removeRoles", userCtr.RemoveRoles)
-	groups.V1.GET("/user/listRoles", userCtr.ListRoles)
+	v1RouterGroup.POST("/user/create", userCtr.Create)
+	v1RouterGroup.POST("/user/delete", userCtr.Delete)
+	v1RouterGroup.POST("/user/update", userCtr.Update)
+	v1RouterGroup.GET("/user/detail", userCtr.Detail)
+	v1RouterGroup.POST("/user/pageList", userCtr.PageList)
+	v1RouterGroup.POST("/user/assignDepartment", userCtr.AssignDepartment)
+	v1RouterGroup.POST("/user/removeDepartment", userCtr.RemoveDepartment)
+	v1RouterGroup.GET("/user/listDepartments", userCtr.ListDepartments)
+	v1RouterGroup.POST("/user/assignRoles", userCtr.AssignRoles)
+	v1RouterGroup.POST("/user/removeRoles", userCtr.RemoveRoles)
+	v1RouterGroup.GET("/user/listRoles", userCtr.ListRoles)
 }

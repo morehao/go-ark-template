@@ -110,7 +110,7 @@ make swag APP=demo
 Access docs at (dev mode):
 
 ```
-http://localhost:8099/v1/demo/redocs
+http://localhost:8099/demo/redocs
 ```
 
 ---

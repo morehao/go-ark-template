@@ -2,24 +2,28 @@ package router
 
 import (
 	"github.com/morehao/goark/apps/demo/internal/controller/ctrexample"
-	"github.com/morehao/golib/biz/grouter/ginrouter"
+	"github.com/morehao/golib/biz/gconstant"
+	"github.com/morehao/golib/biz/gserver/ginserver"
 )
 
-func formatRouter(groups *ginrouter.RouterGroups) {
+func formatRouter(groups *ginserver.RouterGroups) {
 	formatCtr := ctrexample.NewFormatCtr()
-	groups.V1.GET("/formatRes", formatCtr.FormatRes)
+	v1RouterGroup := groups.MustGetGroup(gconstant.ApiVersionV1)
+	v1RouterGroup.GET("/formatRes", formatCtr.FormatRes)
 }
 
-func sseRouter(groups *ginrouter.RouterGroups) {
+func sseRouter(groups *ginserver.RouterGroups) {
 	sseCtr := ctrexample.NewSSECtr()
-	groups.V1.GET("/time", sseCtr.Time)
-	groups.V1.GET("/timeRaw", sseCtr.TimeRaw)
-	groups.V1.GET("/process", sseCtr.Process)
-	groups.V1.GET("/chat", sseCtr.Chat)
-	groups.V1.GET("/raw", sseCtr.Raw)
+	v1RouterGroup := groups.MustGetGroup(gconstant.ApiVersionV1)
+	v1RouterGroup.GET("/time", sseCtr.Time)
+	v1RouterGroup.GET("/timeRaw", sseCtr.TimeRaw)
+	v1RouterGroup.GET("/process", sseCtr.Process)
+	v1RouterGroup.GET("/chat", sseCtr.Chat)
+	v1RouterGroup.GET("/raw", sseCtr.Raw)
 }
 
-func clientRouter(groups *ginrouter.RouterGroups) {
+func clientRouter(groups *ginserver.RouterGroups) {
 	clientCtr := ctrexample.NewClientCtr()
-	groups.V1.GET("/CallGetHttpbingo", clientCtr.CallGetHttpbingo)
+	v1RouterGroup := groups.MustGetGroup(gconstant.ApiVersionV1)
+	v1RouterGroup.GET("/CallGetHttpbingo", clientCtr.CallGetHttpbingo)
 }
