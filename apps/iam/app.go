@@ -2,6 +2,7 @@ package iam
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -14,24 +15,29 @@ import (
 	"github.com/morehao/golib/biz/gcontext"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
 	"github.com/morehao/golib/biz/gmiddleware/ginmiddleware"
+	"github.com/morehao/golib/biz/grouter/ginrouter"
 	"github.com/morehao/golib/gerror"
 )
 
 const AppName = "iam"
 
 func Routers(engine *gin.Engine) {
-	// 不需要认证的路由组
-	noAuthGroup := engine.Group(AppName)
+	engine.Use(ginmiddleware.AccessLog())
+	engine.Use(ginmiddleware.JWTAuth(config.Conf.JWT.SignKey, ginmiddleware.WithWhiteList([]string{
+		"/iam/redocs",
+		"/iam/docs/*any",
+		"/iam/docs/doc.json",
+		"/v1/iam/auth/login",
+	})))
+	if config.Conf.Server.Env == "dev" {
+		swaggerGroup := engine.Group("/" + AppName)
+		ginrouter.RegisterSwagger(swaggerGroup, AppName)
+	}
 
-	// 需要认证的路由组
-	authGroup := engine.Group(AppName)
-	authGroup.Use(ginmiddleware.JWTAuth(config.Conf.JWT.SignKey))
-	authGroup.Use(tokenBlacklistCheck())
-	authGroup.Use(ginContextToStdContext())
+	v1Group := engine.Group(fmt.Sprintf("%s/%s", gconstant.ApiVersionV1, AppName))
 
-	routerGroups := &router.RouterGroups{
-		AuthGroup:   authGroup,
-		NoAuthGroup: noAuthGroup,
+	routerGroups := &ginrouter.RouterGroups{
+		V1: v1Group,
 	}
 	router.RegisterRouter(routerGroups, AppName)
 }

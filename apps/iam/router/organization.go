@@ -1,16 +1,16 @@
 package router
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/morehao/goark/apps/iam/internal/controller/ctrorg"
+	"github.com/morehao/golib/biz/grouter/ginrouter"
 )
 
-func organizationRouter(routerGroup *gin.RouterGroup) {
+func organizationRouter(groups *ginrouter.RouterGroups) {
 	organizationCtr := ctrorg.NewOrganizationCtr()
 
-	routerGroup.POST("/organization/create", organizationCtr.Create)
-	routerGroup.POST("/organization/delete", organizationCtr.Delete)
-	routerGroup.POST("/organization/update", organizationCtr.Update)
-	routerGroup.GET("/organization/detail", organizationCtr.Detail)
-	routerGroup.POST("/organization/pageList", organizationCtr.PageList)
+	groups.V1.POST("/organization/create", organizationCtr.Create)
+	groups.V1.POST("/organization/delete", organizationCtr.Delete)
+	groups.V1.POST("/organization/update", organizationCtr.Update)
+	groups.V1.GET("/organization/detail", organizationCtr.Detail)
+	groups.V1.POST("/organization/pageList", organizationCtr.PageList)
 }

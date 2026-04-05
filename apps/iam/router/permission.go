@@ -1,28 +1,28 @@
 package router
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/morehao/goark/apps/iam/internal/controller/ctrpermission"
+	"github.com/morehao/golib/biz/grouter/ginrouter"
 )
 
-func menuRouter(routerGroup *gin.RouterGroup) {
+func menuRouter(groups *ginrouter.RouterGroups) {
 	menuCtr := ctrpermission.NewMenuCtr()
 
-	routerGroup.POST("/menu/create", menuCtr.Create)
-	routerGroup.POST("/menu/delete", menuCtr.Delete)
-	routerGroup.POST("/menu/update", menuCtr.Update)
-	routerGroup.GET("/menu/detail", menuCtr.Detail)
-	routerGroup.POST("/menu/pageList", menuCtr.PageList)
-	routerGroup.GET("/menu/tree", menuCtr.Tree)
+	groups.V1.POST("/menu/create", menuCtr.Create)
+	groups.V1.POST("/menu/delete", menuCtr.Delete)
+	groups.V1.POST("/menu/update", menuCtr.Update)
+	groups.V1.GET("/menu/detail", menuCtr.Detail)
+	groups.V1.POST("/menu/pageList", menuCtr.PageList)
+	groups.V1.GET("/menu/tree", menuCtr.Tree)
 }
 
-func roleRouter(routerGroup *gin.RouterGroup) {
+func roleRouter(groups *ginrouter.RouterGroups) {
 	roleCtr := ctrpermission.NewRoleCtr()
-	routerGroup.POST("/role/create", roleCtr.Create)
-	routerGroup.POST("/role/delete", roleCtr.Delete)
-	routerGroup.POST("/role/update", roleCtr.Update)
-	routerGroup.GET("/role/detail", roleCtr.Detail)
-	routerGroup.POST("/role/pageList", roleCtr.PageList)
-	routerGroup.POST("/role/assignMenus", roleCtr.AssignMenus)
-	routerGroup.GET("/role/listMenus", roleCtr.ListMenus)
+	groups.V1.POST("/role/create", roleCtr.Create)
+	groups.V1.POST("/role/delete", roleCtr.Delete)
+	groups.V1.POST("/role/update", roleCtr.Update)
+	groups.V1.GET("/role/detail", roleCtr.Detail)
+	groups.V1.POST("/role/pageList", roleCtr.PageList)
+	groups.V1.POST("/role/assignMenus", roleCtr.AssignMenus)
+	groups.V1.GET("/role/listMenus", roleCtr.ListMenus)
 }

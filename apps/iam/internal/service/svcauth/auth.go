@@ -345,7 +345,7 @@ func (svc *authSvc) updateLoginInfo(ctx *gin.Context, userEntity *iammodel.UserE
 	now := time.Now()
 	updateMap := map[string]any{
 		"last_login_at": now,
-		"last_login_ip": gincontext.GetClientIp(ctx),
+		"last_login_ip": gincontext.GetClientIP(ctx),
 		"login_count":   userEntity.LoginCount + 1,
 	}
 	if err := iamdao.NewUserDao().UpdateMap(ctx, userEntity.ID, updateMap); err != nil {

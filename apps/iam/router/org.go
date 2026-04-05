@@ -1,26 +1,26 @@
 package router
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/morehao/goark/apps/iam/internal/controller/ctrorg"
+	"github.com/morehao/golib/biz/grouter/ginrouter"
 )
 
-func tenantRouter(routerGroup *gin.RouterGroup) {
+func tenantRouter(groups *ginrouter.RouterGroups) {
 	tenantCtr := ctrorg.NewTenantCtr()
 
-	routerGroup.POST("/tenant/create", tenantCtr.Create)
-	routerGroup.POST("/tenant/delete", tenantCtr.Delete)
-	routerGroup.POST("/tenant/update", tenantCtr.Update)
-	routerGroup.GET("/tenant/detail", tenantCtr.Detail)
-	routerGroup.POST("/tenant/pageList", tenantCtr.PageList)
+	groups.V1.POST("/tenant/create", tenantCtr.Create)
+	groups.V1.POST("/tenant/delete", tenantCtr.Delete)
+	groups.V1.POST("/tenant/update", tenantCtr.Update)
+	groups.V1.GET("/tenant/detail", tenantCtr.Detail)
+	groups.V1.POST("/tenant/pageList", tenantCtr.PageList)
 }
 
-func departmentRouter(routerGroup *gin.RouterGroup) {
+func departmentRouter(groups *ginrouter.RouterGroups) {
 	departmentCtr := ctrorg.NewDepartmentCtr()
-	routerGroup.POST("/department/create", departmentCtr.Create)
-	routerGroup.POST("/department/delete", departmentCtr.Delete)
-	routerGroup.POST("/department/update", departmentCtr.Update)
-	routerGroup.GET("/department/detail", departmentCtr.Detail)
-	routerGroup.POST("/department/pageList", departmentCtr.PageList)
-	routerGroup.GET("/department/tree", departmentCtr.Tree)
+	groups.V1.POST("/department/create", departmentCtr.Create)
+	groups.V1.POST("/department/delete", departmentCtr.Delete)
+	groups.V1.POST("/department/update", departmentCtr.Update)
+	groups.V1.GET("/department/detail", departmentCtr.Detail)
+	groups.V1.POST("/department/pageList", departmentCtr.PageList)
+	groups.V1.GET("/department/tree", departmentCtr.Tree)
 }

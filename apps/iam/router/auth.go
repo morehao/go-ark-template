@@ -1,17 +1,14 @@
 package router
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/morehao/goark/apps/iam/internal/controller/ctrauth"
+	"github.com/morehao/golib/biz/grouter/ginrouter"
 )
 
-func authRouter(noAuthGroup *gin.RouterGroup, authGroup *gin.RouterGroup) {
+func authRouter(groups *ginrouter.RouterGroups) {
 	authCtr := ctrauth.NewAuthCtr()
 
-	// 登录接口不需要认证
-	noAuthGroup.POST("/auth/login", authCtr.Login)
-
-	// 选择租户和登出需要认证
-	authGroup.POST("/auth/selectTenant", authCtr.SelectTenant)
-	authGroup.POST("/auth/logout", authCtr.Logout)
+	groups.V1.POST("/auth/login", authCtr.Login)
+	groups.V1.POST("/auth/selectTenant", authCtr.SelectTenant)
+	groups.V1.POST("/auth/logout", authCtr.Logout)
 }

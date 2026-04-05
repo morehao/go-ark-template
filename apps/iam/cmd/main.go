@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/morehao/goark/apps/iam"
 	"github.com/morehao/goark/apps/iam/config"
-	"github.com/morehao/golib/biz/gmiddleware/ginmiddleware"
 	"github.com/morehao/golib/glog"
 )
 
@@ -21,10 +20,7 @@ func main() {
 	defer glog.Close()
 
 	engine := gin.New()
-	engine.ContextWithFallback = true
 	engine.Use(gin.Recovery())
-	engine.Use(ginmiddleware.AccessLog())
-	// JWT认证和上下文传播中间件已在app.go中按路由组分别配置
 	iam.Routers(engine)
 
 	if err := engine.Run(fmt.Sprintf(":%s", config.Conf.Server.Port)); err != nil {
