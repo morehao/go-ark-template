@@ -1,7 +1,7 @@
-[English](./README.md) | [简体中文](./README_cn.md)
+[English](./README.md) | [简体中文](./README.zh.md)
 
 # 项目简介
-`go-gin-web` 是一个从零开始构建的 Go 工程化实践项目，基于[gin](https://github.com/gin-gonic/gin)框架，旨在搭建一个分层相对合理、开发相对规范、可维护性高、方便扩展的 Go 服务端项目。
+`goark` 是一个基于 [Gin](https://github.com/gin-gonic/gin) 的 Go 后端工程实践项目，提供分层清晰、可维护、可扩展的多应用服务结构。
 # 项目特点
 
 - 清晰的项目结构：参考了[project-layout](https://github.com/golang-standards/project-layout)，遵循分层架构思想，目录组织合理，便于团队协作与长期维护。
@@ -16,45 +16,43 @@
 # 项目结构
 
 参考了[project-layout](https://github.com/golang-standards/project-layout)。当前项目结构如下：
-``` bash
+```bash
 .
 ├── apps
-│   ├── demoapp
+│   ├── demo
 │   │   ├── cmd
 │   │   ├── client
-│   │   │   └── httpbingo
 │   │   ├── config
-│   │   ├── dao
-│   │   │   └── daouser
+│   │   ├── demodao
+│   │   ├── demomodel
 │   │   ├── docs
 │   │   ├── internal
 │   │   │   ├── controller
-│   │   │   │   ├── ctrexample
-│   │   │   │   └── ctruser
 │   │   │   ├── dto
-│   │   │   │   ├── dtoexample
-│   │   │   │   └── dtouser
+│   │   │   ├── router
 │   │   │   └── service
-│   │   │       ├── svcexample
-│   │   │       └── svcuser
 │   │   ├── middleware
-│   │   ├── model
 │   │   ├── object
-│   │   │   ├── gobject
-│   │   │   └── objuser
-│   │   ├── router
 │   │   └── scripts
-│   └── newapp
-├── log
-├── output
-│   └── build
+│   └── iam
+│       ├── cmd
+│       ├── config
+│       ├── docs
+│       ├── iamdao
+│       ├── iammodel
+│       ├── internal
+│       │   ├── controller
+│       │   ├── dto
+│       │   ├── router
+│       │   └── service
+│       ├── object
+│       └── scripts
 ├── pkg
 │   ├── code
 │   ├── dbclient
-│   ├── testutil
+│   ├── testsetup
 │   └── utils
 └── scripts
-    └── sql
 ```
 
 # 基础功能
@@ -65,7 +63,7 @@
 ```bash
 go install github.com/morehao/gocli@latest
 ```
-确保项目应用目录下有代码生成配置文件，示例：`go-gin-web/apps/demoapp/config/code_gen.yaml`。代码生成命令如下：
+确保项目应用目录下有代码生成配置文件，示例：`goark/apps/demo/config/code_gen.yaml`。代码生成命令如下：
 ```bash
 # 基于表生成整个功能模块
 make codegen MODE=module APP=demo
@@ -83,20 +81,20 @@ make codegen MODE=api APP=demo
 go install github.com/swaggo/swag/cmd/swag@latest
 ```
 生成接口文档
-``` shell
-make swag APP=demoapp
+```shell
+make swag APP=demo
 ```
 访问接口文档
-访问 `http://localhost:8099/demoapp/swagger/index.html` 即可查看接口文档。
+开发环境访问 `http://localhost:8099/v1/demo/redocs` 即可查看接口文档。
 
 ## 项目部署
 构建镜像
-``` bash
-make docker-build APP=demoapp
+```bash
+make docker-build APP=demo
 ```
 运行容器
-``` bash
- make docker-run APP=demoapp
+```bash
+make docker-run APP=demo
 ```
 
 ## 快速生成新项目
@@ -115,4 +113,3 @@ gocli cutter -d /goProject/yourAppName
 
 ## 相关组件
 相关组件均在[golib](https://github.com/morehao/golib)包中实现。
-
