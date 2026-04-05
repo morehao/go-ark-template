@@ -53,3 +53,33 @@ type RolePageListResp struct {
 	// Total 数据总条数
 	Total int64 `json:"total"`
 }
+
+// RoleMenuListItem 角色菜单列表项
+type RoleMenuListItem struct {
+	// ID 菜单ID
+	ID uint `json:"id"`
+	objpermission.MenuBaseInfo
+	gobject.OperatorBaseInfo
+}
+
+// RoleMenuListResp 角色菜单列表响应
+type RoleMenuListResp struct {
+	// List 菜单列表
+	List []RoleMenuListItem `json:"list"`
+}
+
+// MenuTreeNode 菜单树节点
+type MenuTreeNode struct {
+	// ID 菜单ID
+	ID uint `json:"id"`
+	objpermission.MenuBaseInfo
+	gobject.OperatorBaseInfo
+	// Children 子菜单列表
+	Children []MenuTreeNode `json:"children"`
+}
+
+// MenuTreeResp 菜单树响应
+type MenuTreeResp struct {
+	// List 菜单树列表
+	List []MenuTreeNode `json:"list"`
+}

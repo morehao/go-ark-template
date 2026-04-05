@@ -20,6 +20,7 @@ type MenuSvc interface {
 	Update(ctx *gin.Context, req *dtopermission.MenuUpdateReq) error
 	Detail(ctx *gin.Context, req *dtopermission.MenuDetailReq) (*dtopermission.MenuDetailResp, error)
 	PageList(ctx *gin.Context, req *dtopermission.MenuPageListReq) (*dtopermission.MenuPageListResp, error)
+	Tree(ctx *gin.Context, req *dtopermission.MenuTreeReq) (*dtopermission.MenuTreeResp, error)
 }
 
 type menuSvc struct {
@@ -187,5 +188,66 @@ func (svc *menuSvc) PageList(ctx *gin.Context, req *dtopermission.MenuPageListRe
 	return &dtopermission.MenuPageListResp{
 		List:  list,
 		Total: total,
+	}, nil
+}
+
+// Tree 获取菜单树
+func (svc *menuSvc) Tree(ctx *gin.Context, req *dtopermission.MenuTreeReq) (*dtopermission.MenuTreeResp, error) {
+	cond := &iamdao.MenuCond{}
+	allMenus, err := iamdao.NewMenuDao().GetListByCond(ctx, cond)
+	if err != nil {
+		glog.Errorf(ctx, "[svcpermission.MenuTree] daoMenu GetListByCond fail, err:%v", err)
+		return nil, code.GetError(code.MenuGetPageListError)
+	}
+
+	var parentID uint
+	if req.ParentID != nil {
+		parentID = *req.ParentID
+	}
+
+	menuMap := make(map[uint][]iammodel.MenuEntity)
+	for _, menu := range allMenus {
+		menuMap[menu.ParentID] = append(menuMap[menu.ParentID], menu)
+	}
+
+	var buildTree func(parentID uint) []dtopermission.MenuTreeNode
+	buildTree = func(parentID uint) []dtopermission.MenuTreeNode {
+		var nodes []dtopermission.MenuTreeNode
+		children, ok := menuMap[parentID]
+		if !ok {
+			return nodes
+		}
+		for _, menu := range children {
+			node := dtopermission.MenuTreeNode{
+				ID: menu.ID,
+				MenuBaseInfo: objpermission.MenuBaseInfo{
+					CacheType:     menu.CacheType,
+					TenantID:      menu.TenantID,
+					ComponentPath: menu.ComponentPath,
+					Icon:          menu.Icon,
+					LinkType:      menu.LinkType,
+					MenuCode:      menu.MenuCode,
+					MenuName:      menu.MenuName,
+					MenuType:      menu.MenuType,
+					ParentID:      menu.ParentID,
+					Permission:    menu.Permission,
+					RoutePath:     menu.RoutePath,
+					SortOrder:     menu.SortOrder,
+					Status:        menu.Status,
+					Visibility:    menu.Visibility,
+				},
+				OperatorBaseInfo: gobject.OperatorBaseInfo{
+					UpdatedAt: menu.UpdatedAt.Unix(),
+				},
+				Children: buildTree(menu.ID),
+			}
+			nodes = append(nodes, node)
+		}
+		return nodes
+	}
+
+	tree := buildTree(parentID)
+	return &dtopermission.MenuTreeResp{
+		List: tree,
 	}, nil
 }
