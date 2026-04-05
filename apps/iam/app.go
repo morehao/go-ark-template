@@ -9,8 +9,8 @@ import (
 	_ "github.com/morehao/goark/apps/iam/docs"
 
 	"github.com/morehao/goark/apps/iam/config"
+	"github.com/morehao/goark/apps/iam/internal/router"
 	"github.com/morehao/goark/apps/iam/internal/service/svcauth"
-	"github.com/morehao/goark/apps/iam/router"
 	"github.com/morehao/golib/biz/gconstant"
 	"github.com/morehao/golib/biz/gcontext"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
