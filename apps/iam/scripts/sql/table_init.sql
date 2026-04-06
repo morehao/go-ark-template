@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS iam_organization_config (
     created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`id`),
-    UNIQUE KEY uk_organization_config (organization_id, config_key),
+    UNIQUE KEY uk_organization_config (organization_id, config_group, config_key),
     INDEX idx_organization_id (organization_id),
     INDEX idx_config_group (config_group),
     INDEX idx_config_key (config_key)

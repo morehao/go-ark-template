@@ -11,6 +11,7 @@ type OrganizationCtr interface {
 	Create(ctx *gin.Context)
 	Delete(ctx *gin.Context)
 	Update(ctx *gin.Context)
+	LoginConfig(ctx *gin.Context)
 	Detail(ctx *gin.Context)
 	PageList(ctx *gin.Context)
 }
@@ -68,6 +69,28 @@ func (ctr *organizationCtr) Update(ctx *gin.Context) {
 	gincontext.Success(ctx, "修改成功")
 }
 
+// LoginConfig 登录配置
+// @Tags 组织管理
+// @Summary 获取组织登录配置
+// @accept application/json
+// @Produce application/json
+// @Param domain query string false "组织域名(可选)"
+// @Success 200 {object} gincontext.DtoRender{data=dtoorg.OrganizationLoginConfigResp} "{"code": 0,"data": "ok","msg": "success"}"
+// @Router /v1/iam/organization/loginConfig [get]
+func (ctr *organizationCtr) LoginConfig(ctx *gin.Context) {
+	var req dtoorg.OrganizationLoginConfigReq
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	res, err := ctr.organizationSvc.LoginConfig(ctx, &req)
+	if err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	gincontext.Success(ctx, res)
+}
+
 func (ctr *organizationCtr) Detail(ctx *gin.Context) {
 	var req dtoorg.OrganizationDetailReq
 	if err := ctx.ShouldBindQuery(&req); err != nil {
@@ -84,7 +107,7 @@ func (ctr *organizationCtr) Detail(ctx *gin.Context) {
 
 func (ctr *organizationCtr) PageList(ctx *gin.Context) {
 	var req dtoorg.OrganizationPageListReq
-	if err := ctx.ShouldBindQuery(&req); err != nil {
+	if err := ctx.ShouldBindJSON(&req); err != nil {
 		gincontext.Fail(ctx, err)
 		return
 	}

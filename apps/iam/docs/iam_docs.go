@@ -285,17 +285,13 @@ const docTemplateiam = `{
                 "summary": "部门管理列表分页",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Page 页码",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "maximum": 1000,
-                        "type": "integer",
-                        "description": "PageSize 每页数据条数",
-                        "name": "pageSize",
-                        "in": "query"
+                        "description": "部门管理列表",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtoorg.DepartmentPageListReq"
+                        }
                     }
                 ],
                 "responses": {
@@ -553,17 +549,13 @@ const docTemplateiam = `{
                 "summary": "菜单管理列表分页",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Page 页码",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "maximum": 1000,
-                        "type": "integer",
-                        "description": "PageSize 每页数据条数",
-                        "name": "pageSize",
-                        "in": "query"
+                        "description": "菜单管理列表",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtopermission.MenuPageListReq"
+                        }
                     }
                 ],
                 "responses": {
@@ -666,6 +658,48 @@ const docTemplateiam = `{
                                     "properties": {
                                         "data": {
                                             "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/iam/organization/loginConfig": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "组织管理"
+                ],
+                "summary": "获取组织登录配置",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "组织域名(可选)",
+                        "name": "domain",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"code\": 0,\"data\": \"ok\",\"msg\": \"success\"}",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/gincontext.DtoRender"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dtoorg.OrganizationLoginConfigResp"
                                         }
                                     }
                                 }
@@ -910,17 +944,13 @@ const docTemplateiam = `{
                 "summary": "角色管理列表分页",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Page 页码",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "maximum": 1000,
-                        "type": "integer",
-                        "description": "PageSize 每页数据条数",
-                        "name": "pageSize",
-                        "in": "query"
+                        "description": "角色管理列表",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtopermission.RolePageListReq"
+                        }
                     }
                 ],
                 "responses": {
@@ -1312,17 +1342,13 @@ const docTemplateiam = `{
                 "summary": "用户管理列表分页",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Page 页码",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "maximum": 1000,
-                        "type": "integer",
-                        "description": "PageSize 每页数据条数",
-                        "name": "pageSize",
-                        "in": "query"
+                        "description": "用户管理列表",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtouser.UserPageListReq"
+                        }
                     }
                 ],
                 "responses": {
@@ -1810,6 +1836,20 @@ const docTemplateiam = `{
                 }
             }
         },
+        "dtoorg.DepartmentPageListReq": {
+            "type": "object",
+            "properties": {
+                "page": {
+                    "description": "Page 页码",
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "description": "PageSize 每页数据条数",
+                    "type": "integer",
+                    "maximum": 1000
+                }
+            }
+        },
         "dtoorg.DepartmentPageListResp": {
             "type": "object",
             "properties": {
@@ -1953,6 +1993,35 @@ const docTemplateiam = `{
                 "tenantID": {
                     "description": "TenantID 所属租户ID",
                     "type": "integer"
+                }
+            }
+        },
+        "dtoorg.OrganizationLoginConfigResp": {
+            "type": "object",
+            "properties": {
+                "configs": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "domain": {
+                    "type": "string"
+                },
+                "logo": {
+                    "type": "string"
+                },
+                "organizationId": {
+                    "type": "integer"
+                },
+                "organizationName": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
                 }
             }
         },
@@ -2203,6 +2272,20 @@ const docTemplateiam = `{
                 "visibility": {
                     "description": "Visibility 可见性: visible-可见 hidden-隐藏",
                     "type": "string"
+                }
+            }
+        },
+        "dtopermission.MenuPageListReq": {
+            "type": "object",
+            "properties": {
+                "page": {
+                    "description": "Page 页码",
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "description": "PageSize 每页数据条数",
+                    "type": "integer",
+                    "maximum": 1000
                 }
             }
         },
@@ -2681,6 +2764,20 @@ const docTemplateiam = `{
                 }
             }
         },
+        "dtopermission.RolePageListReq": {
+            "type": "object",
+            "properties": {
+                "page": {
+                    "description": "Page 页码",
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "description": "PageSize 每页数据条数",
+                    "type": "integer",
+                    "maximum": 1000
+                }
+            }
+        },
         "dtopermission.RolePageListResp": {
             "type": "object",
             "properties": {
@@ -3082,6 +3179,20 @@ const docTemplateiam = `{
                 "username": {
                     "description": "Username 用户名(租户用户:租户内唯一,平台管理员:全局唯一,需应用层保证)",
                     "type": "string"
+                }
+            }
+        },
+        "dtouser.UserPageListReq": {
+            "type": "object",
+            "properties": {
+                "page": {
+                    "description": "Page 页码",
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "description": "PageSize 每页数据条数",
+                    "type": "integer",
+                    "maximum": 1000
                 }
             }
         },

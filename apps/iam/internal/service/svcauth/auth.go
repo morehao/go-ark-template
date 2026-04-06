@@ -54,6 +54,11 @@ func NewAuthSvc() AuthSvc {
 func (svc *authSvc) Login(ctx *gin.Context, req *dtoauth.LoginReq) (*dtoauth.LoginResp, error) {
 	account := strings.TrimSpace(req.Account)
 
+	organizationEntity, err := svc.getCurrentOrganization(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	// 查找自然人(通过手机号或邮箱)
 	personEntity, err := svc.findPersonByAccount(ctx, account)
 	if err != nil {
@@ -74,6 +79,10 @@ func (svc *authSvc) Login(ctx *gin.Context, req *dtoauth.LoginReq) (*dtoauth.Log
 	if err != nil {
 		glog.Errorf(ctx, "[svcauth.Login] GetListByCond fail, err:%v, personID:%d", err, personEntity.ID)
 		return nil, code.GetError(code.AuthLoginError)
+	}
+	userList, err = svc.filterUsersByOrganization(ctx, userList, organizationEntity.ID)
+	if err != nil {
+		return nil, err
 	}
 	if len(userList) == 0 {
 		return nil, code.GetError(code.AuthNoTenantError)
@@ -109,7 +118,7 @@ func (svc *authSvc) Login(ctx *gin.Context, req *dtoauth.LoginReq) (*dtoauth.Log
 	}
 
 	// 多租户：返回临时token + 租户列表
-	tempToken, err := svc.generateTempToken(personEntity.ID)
+	tempToken, err := svc.generateTempToken(personEntity.ID, organizationEntity.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -129,38 +138,37 @@ func (svc *authSvc) Login(ctx *gin.Context, req *dtoauth.LoginReq) (*dtoauth.Log
 
 // SelectTenant 选择租户
 func (svc *authSvc) SelectTenant(ctx *gin.Context, req *dtoauth.SelectTenantReq) (*dtoauth.SelectTenantResp, error) {
+	if gincontext.GetUserType(ctx) != "temp" {
+		return nil, code.GetError(code.AuthTempTokenRequiredError)
+	}
+
 	// 从context获取当前用户信息(临时token中的personID通过UserID字段传递)
-	currentUserID := gincontext.GetUserID(ctx)
-	if currentUserID == 0 {
+	personID := gincontext.GetUserID(ctx)
+	orgID := gincontext.GetOrgID(ctx)
+	if personID == 0 || orgID == 0 {
 		return nil, code.GetError(code.AuthTenantSelectError)
 	}
 
-	// 尝试通过UserID获取用户(如果是临时token，UserID实际存的是personID)
-	// 先尝试作为personID查找
+	tenantEntity, err := iamdao.NewTenantDao().GetByID(ctx, req.TenantID)
+	if err != nil {
+		glog.Errorf(ctx, "[svcauth.SelectTenant] GetByID tenant fail, err:%v, tenantID:%d", err, req.TenantID)
+		return nil, code.GetError(code.AuthTenantSelectError)
+	}
+	if tenantEntity == nil || tenantEntity.ID == 0 || tenantEntity.OrganizationID != orgID {
+		return nil, code.GetError(code.AuthTenantNotInOrgError)
+	}
+
 	userEntity, err := iamdao.NewUserDao().GetByCond(ctx, &iamdao.UserCond{
-		PersonID: currentUserID,
+		PersonID: personID,
 		TenantID: req.TenantID,
 		Status:   "active",
 	})
 	if err != nil {
-		glog.Errorf(ctx, "[svcauth.SelectTenant] GetByCond fail, err:%v, personID:%d, tenantID:%d", err, currentUserID, req.TenantID)
+		glog.Errorf(ctx, "[svcauth.SelectTenant] GetByCond fail, err:%v, personID:%d, tenantID:%d", err, personID, req.TenantID)
 		return nil, code.GetError(code.AuthTenantSelectError)
 	}
-
-	// 如果personID没找到,尝试通过user获取person后再查找
 	if userEntity == nil || userEntity.ID == 0 {
-		existingUser, err := iamdao.NewUserDao().GetByID(ctx, currentUserID)
-		if err != nil || existingUser == nil || existingUser.ID == 0 {
-			return nil, code.GetError(code.AuthTenantSelectError)
-		}
-		userEntity, err = iamdao.NewUserDao().GetByCond(ctx, &iamdao.UserCond{
-			PersonID: existingUser.PersonID,
-			TenantID: req.TenantID,
-			Status:   "active",
-		})
-		if err != nil || userEntity == nil || userEntity.ID == 0 {
-			return nil, code.GetError(code.AuthTenantSelectError)
-		}
+		return nil, code.GetError(code.AuthTenantSelectError)
 	}
 
 	personEntity, err := iamdao.NewPersonDao().GetByID(ctx, userEntity.PersonID)
@@ -174,7 +182,7 @@ func (svc *authSvc) SelectTenant(ctx *gin.Context, req *dtoauth.SelectTenantReq)
 		return nil, err
 	}
 
-	tenantEntity, _ := iamdao.NewTenantDao().GetByID(ctx, userEntity.TenantID)
+	tenantEntity, _ = iamdao.NewTenantDao().GetByID(ctx, userEntity.TenantID)
 	tenantName := ""
 	if tenantEntity != nil {
 		tenantName = tenantEntity.TenantName
@@ -294,7 +302,7 @@ func (svc *authSvc) generateToken(ctx *gin.Context, userEntity iammodel.UserEnti
 	return token, nil
 }
 
-func (svc *authSvc) generateTempToken(personID uint) (string, error) {
+func (svc *authSvc) generateTempToken(personID uint, orgID uint) (string, error) {
 	jwtAuth, err := jwtauth.New[JWTCustomData](config.Conf.JWT.SignKey)
 	if err != nil {
 		return "", code.GetError(code.AuthTokenGenerateError)
@@ -304,7 +312,7 @@ func (svc *authSvc) generateTempToken(personID uint) (string, error) {
 		UserID:   personID, // 临时token中使用personID作为UserID
 		UserType: "temp",
 		TenantID: 0,
-		OrgID:    0,
+		OrgID:    orgID,
 	}
 
 	token, err := jwtAuth.Issue(
@@ -339,6 +347,61 @@ func (svc *authSvc) buildTenantList(ctx *gin.Context, userList iammodel.UserEnti
 		})
 	}
 	return tenants, nil
+}
+
+func (svc *authSvc) getCurrentOrganization(ctx *gin.Context) (*iammodel.OrganizationEntity, error) {
+	domain := resolveDomain(ctx)
+	if domain == "" {
+		return nil, code.GetError(code.AuthOrganizationNotFoundError)
+	}
+
+	organizationEntity, err := iamdao.NewOrganizationDao().GetByCond(ctx, &iamdao.OrganizationCond{
+		Domain: domain,
+		Status: "active",
+	})
+	if err != nil {
+		glog.Errorf(ctx, "[svcauth.getCurrentOrganization] daoOrganization GetByCond fail, err:%v, domain:%s", err, domain)
+		return nil, code.GetError(code.AuthLoginError)
+	}
+	if organizationEntity == nil || organizationEntity.ID == 0 {
+		return nil, code.GetError(code.AuthOrganizationNotFoundError)
+	}
+	return organizationEntity, nil
+}
+
+func (svc *authSvc) filterUsersByOrganization(ctx *gin.Context, userList iammodel.UserEntityList, organizationID uint) (iammodel.UserEntityList, error) {
+	filtered := make(iammodel.UserEntityList, 0, len(userList))
+	for _, userEntity := range userList {
+		tenantEntity, err := iamdao.NewTenantDao().GetByID(ctx, userEntity.TenantID)
+		if err != nil {
+			glog.Errorf(ctx, "[svcauth.filterUsersByOrganization] daoTenant GetByID fail, err:%v, tenantID:%d", err, userEntity.TenantID)
+			return nil, code.GetError(code.AuthLoginError)
+		}
+		if tenantEntity == nil || tenantEntity.ID == 0 || tenantEntity.Status != "active" {
+			continue
+		}
+		if tenantEntity.OrganizationID != organizationID {
+			continue
+		}
+		filtered = append(filtered, userEntity)
+	}
+	return filtered, nil
+}
+
+func resolveDomain(ctx *gin.Context) string {
+	host := strings.TrimSpace(ctx.GetHeader("X-Forwarded-Host"))
+	if host == "" && ctx.Request != nil {
+		host = strings.TrimSpace(ctx.Request.Host)
+	}
+	host = strings.TrimSpace(strings.Split(host, ",")[0])
+	host = strings.TrimPrefix(host, "http://")
+	host = strings.TrimPrefix(host, "https://")
+	host = strings.Split(host, "/")[0]
+	if strings.Count(host, ":") == 1 {
+		host = strings.Split(host, ":")[0]
+	}
+	host = strings.TrimSuffix(strings.ToLower(strings.TrimSpace(host)), ".")
+	return host
 }
 
 func (svc *authSvc) updateLoginInfo(ctx *gin.Context, userEntity *iammodel.UserEntity) {

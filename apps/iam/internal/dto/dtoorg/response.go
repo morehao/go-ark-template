@@ -75,3 +75,12 @@ type OrganizationPageListResp struct {
 	List  []OrganizationPageListItem `json:"list"`
 	Total int64                      `json:"total"`
 }
+
+type OrganizationLoginConfigResp struct {
+	OrganizationID   uint                         `json:"organizationId"`
+	OrganizationName string                       `json:"organizationName"`
+	Domain           string                       `json:"domain"`
+	Logo             string                       `json:"logo"`
+	Status           string                       `json:"status"`
+	Configs          map[string]map[string]string `json:"configs"`
+}

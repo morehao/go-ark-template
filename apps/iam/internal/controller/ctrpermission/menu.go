@@ -124,12 +124,12 @@ func (ctr *menuCtr) Detail(ctx *gin.Context) {
 // @Summary 菜单管理列表分页
 // @accept application/json
 // @Produce application/json
-// @Param req query dtopermission.MenuPageListReq true "菜单管理列表"
+// @Param req body dtopermission.MenuPageListReq true "菜单管理列表"
 // @Success 200 {object} gincontext.DtoRender{data=dtopermission.MenuPageListResp} "{"code": 0,"data": "ok","msg": "success"}"
 // @Router /v1/iam/menu/pageList [post]
 func (ctr *menuCtr) PageList(ctx *gin.Context) {
 	var req dtopermission.MenuPageListReq
-	if err := ctx.ShouldBindQuery(&req); err != nil {
+	if err := ctx.ShouldBindJSON(&req); err != nil {
 		gincontext.Fail(ctx, err)
 		return
 	}

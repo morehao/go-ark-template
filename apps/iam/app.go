@@ -30,6 +30,7 @@ func Routers(engine *gin.Engine) {
 			ginmiddleware.AccessLog(),
 			ginmiddleware.JWTAuth(config.Conf.JWT.SignKey, ginmiddleware.WithWhiteList([]string{
 				"/v1/iam/auth/login",
+				"/v1/iam/organization/loginConfig",
 			})),
 			tokenBlacklistCheck(),
 			ginContextToStdContext(),

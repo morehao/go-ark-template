@@ -65,3 +65,7 @@ type OrganizationPageListReq struct {
 type OrganizationDeleteReq struct {
 	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"`
 }
+
+type OrganizationLoginConfigReq struct {
+	Domain string `json:"domain" form:"domain" label:"组织域名"`
+}

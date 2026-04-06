@@ -1,6 +1,9 @@
 package svcorg
 
 import (
+	"net"
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	org "github.com/morehao/goark/apps/iam/core/organization"
 	"github.com/morehao/goark/apps/iam/core/user"
@@ -22,6 +25,7 @@ type OrganizationSvc interface {
 	Create(ctx *gin.Context, req *dtoorg.OrganizationCreateReq) (*dtoorg.OrganizationCreateResp, error)
 	Delete(ctx *gin.Context, req *dtoorg.OrganizationDeleteReq) error
 	Update(ctx *gin.Context, req *dtoorg.OrganizationUpdateReq) error
+	LoginConfig(ctx *gin.Context, req *dtoorg.OrganizationLoginConfigReq) (*dtoorg.OrganizationLoginConfigResp, error)
 	Detail(ctx *gin.Context, req *dtoorg.OrganizationDetailReq) (*dtoorg.OrganizationDetailResp, error)
 	PageList(ctx *gin.Context, req *dtoorg.OrganizationPageListReq) (*dtoorg.OrganizationPageListResp, error)
 }
@@ -135,6 +139,56 @@ func (svc *organizationSvc) Update(ctx *gin.Context, req *dtoorg.OrganizationUpd
 	return nil
 }
 
+func (svc *organizationSvc) LoginConfig(ctx *gin.Context, req *dtoorg.OrganizationLoginConfigReq) (*dtoorg.OrganizationLoginConfigResp, error) {
+	domain := resolveDomain(ctx, req.Domain)
+	if domain == "" {
+		return nil, code.GetError(code.AuthOrganizationNotFoundError)
+	}
+
+	organizationEntity, err := iamdao.NewOrganizationDao().GetByCond(ctx, &iamdao.OrganizationCond{
+		Domain: domain,
+		Status: "active",
+	})
+	if err != nil {
+		glog.Errorf(ctx, "[svcorg.OrganizationLoginConfig] daoOrganization GetByCond fail, err:%v, domain:%s", err, domain)
+		return nil, code.GetError(code.AuthLoginError)
+	}
+	if organizationEntity == nil || organizationEntity.ID == 0 {
+		return nil, code.GetError(code.AuthOrganizationNotFoundError)
+	}
+
+	configEntityList, err := iamdao.NewOrganizationConfigDao().GetListByCond(ctx, &iamdao.OrganizationConfigCond{
+		OrganizationID: organizationEntity.ID,
+	})
+	if err != nil {
+		glog.Errorf(ctx, "[svcorg.OrganizationLoginConfig] daoOrganizationConfig GetListByCond fail, err:%v, organizationID:%d", err, organizationEntity.ID)
+		return nil, code.GetError(code.AuthLoginError)
+	}
+
+	configs := map[string]map[string]string{
+		"auth":    {},
+		"general": {},
+	}
+	for _, v := range configEntityList {
+		if v.ConfigGroup != "auth" && v.ConfigGroup != "general" {
+			continue
+		}
+		if _, ok := configs[v.ConfigGroup]; !ok {
+			configs[v.ConfigGroup] = make(map[string]string)
+		}
+		configs[v.ConfigGroup][v.ConfigKey] = v.ConfigValue
+	}
+
+	return &dtoorg.OrganizationLoginConfigResp{
+		OrganizationID:   organizationEntity.ID,
+		OrganizationName: organizationEntity.OrganizationName,
+		Domain:           organizationEntity.Domain,
+		Logo:             organizationEntity.Logo,
+		Status:           organizationEntity.Status,
+		Configs:          configs,
+	}, nil
+}
+
 func (svc *organizationSvc) Detail(ctx *gin.Context, req *dtoorg.OrganizationDetailReq) (*dtoorg.OrganizationDetailResp, error) {
 	organizationEntity, err := iamdao.NewOrganizationDao().GetByID(ctx, req.ID)
 	if err != nil {
@@ -198,4 +252,27 @@ func (svc *organizationSvc) PageList(ctx *gin.Context, req *dtoorg.OrganizationP
 		List:  list,
 		Total: total,
 	}, nil
+}
+
+func resolveDomain(ctx *gin.Context, reqDomain string) string {
+	host := strings.TrimSpace(ctx.GetHeader("X-Forwarded-Host"))
+	if host == "" && ctx.Request != nil {
+		host = strings.TrimSpace(ctx.Request.Host)
+	}
+	if host == "" {
+		host = strings.TrimSpace(reqDomain)
+	}
+	host = strings.TrimSpace(strings.Split(host, ",")[0])
+	host = strings.TrimPrefix(host, "http://")
+	host = strings.TrimPrefix(host, "https://")
+	host = strings.Split(host, "/")[0]
+
+	if parsedHost, _, err := net.SplitHostPort(host); err == nil {
+		host = parsedHost
+	} else if strings.Count(host, ":") == 1 {
+		host = strings.Split(host, ":")[0]
+	}
+
+	host = strings.TrimSuffix(strings.ToLower(strings.TrimSpace(host)), ".")
+	return host
 }

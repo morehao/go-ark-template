@@ -88,7 +88,7 @@ func (ctr *tenantCtr) Detail(ctx *gin.Context) {
 
 func (ctr *tenantCtr) PageList(ctx *gin.Context) {
 	var req dtoorg.TenantPageListReq
-	if err := ctx.ShouldBindQuery(&req); err != nil {
+	if err := ctx.ShouldBindJSON(&req); err != nil {
 		gincontext.Fail(ctx, err)
 		return
 	}
