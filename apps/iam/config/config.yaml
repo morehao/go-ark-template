@@ -36,6 +36,16 @@ log:
     extra_keys:
       - requestId
 
+trace:
+  enable: true
+  service_version: ""
+  sampler: traceidratio
+  trace_id_ratio: 1.0
+  otlp:
+    endpoint: "127.0.0.1:4317"
+    insecure: true
+    timeout: 10s
+
 
 db_configs:
   - url: "mysql://root:123456@127.0.0.1:3306/ark_iam?charset=utf8mb4&parseTime=True&loc=Local&timeout=5s&readTimeout=3s&writeTimeout=3s"

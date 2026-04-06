@@ -17,6 +17,7 @@ func main() {
 	if config.Conf.Server.Env == "prod" {
 		gin.SetMode(gin.ReleaseMode)
 	}
+	defer shutdownTraceProvider()
 	defer glog.Close()
 
 	engine := gin.New()
