@@ -1,8 +1,8 @@
-[English](./README.md) | [简体中文](./README_cn.md)
+[English](./README.md) | [简体中文](./README.zh.md)
 
 # Project Overview
 
-`go-gin-web` is an engineering practice project built from scratch using Go, based on the [Gin](https://github.com/gin-gonic/gin) framework. It aims to provide a cleanly layered, maintainable, scalable, and developer-friendly backend service structure.
+`goark` is a Go backend engineering practice project based on [Gin](https://github.com/gin-gonic/gin). It provides a layered, maintainable, and scalable service structure with multiple app modules.
 
 ---
 
@@ -29,39 +29,37 @@ Follows [project-layout](https://github.com/golang-standards/project-layout). Cu
 │   ├── demo
 │   │   ├── cmd
 │   │   ├── client
-│   │   │   └── httpbingo
 │   │   ├── config
-│   │   ├── dao
-│   │   │   └── daouser
+│   │   ├── demodao
+│   │   ├── demomodel
 │   │   ├── docs
 │   │   ├── internal
 │   │   │   ├── controller
-│   │   │   │   ├── ctrexample
-│   │   │   │   └── ctruser
 │   │   │   ├── dto
-│   │   │   │   ├── dtoexample
-│   │   │   │   └── dtouser
+│   │   │   ├── router
 │   │   │   └── service
-│   │   │       ├── svcexample
-│   │   │       └── svcuser
 │   │   ├── middleware
-│   │   ├── model
 │   │   ├── object
-│   │   │   ├── gobject
-│   │   │   └── objuser
-│   │   ├── router
 │   │   └── scripts
-│   └── newapp
-├── log
-├── output
-│   └── build
+│   └── iam
+│       ├── cmd
+│       ├── config
+│       ├── docs
+│       ├── iamdao
+│       ├── iammodel
+│       ├── internal
+│       │   ├── controller
+│       │   ├── dto
+│       │   ├── router
+│       │   └── service
+│       ├── object
+│       └── scripts
 ├── pkg
 │   ├── code
 │   ├── dbclient
-│   ├── testutil
+│   ├── testsetup
 │   └── utils
 └── scripts
-    └── sql
 ```
 
 ---
@@ -76,7 +74,7 @@ Install the CLI tool:
 go install github.com/morehao/gocli@latest
 ```
 
-Ensure a `code_gen.yaml` config file exists under the application directory, e.g., `go-gin-web/apps/demoapp/config/code_gen.yaml`.
+Ensure a `code_gen.yaml` config file exists under the application directory, e.g., `goark/apps/demo/config/code_gen.yaml`.
 
 Run code generation commands:
 
@@ -109,10 +107,10 @@ Generate Swagger docs:
 make swag APP=demo
 ```
 
-Access docs at:
+Access docs at (dev mode):
 
 ```
-http://localhost:8099/demoapp/swagger/index.html
+http://localhost:8099/demo/redocs
 ```
 
 ---
@@ -156,4 +154,3 @@ See [cutter](https://github.com/morehao/gocli) for more usage details.
 ## Related Libraries
 
 All related components are implemented in the [golib](https://github.com/morehao/golib) package.
-

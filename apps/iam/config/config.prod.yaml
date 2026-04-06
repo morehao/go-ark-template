@@ -37,6 +37,16 @@ log:
     extra_keys:
       - requestId
 
+trace:
+  enable: true
+  service_version: ""
+  sampler: traceidratio
+  trace_id_ratio: 0.2
+  otlp:
+    endpoint: ""
+    insecure: false
+    timeout: 10s
+
 db_configs:
   - url: "mysql://root:123456@host.docker.internal:3306/practice?charset=utf8mb4&parseTime=True&loc=Local&timeout=5s&readTimeout=3s&writeTimeout=3s"
     service: iam

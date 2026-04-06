@@ -34,7 +34,7 @@ func NewUserCtr() UserCtr {
 // @Produce application/json
 // @Param req body dtouser.UserCreateReq true "创建用户管理"
 // @Success 200 {object} gincontext.DtoRender{data=dtouser.UserCreateResp} "{"code": 0,"data": "ok","msg": "success"}"
-// @Router /demo/v1/user/create [post]
+// @Router /v1/demo/user/create [post]
 func (ctr *userCtr) Create(ctx *gin.Context) {
 	var req dtouser.UserCreateReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -57,7 +57,7 @@ func (ctr *userCtr) Create(ctx *gin.Context) {
 // @Produce application/json
 // @Param req body dtouser.UserDeleteReq true "删除用户管理"
 // @Success 200 {object} gincontext.DtoRender{data=string} "{"code": 0,"data": "ok","msg": "删除成功"}"
-// @Router /demo/v1/user/delete [post]
+// @Router /v1/demo/user/delete [post]
 func (ctr *userCtr) Delete(ctx *gin.Context) {
 	var req dtouser.UserDeleteReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -80,7 +80,7 @@ func (ctr *userCtr) Delete(ctx *gin.Context) {
 // @Produce application/json
 // @Param req body dtouser.UserUpdateReq true "修改用户管理"
 // @Success 200 {object} gincontext.DtoRender{data=string} "{"code": 0,"data": "ok","msg": "修改成功"}"
-// @Router /demo/v1/user/update [post]
+// @Router /v1/demo/user/update [post]
 func (ctr *userCtr) Update(ctx *gin.Context) {
 	var req dtouser.UserUpdateReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -102,7 +102,7 @@ func (ctr *userCtr) Update(ctx *gin.Context) {
 // @Produce application/json
 // @Param req query dtouser.UserDetailReq true "用户管理详情"
 // @Success 200 {object} gincontext.DtoRender{data=dtouser.UserDetailResp} "{"code": 0,"data": "ok","msg": "success"}"
-// @Router /demo/v1/user/detail [get]
+// @Router /v1/demo/user/detail [get]
 func (ctr *userCtr) Detail(ctx *gin.Context) {
 	var req dtouser.UserDetailReq
 	if err := ctx.ShouldBindQuery(&req); err != nil {
@@ -125,7 +125,7 @@ func (ctr *userCtr) Detail(ctx *gin.Context) {
 // @Produce application/json
 // @Param req query dtouser.UserPageListReq true "用户管理列表"
 // @Success 200 {object} gincontext.DtoRender{data=dtouser.UserPageListResp} "{"code": 0,"data": "ok","msg": "success"}"
-// @Router /demo/v1/user/pageList [post]
+// @Router /v1/demo/user/pageList [post]
 func (ctr *userCtr) PageList(ctx *gin.Context) {
 	var req dtouser.UserPageListReq
 	if err := ctx.ShouldBindQuery(&req); err != nil {
