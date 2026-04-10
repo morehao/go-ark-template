@@ -1,19 +1,23 @@
 package dtoauth
 
-// LoginResp 登录响应
-type LoginResp struct {
-	// Token JWT令牌(单租户时直接返回完整token)
-	Token string `json:"token"`
+import "github.com/morehao/goark/apps/iam/iammodel"
+
+// LoginByPasswordResp 密码登录响应
+type LoginByPasswordResp struct {
+	// TempToken JWT临时令牌(需通过selectTenant换取正式token)
+	TempToken string `json:"tempToken"`
 	// NeedSelectTenant 是否需要选择租户
 	NeedSelectTenant bool `json:"needSelectTenant"`
-	// Tenants 可选租户列表(多租户时返回)
-	Tenants []TenantItem `json:"tenants"`
-	// UserInfo 用户信息(单租户时返回)
-	UserInfo *LoginUserInfo `json:"userInfo"`
+	// TenantList 可选租户列表
+	TenantList []TenantListItem `json:"tenantList"`
+	// PersonID 自然人ID
+	PersonID uint `json:"personId"`
+	// RealName 真实姓名
+	RealName string `json:"realName"`
 }
 
-// TenantItem 租户列表项
-type TenantItem struct {
+// TenantListItem 租户列表项
+type TenantListItem struct {
 	// TenantID 租户ID
 	TenantID uint `json:"tenantId"`
 	// TenantName 租户名称
@@ -28,11 +32,21 @@ type TenantItem struct {
 type SelectTenantResp struct {
 	// Token JWT令牌
 	Token string `json:"token"`
+	// RefreshToken 刷新令牌
+	RefreshToken string `json:"refreshToken"`
 	// UserInfo 用户信息
-	UserInfo *LoginUserInfo `json:"userInfo"`
+	UserInfo LoginUserInfo `json:"userInfo"`
 }
 
-// LoginUserInfo 登录用户信息
+// RefreshTokenResp 刷新令牌响应
+type RefreshTokenResp struct {
+	// Token 新的JWT令牌
+	Token string `json:"token"`
+	// RefreshToken 新的刷新令牌
+	RefreshToken string `json:"refreshToken"`
+}
+
+// LoginUserInfo 密码登录用户信息
 type LoginUserInfo struct {
 	// UserID 用户ID
 	UserID uint `json:"userId"`
@@ -43,7 +57,7 @@ type LoginUserInfo struct {
 	// RealName 真实姓名
 	RealName string `json:"realName"`
 	// UserType 用户类型
-	UserType string `json:"userType"`
+	UserType iammodel.UserType `json:"userType"`
 	// TenantID 租户ID
 	TenantID uint `json:"tenantId"`
 	// TenantName 租户名称

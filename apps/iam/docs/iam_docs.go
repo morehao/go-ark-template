@@ -15,7 +15,7 @@ const docTemplateiam = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/v1/iam/auth/login": {
+        "/v1/iam/auth/loginByPassword": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -26,15 +26,15 @@ const docTemplateiam = `{
                 "tags": [
                     "认证管理"
                 ],
-                "summary": "用户登录",
+                "summary": "密码登录",
                 "parameters": [
                     {
-                        "description": "登录请求",
+                        "description": "密码登录请求",
                         "name": "req",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dtoauth.LoginReq"
+                            "$ref": "#/definitions/dtoauth.LoginByPasswordReq"
                         }
                     }
                 ],
@@ -50,7 +50,7 @@ const docTemplateiam = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/dtoauth.LoginResp"
+                                            "$ref": "#/definitions/dtoauth.LoginByPasswordResp"
                                         }
                                     }
                                 }
@@ -72,6 +72,17 @@ const docTemplateiam = `{
                     "认证管理"
                 ],
                 "summary": "用户登出",
+                "parameters": [
+                    {
+                        "description": "登出请求",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtoauth.LogoutReq"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "{\"code\": 0,\"data\": \"ok\",\"msg\": \"登出成功\"}",
@@ -85,6 +96,51 @@ const docTemplateiam = `{
                                     "properties": {
                                         "data": {
                                             "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/iam/auth/refreshToken": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证管理"
+                ],
+                "summary": "刷新令牌",
+                "parameters": [
+                    {
+                        "description": "刷新令牌请求",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtoauth.RefreshTokenReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"code\": 0,\"data\": {\"token\":\"...\",\"refreshToken\":\"...\"},\"msg\": \"success\"}",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/gincontext.DtoRender"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dtoauth.RefreshTokenResp"
                                         }
                                     }
                                 }
@@ -1510,7 +1566,7 @@ const docTemplateiam = `{
         }
     },
     "definitions": {
-        "dtoauth.LoginReq": {
+        "dtoauth.LoginByPasswordReq": {
             "type": "object",
             "required": [
                 "account",
@@ -1527,31 +1583,31 @@ const docTemplateiam = `{
                 }
             }
         },
-        "dtoauth.LoginResp": {
+        "dtoauth.LoginByPasswordResp": {
             "type": "object",
             "properties": {
                 "needSelectTenant": {
                     "description": "NeedSelectTenant 是否需要选择租户",
                     "type": "boolean"
                 },
-                "tenants": {
-                    "description": "Tenants 可选租户列表(多租户时返回)",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dtoauth.TenantItem"
-                    }
+                "personId": {
+                    "description": "PersonID 自然人ID",
+                    "type": "integer"
                 },
-                "token": {
-                    "description": "Token JWT令牌(单租户时直接返回完整token)",
+                "realName": {
+                    "description": "RealName 真实姓名",
                     "type": "string"
                 },
-                "userInfo": {
-                    "description": "UserInfo 用户信息(单租户时返回)",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/dtoauth.LoginUserInfo"
-                        }
-                    ]
+                "tempToken": {
+                    "description": "TempToken JWT临时令牌(需通过selectTenant换取正式token)",
+                    "type": "string"
+                },
+                "tenantList": {
+                    "description": "TenantList 可选租户列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dtoauth.TenantListItem"
+                    }
                 }
             }
         },
@@ -1580,10 +1636,48 @@ const docTemplateiam = `{
                 },
                 "userType": {
                     "description": "UserType 用户类型",
-                    "type": "string"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.UserType"
+                        }
+                    ]
                 },
                 "username": {
                     "description": "Username 用户名",
+                    "type": "string"
+                }
+            }
+        },
+        "dtoauth.LogoutReq": {
+            "type": "object",
+            "properties": {
+                "refreshToken": {
+                    "description": "RefreshToken 刷新令牌（可选，传递后一并吊销）",
+                    "type": "string"
+                }
+            }
+        },
+        "dtoauth.RefreshTokenReq": {
+            "type": "object",
+            "required": [
+                "refreshToken"
+            ],
+            "properties": {
+                "refreshToken": {
+                    "description": "RefreshToken 刷新令牌",
+                    "type": "string"
+                }
+            }
+        },
+        "dtoauth.RefreshTokenResp": {
+            "type": "object",
+            "properties": {
+                "refreshToken": {
+                    "description": "RefreshToken 新的刷新令牌",
+                    "type": "string"
+                },
+                "token": {
+                    "description": "Token 新的JWT令牌",
                     "type": "string"
                 }
             }
@@ -1603,6 +1697,10 @@ const docTemplateiam = `{
         "dtoauth.SelectTenantResp": {
             "type": "object",
             "properties": {
+                "refreshToken": {
+                    "description": "RefreshToken 刷新令牌",
+                    "type": "string"
+                },
                 "token": {
                     "description": "Token JWT令牌",
                     "type": "string"
@@ -1617,7 +1715,7 @@ const docTemplateiam = `{
                 }
             }
         },
-        "dtoauth.TenantItem": {
+        "dtoauth.TenantListItem": {
             "type": "object",
             "properties": {
                 "orgId": {
@@ -3330,6 +3428,19 @@ const docTemplateiam = `{
             "x-enum-varnames": [
                 "UserDeptTypePrimary",
                 "UserDeptTypeSecondary"
+            ]
+        },
+        "iammodel.UserType": {
+            "type": "string",
+            "enum": [
+                "normal",
+                "tenant_admin",
+                "platform_admin"
+            ],
+            "x-enum-varnames": [
+                "UserTypeNormal",
+                "UserTypeTenantAdmin",
+                "UserTypePlatformAdmin"
             ]
         }
     }

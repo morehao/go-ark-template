@@ -15,6 +15,8 @@ const (
 	AuthOrganizationNotFoundError = 100809
 	AuthTempTokenRequiredError    = 100810
 	AuthTenantNotInOrgError       = 100811
+	AuthTokenRefreshError         = 100812
+	AuthRefreshTokenInvalidError  = 100813
 )
 
 var authErrorMsgMap = gerror.CodeMsgMap{
@@ -30,4 +32,6 @@ var authErrorMsgMap = gerror.CodeMsgMap{
 	AuthOrganizationNotFoundError: "未找到对应组织",
 	AuthTempTokenRequiredError:    "请先完成租户选择流程",
 	AuthTenantNotInOrgError:       "租户不属于当前组织",
+	AuthTokenRefreshError:         "刷新令牌失败",
+	AuthRefreshTokenInvalidError:  "刷新令牌无效或已过期",
 }
