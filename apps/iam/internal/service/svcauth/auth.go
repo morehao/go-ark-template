@@ -74,7 +74,7 @@ func (svc *authSvc) Login(ctx *gin.Context, req *dtoauth.LoginReq) (*dtoauth.Log
 	// 查询该自然人关联的所有用户账号
 	userList, err := iamdao.NewUserDao().GetListByCond(ctx, &iamdao.UserCond{
 		PersonID: personEntity.ID,
-		Status:   "active",
+		Status:   iammodel.UserStatusEnabled,
 	})
 	if err != nil {
 		glog.Errorf(ctx, "[svcauth.Login] GetListByCond fail, err:%v, personID:%d", err, personEntity.ID)
@@ -110,7 +110,7 @@ func (svc *authSvc) Login(ctx *gin.Context, req *dtoauth.LoginReq) (*dtoauth.Log
 				PersonID:   personEntity.ID,
 				Username:   userEntity.Username,
 				RealName:   personEntity.RealName,
-				UserType:   userEntity.UserType,
+				UserType:   string(userEntity.UserType),
 				TenantID:   userEntity.TenantID,
 				TenantName: tenantName,
 			},
@@ -161,7 +161,7 @@ func (svc *authSvc) SelectTenant(ctx *gin.Context, req *dtoauth.SelectTenantReq)
 	userEntity, err := iamdao.NewUserDao().GetByCond(ctx, &iamdao.UserCond{
 		PersonID: personID,
 		TenantID: req.TenantID,
-		Status:   "active",
+		Status:   iammodel.UserStatusEnabled,
 	})
 	if err != nil {
 		glog.Errorf(ctx, "[svcauth.SelectTenant] GetByCond fail, err:%v, personID:%d, tenantID:%d", err, personID, req.TenantID)
@@ -197,7 +197,7 @@ func (svc *authSvc) SelectTenant(ctx *gin.Context, req *dtoauth.SelectTenantReq)
 			PersonID:   personEntity.ID,
 			Username:   userEntity.Username,
 			RealName:   personEntity.RealName,
-			UserType:   userEntity.UserType,
+			UserType:   string(userEntity.UserType),
 			TenantID:   userEntity.TenantID,
 			TenantName: tenantName,
 		},
@@ -285,7 +285,7 @@ func (svc *authSvc) generateToken(ctx *gin.Context, userEntity iammodel.UserEnti
 
 	customData := JWTCustomData{
 		UserID:   userEntity.ID,
-		UserType: userEntity.UserType,
+		UserType: string(userEntity.UserType),
 		TenantID: userEntity.TenantID,
 		OrgID:    orgID,
 	}
@@ -357,7 +357,7 @@ func (svc *authSvc) getCurrentOrganization(ctx *gin.Context) (*iammodel.Organiza
 
 	organizationEntity, err := iamdao.NewOrganizationDao().GetByCond(ctx, &iamdao.OrganizationCond{
 		Domain: domain,
-		Status: "active",
+		Status: iammodel.OrgStatusEnabled,
 	})
 	if err != nil {
 		glog.Errorf(ctx, "[svcauth.getCurrentOrganization] daoOrganization GetByCond fail, err:%v, domain:%s", err, domain)
@@ -377,7 +377,7 @@ func (svc *authSvc) filterUsersByOrganization(ctx *gin.Context, userList iammode
 			glog.Errorf(ctx, "[svcauth.filterUsersByOrganization] daoTenant GetByID fail, err:%v, tenantID:%d", err, userEntity.TenantID)
 			return nil, code.GetError(code.AuthLoginError)
 		}
-		if tenantEntity == nil || tenantEntity.ID == 0 || tenantEntity.Status != "active" {
+		if tenantEntity == nil || tenantEntity.ID == 0 || tenantEntity.Status != iammodel.TenantStatusEnabled {
 			continue
 		}
 		if tenantEntity.OrganizationID != organizationID {

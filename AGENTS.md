@@ -78,6 +78,8 @@ apps/
 │   ├── demomodel/              # 数据模型
 │   └── demodao/                # 数据访问层
 ├── iam/                       # IAM 应用 (同上结构)
+│   └── internal/
+│       ├── constant/           # 应用层常量（前端专用）
 pkg/                          # 公共包
 ```
 
@@ -88,6 +90,58 @@ pkg/                          # 公共包
 - **结构体**: 导出使用大驼峰 `UserSvc`，非导出使用小驼峰 `userSvc`
 - **文件命名**: 小写下划线，如 `user_service.go`，测试文件 `*_test.go`
 - **数据库表**: 下划线命名，如 `user_department`
+
+### 常量定义规范
+
+**凡字典字符串，禁止硬编码，均需定义成常量。**
+
+| 常量类型 | 存放位置 | 说明 |
+|---------|---------|------|
+| 数据表名常量 | `iammodel/*.go` | 定义在对应结构体文件 |
+| 数据库存储的枚举值 | `iammodel/*.go` | 定义在对应结构体文件 |
+| 字典值常量 | `iammodel/*.go` | 所有字典字符串定义成常量 |
+| 应用层常量（前端专用） | `internal/constant/` | 状态映射等前端专用常量 |
+
+#### 数据表常量（model 层）
+
+```go
+// iammodel/department.go
+
+// 数据表名
+const TableNameDepartment = "iam_department"
+
+// 业务枚举类型
+type DeptStatus string
+
+// 字典值常量（禁止硬编码）
+const (
+    DeptStatusActive   DeptStatus = "active"
+    DeptStatusInactive DeptStatus = "inactive"
+)
+
+func (DepartmentEntity) TableName() string {
+    return TableNameDepartment
+}
+```
+
+#### 应用层常量（internal/constant/）
+
+前端专用的状态映射等常量，放在应用的 `internal/constant/` 目录下：
+
+```go
+// apps/iam/internal/constant/status.go
+package constant
+
+const (
+    StatusEnabled  = "enable"
+    StatusDisabled = "disable"
+)
+
+var StatusTextMap = map[string]string{
+    StatusEnabled:  "启用",
+    StatusDisabled: "停用",
+}
+```
 
 ### Import 排序
 

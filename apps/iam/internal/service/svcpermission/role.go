@@ -38,13 +38,13 @@ func NewRoleSvc() RoleSvc {
 // Create 创建角色管理
 func (svc *roleSvc) Create(ctx *gin.Context, req *dtopermission.RoleCreateReq) (*dtopermission.RoleCreateResp, error) {
 	insertEntity := &iammodel.RoleEntity{
-		DataScope:   req.DataScope,
+		DataScope:   iammodel.RoleDataScope(req.DataScope),
 		Description: req.Description,
 		RoleCode:    req.RoleCode,
 		RoleName:    req.RoleName,
-		RoleType:    req.RoleType,
+		RoleType:    iammodel.RoleType(req.RoleType),
 		SortOrder:   req.SortOrder,
-		Status:      req.Status,
+		Status:      iammodel.RoleStatus(req.Status),
 	}
 
 	if err := iamdao.NewRoleDao().Insert(ctx, insertEntity); err != nil {
@@ -116,13 +116,13 @@ func (svc *roleSvc) Detail(ctx *gin.Context, req *dtopermission.RoleDetailReq) (
 		ID: roleEntity.ID,
 		RoleBaseInfo: objpermission.RoleBaseInfo{
 			TenantID:    roleEntity.TenantID,
-			DataScope:   roleEntity.DataScope,
+			DataScope:   string(roleEntity.DataScope),
 			Description: roleEntity.Description,
 			RoleCode:    roleEntity.RoleCode,
 			RoleName:    roleEntity.RoleName,
-			RoleType:    roleEntity.RoleType,
+			RoleType:    string(roleEntity.RoleType),
 			SortOrder:   roleEntity.SortOrder,
-			Status:      roleEntity.Status,
+			Status:      string(roleEntity.Status),
 		},
 		OperatorBaseInfo: gobject.OperatorBaseInfo{
 			CreatedAt: roleEntity.CreatedAt.Unix(),
@@ -151,13 +151,13 @@ func (svc *roleSvc) PageList(ctx *gin.Context, req *dtopermission.RolePageListRe
 			ID: v.ID,
 			RoleBaseInfo: objpermission.RoleBaseInfo{
 				TenantID:    v.TenantID,
-				DataScope:   v.DataScope,
+				DataScope:   string(v.DataScope),
 				Description: v.Description,
 				RoleCode:    v.RoleCode,
 				RoleName:    v.RoleName,
-				RoleType:    v.RoleType,
+				RoleType:    string(v.RoleType),
 				SortOrder:   v.SortOrder,
-				Status:      v.Status,
+				Status:      string(v.Status),
 			},
 			OperatorBaseInfo: gobject.OperatorBaseInfo{
 				UpdatedAt: v.UpdatedAt.Unix(),
@@ -257,20 +257,20 @@ func (svc *roleSvc) ListMenus(ctx *gin.Context, req *dtopermission.RoleListMenus
 		list = append(list, dtopermission.RoleMenuListItem{
 			ID: menuEntity.ID,
 			MenuBaseInfo: objpermission.MenuBaseInfo{
-				CacheType:     menuEntity.CacheType,
+				CacheType:     string(menuEntity.CacheType),
 				TenantID:      menuEntity.TenantID,
 				ComponentPath: menuEntity.ComponentPath,
 				Icon:          menuEntity.Icon,
-				LinkType:      menuEntity.LinkType,
+				LinkType:      string(menuEntity.LinkType),
 				MenuCode:      menuEntity.MenuCode,
 				MenuName:      menuEntity.MenuName,
-				MenuType:      menuEntity.MenuType,
+				MenuType:      string(menuEntity.MenuType),
 				ParentID:      menuEntity.ParentID,
 				Permission:    menuEntity.Permission,
 				RoutePath:     menuEntity.RoutePath,
 				SortOrder:     menuEntity.SortOrder,
-				Status:        menuEntity.Status,
-				Visibility:    menuEntity.Visibility,
+				Status:        string(menuEntity.Status),
+				Visibility:    string(menuEntity.Visibility),
 			},
 			OperatorBaseInfo: gobject.OperatorBaseInfo{
 				UpdatedAt: menuEntity.UpdatedAt.Unix(),

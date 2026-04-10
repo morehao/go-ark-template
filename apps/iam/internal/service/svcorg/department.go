@@ -67,7 +67,7 @@ func (svc *departmentSvc) Create(ctx *gin.Context, req *dtoorg.DepartmentCreateR
 		LeaderID:  req.LeaderID,
 		ParentID:  req.ParentID,
 		SortOrder: req.SortOrder,
-		Status:    req.Status,
+		Status:    iammodel.DeptStatus(req.Status),
 		CreatedBy: operatorID,
 		UpdatedBy: operatorID,
 	}
@@ -157,7 +157,7 @@ func (svc *departmentSvc) Detail(ctx *gin.Context, req *dtoorg.DepartmentDetailR
 			LeaderID:  departmentEntity.LeaderID,
 			ParentID:  departmentEntity.ParentID,
 			SortOrder: departmentEntity.SortOrder,
-			Status:    departmentEntity.Status,
+			Status:    string(departmentEntity.Status),
 		},
 		OperatorBaseInfo: gobject.OperatorBaseInfo{
 			CreatedAt: departmentEntity.CreatedAt.Unix(),
@@ -196,7 +196,7 @@ func (svc *departmentSvc) PageList(ctx *gin.Context, req *dtoorg.DepartmentPageL
 				LeaderID:  v.LeaderID,
 				ParentID:  v.ParentID,
 				SortOrder: v.SortOrder,
-				Status:    v.Status,
+				Status:    string(v.Status),
 			},
 			OperatorBaseInfo: gobject.OperatorBaseInfo{
 				UpdatedAt: v.UpdatedAt.Unix(),
@@ -250,7 +250,7 @@ func (svc *departmentSvc) Tree(ctx *gin.Context, req *dtoorg.DepartmentTreeReq) 
 					LeaderID:  dept.LeaderID,
 					ParentID:  dept.ParentID,
 					SortOrder: dept.SortOrder,
-					Status:    dept.Status,
+					Status:    string(dept.Status),
 				},
 				OperatorBaseInfo: gobject.OperatorBaseInfo{
 					UpdatedAt: dept.UpdatedAt.Unix(),

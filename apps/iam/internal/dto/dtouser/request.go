@@ -1,6 +1,7 @@
 package dtouser
 
 import (
+	"github.com/morehao/goark/apps/iam/iammodel"
 	"github.com/morehao/goark/apps/iam/object/objuser"
 	"github.com/morehao/golib/biz/gobject"
 )
@@ -40,9 +41,9 @@ type UserDeleteReq struct {
 }
 
 type UserDepartmentAssignReq struct {
-	UserID       uint   `json:"userID" validate:"required" label:"用户ID"`
-	DepartmentID uint   `json:"departmentID" validate:"required" label:"部门ID"`
-	DeptType     string `json:"deptType" validate:"required" label:"部门类型: primary-secondary"`
+	UserID       uint                  `json:"userID" validate:"required" label:"用户ID"`
+	DepartmentID uint                  `json:"departmentID" validate:"required" label:"部门ID"`
+	DeptType     iammodel.UserDeptType `json:"deptType" validate:"required" label:"部门类型: primary-secondary"`
 }
 
 type UserDepartmentRemoveReq struct {

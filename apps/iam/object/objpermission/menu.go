@@ -25,7 +25,7 @@ type MenuBaseInfo struct {
 	RoutePath string `json:"routePath" form:"routePath"`
 	// SortOrder 排序
 	SortOrder int32 `json:"sortOrder" form:"sortOrder"`
-	// Status 状态: active-正常 inactive-停用
+	// Status 状态: enabled-启用 disabled-停用
 	Status string `json:"status" form:"status"`
 	// Visibility 可见性: visible-可见 hidden-隐藏
 	Visibility string `json:"visibility" form:"visibility"`

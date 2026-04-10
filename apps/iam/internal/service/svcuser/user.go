@@ -64,8 +64,8 @@ func (svc *userSvc) Create(ctx *gin.Context, req *dtouser.UserCreateReq) (*dtous
 		TenantID:    tenantID,
 		DeptID:      primaryDeptID,
 		Username:    req.Username,
-		UserType:    req.UserType,
-		Status:      req.Status,
+		UserType:    iammodel.UserType(req.UserType),
+		Status:      iammodel.UserStatus(req.Status),
 		EmployeeNo:  req.EmployeeNo,
 		JobLevel:    req.JobLevel,
 		Position:    req.Position,
@@ -168,8 +168,8 @@ func (svc *userSvc) Detail(ctx *gin.Context, req *dtouser.UserDetailReq) (*dtous
 			LoginCount:  userEntity.LoginCount,
 			PersonID:    userEntity.PersonID,
 			Position:    userEntity.Position,
-			Status:      userEntity.Status,
-			UserType:    userEntity.UserType,
+			Status:      string(userEntity.Status),
+			UserType:    string(userEntity.UserType),
 			Username:    userEntity.Username,
 		},
 		OperatorBaseInfo: gobject.OperatorBaseInfo{
@@ -208,8 +208,8 @@ func (svc *userSvc) PageList(ctx *gin.Context, req *dtouser.UserPageListReq) (*d
 				LoginCount:  v.LoginCount,
 				PersonID:    v.PersonID,
 				Position:    v.Position,
-				Status:      v.Status,
-				UserType:    v.UserType,
+				Status:      string(v.Status),
+				UserType:    string(v.UserType),
 				Username:    v.Username,
 			},
 			OperatorBaseInfo: gobject.OperatorBaseInfo{
@@ -333,7 +333,7 @@ func (svc *userSvc) AssignDepartment(ctx *gin.Context, req *dtouser.UserDepartme
 		return nil
 	}
 
-	deptType := iammodel.UserDeptType(req.DeptType)
+	deptType := req.DeptType
 	if deptType == iammodel.UserDeptTypePrimary {
 		primaryCond := &iamdao.UserDepartmentCond{
 			UserID:   req.UserID,
@@ -532,7 +532,7 @@ func (svc *userSvc) ListRoles(ctx *gin.Context, req *dtouser.UserRolesReq) (*dto
 			RoleID:   roleEntity.ID,
 			RoleName: roleEntity.RoleName,
 			RoleCode: roleEntity.RoleCode,
-			RoleType: roleEntity.RoleType,
+			RoleType: string(roleEntity.RoleType),
 		})
 	}
 

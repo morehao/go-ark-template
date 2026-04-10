@@ -12,7 +12,7 @@ type OrganizationCond struct {
 	ID     uint
 	Name   string
 	Domain string
-	Status string
+	Status iammodel.OrgStatus
 }
 
 func (c *OrganizationCond) BuildCondition(db *gorm.DB, tableName string) {

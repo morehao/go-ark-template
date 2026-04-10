@@ -15,7 +15,7 @@ type DepartmentCond struct {
 	ParentIDNil bool
 	DeptName    string
 	DeptCode    string
-	Status      string
+	Status      iammodel.DeptStatus
 }
 
 func (c *DepartmentCond) BuildCondition(db *gorm.DB, tableName string) {

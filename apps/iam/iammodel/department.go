@@ -7,8 +7,8 @@ import (
 type DeptStatus string
 
 const (
-	DeptStatusActive   DeptStatus = "active"
-	DeptStatusInactive DeptStatus = "inactive"
+	DeptStatusEnabled  DeptStatus = "enabled"
+	DeptStatusDisabled DeptStatus = "disabled"
 )
 
 // DepartmentEntity 部门管理表结构体
@@ -24,7 +24,7 @@ type DepartmentEntity struct {
 	LeaderID  uint       `gorm:"column:leader_id;type:bigint;;default '';comment: 部门负责人ID"`
 	ParentID  uint       `gorm:"column:parent_id;type:bigint;;default 0;comment: 父部门ID,0表示根部门"`
 	SortOrder int32      `gorm:"column:sort_order;type:int;;default 0;comment: 排序"`
-	Status    DeptStatus `gorm:"column:status;type:varchar(16);;default active;comment: 状态: active-正常 inactive-停用"`
+	Status    DeptStatus `gorm:"column:status;type:varchar(16);;default enabled;comment: 状态: enabled-启用 disabled-停用"`
 	UpdatedBy uint       `gorm:"column:updated_by;type:bigint;not null;default 0;comment: 更新人ID"`
 }
 

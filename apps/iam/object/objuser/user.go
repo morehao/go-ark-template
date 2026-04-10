@@ -21,7 +21,7 @@ type UserBaseInfo struct {
 	PersonID uint `json:"personID" form:"personID"`
 	// Position 职位
 	Position string `json:"position" form:"position"`
-	// Status 状态: active-正常 locked-锁定 disabled-禁用
+	// Status 状态: enabled-正常 locked-锁定 disabled-禁用
 	Status string `json:"status" form:"status"`
 	// UserType 用户类型: normal-普通用户 tenant_admin-租户管理员 platform_admin-平台管理员(可管理所有租户)
 	UserType string `json:"userType" form:"userType"`

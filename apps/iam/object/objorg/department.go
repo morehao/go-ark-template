@@ -1,7 +1,5 @@
 package objorg
 
-import "github.com/morehao/goark/apps/iam/iammodel"
-
 type DepartmentBaseInfo struct {
 	// TenantID 所属租户ID
 	TenantID uint `json:"tenantID" form:"tenantID"`
@@ -19,6 +17,6 @@ type DepartmentBaseInfo struct {
 	ParentID uint `json:"parentID" form:"parentID"`
 	// SortOrder 排序
 	SortOrder int32 `json:"sortOrder" form:"sortOrder"`
-	// Status 状态: active-正常 inactive-停用
-	Status iammodel.DeptStatus `json:"status" form:"status"`
+	// Status 状态: enabled-启用 disabled-停用
+	Status string `json:"status" form:"status"`
 }

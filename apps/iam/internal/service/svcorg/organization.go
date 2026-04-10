@@ -47,7 +47,7 @@ func (svc *organizationSvc) Create(ctx *gin.Context, req *dtoorg.OrganizationCre
 		Logo:             req.Logo,
 		Description:      req.Description,
 		SortOrder:        req.SortOrder,
-		Status:           req.Status,
+		Status:           iammodel.OrgStatus(req.Status),
 		OrganizationCode: req.OrganizationCode,
 		OrganizationName: req.OrganizationName,
 		CreatedBy:        operatorID,
@@ -82,8 +82,8 @@ func (svc *organizationSvc) Create(ctx *gin.Context, req *dtoorg.OrganizationCre
 				OperatorID: operatorID,
 				TenantID:   platformTenant.ID,
 				DeptID:     platformDept.ID,
-				Status:     "active",
-				UserType:   "tenant_admin",
+				Status:     iammodel.UserStatusEnabled,
+				UserType:   iammodel.UserTypeTenantAdmin,
 			}
 			result, err := user.CreatePersonWithUser(ctx, tx, params)
 			if err != nil {
@@ -147,7 +147,7 @@ func (svc *organizationSvc) LoginConfig(ctx *gin.Context, req *dtoorg.Organizati
 
 	organizationEntity, err := iamdao.NewOrganizationDao().GetByCond(ctx, &iamdao.OrganizationCond{
 		Domain: domain,
-		Status: "active",
+		Status: iammodel.OrgStatusEnabled,
 	})
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.OrganizationLoginConfig] daoOrganization GetByCond fail, err:%v, domain:%s", err, domain)
@@ -184,7 +184,7 @@ func (svc *organizationSvc) LoginConfig(ctx *gin.Context, req *dtoorg.Organizati
 		OrganizationName: organizationEntity.OrganizationName,
 		Domain:           organizationEntity.Domain,
 		Logo:             organizationEntity.Logo,
-		Status:           organizationEntity.Status,
+		Status:           string(organizationEntity.Status),
 		Configs:          configs,
 	}, nil
 }
@@ -205,7 +205,7 @@ func (svc *organizationSvc) Detail(ctx *gin.Context, req *dtoorg.OrganizationDet
 			Logo:             organizationEntity.Logo,
 			Description:      organizationEntity.Description,
 			SortOrder:        organizationEntity.SortOrder,
-			Status:           organizationEntity.Status,
+			Status:           string(organizationEntity.Status),
 			OrganizationCode: organizationEntity.OrganizationCode,
 			OrganizationName: organizationEntity.OrganizationName,
 		},
@@ -239,7 +239,7 @@ func (svc *organizationSvc) PageList(ctx *gin.Context, req *dtoorg.OrganizationP
 				Logo:             v.Logo,
 				Description:      v.Description,
 				SortOrder:        v.SortOrder,
-				Status:           v.Status,
+				Status:           string(v.Status),
 				OrganizationCode: v.OrganizationCode,
 				OrganizationName: v.OrganizationName,
 			},

@@ -15,6 +15,6 @@ type RoleBaseInfo struct {
 	RoleType string `json:"roleType" form:"roleType"`
 	// SortOrder 排序
 	SortOrder int32 `json:"sortOrder" form:"sortOrder"`
-	// Status 状态: active-正常 inactive-停用
+	// Status 状态: enabled-启用 disabled-停用
 	Status string `json:"status" form:"status"`
 }

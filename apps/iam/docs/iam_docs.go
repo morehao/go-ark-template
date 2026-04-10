@@ -1670,12 +1670,8 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: active-正常 inactive-停用",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/iammodel.DeptStatus"
-                        }
-                    ]
+                    "description": "Status 状态: enabled-启用 disabled-停用",
+                    "type": "string"
                 },
                 "tenantID": {
                     "description": "TenantID 所属租户ID",
@@ -1748,12 +1744,8 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: active-正常 inactive-停用",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/iammodel.DeptStatus"
-                        }
-                    ]
+                    "description": "Status 状态: enabled-启用 disabled-停用",
+                    "type": "string"
                 },
                 "tenantID": {
                     "description": "TenantID 所属租户ID",
@@ -1815,12 +1807,8 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: active-正常 inactive-停用",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/iammodel.DeptStatus"
-                        }
-                    ]
+                    "description": "Status 状态: enabled-启用 disabled-停用",
+                    "type": "string"
                 },
                 "tenantID": {
                     "description": "TenantID 所属租户ID",
@@ -1913,12 +1901,8 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: active-正常 inactive-停用",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/iammodel.DeptStatus"
-                        }
-                    ]
+                    "description": "Status 状态: enabled-启用 disabled-停用",
+                    "type": "string"
                 },
                 "tenantID": {
                     "description": "TenantID 所属租户ID",
@@ -1983,12 +1967,8 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: active-正常 inactive-停用",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/iammodel.DeptStatus"
-                        }
-                    ]
+                    "description": "Status 状态: enabled-启用 disabled-停用",
+                    "type": "string"
                 },
                 "tenantID": {
                     "description": "TenantID 所属租户ID",
@@ -2073,7 +2053,7 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: active-正常 inactive-停用",
+                    "description": "Status 状态: enabled-启用 disabled-停用",
                     "type": "string"
                 },
                 "tenantID": {
@@ -2170,7 +2150,7 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: active-正常 inactive-停用",
+                    "description": "Status 状态: enabled-启用 disabled-停用",
                     "type": "string"
                 },
                 "tenantID": {
@@ -2254,7 +2234,7 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: active-正常 inactive-停用",
+                    "description": "Status 状态: enabled-启用 disabled-停用",
                     "type": "string"
                 },
                 "tenantID": {
@@ -2372,7 +2352,7 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: active-正常 inactive-停用",
+                    "description": "Status 状态: enabled-启用 disabled-停用",
                     "type": "string"
                 },
                 "tenantID": {
@@ -2460,7 +2440,7 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: active-正常 inactive-停用",
+                    "description": "Status 状态: enabled-启用 disabled-停用",
                     "type": "string"
                 },
                 "tenantID": {
@@ -2521,7 +2501,7 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: active-正常 inactive-停用",
+                    "description": "Status 状态: enabled-启用 disabled-停用",
                     "type": "string"
                 },
                 "tenantID": {
@@ -2594,7 +2574,7 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: active-正常 inactive-停用",
+                    "description": "Status 状态: enabled-启用 disabled-停用",
                     "type": "string"
                 },
                 "tenantID": {
@@ -2671,7 +2651,7 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: active-正常 inactive-停用",
+                    "description": "Status 状态: enabled-启用 disabled-停用",
                     "type": "string"
                 },
                 "tenantID": {
@@ -2747,7 +2727,7 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: active-正常 inactive-停用",
+                    "description": "Status 状态: enabled-启用 disabled-停用",
                     "type": "string"
                 },
                 "tenantID": {
@@ -2829,7 +2809,7 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: active-正常 inactive-停用",
+                    "description": "Status 状态: enabled-启用 disabled-停用",
                     "type": "string"
                 },
                 "tenantID": {
@@ -2921,7 +2901,7 @@ const docTemplateiam = `{
                     }
                 },
                 "status": {
-                    "description": "Status 状态: active-正常 locked-锁定 disabled-禁用",
+                    "description": "Status 状态: enabled-正常 locked-锁定 disabled-禁用",
                     "type": "string"
                 },
                 "tenantID": {
@@ -2975,7 +2955,7 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "deptType": {
-                    "type": "string"
+                    "$ref": "#/definitions/iammodel.UserDeptType"
                 },
                 "userID": {
                     "type": "integer"
@@ -3077,7 +3057,7 @@ const docTemplateiam = `{
                     "type": "string"
                 },
                 "status": {
-                    "description": "Status 状态: active-正常 locked-锁定 disabled-禁用",
+                    "description": "Status 状态: enabled-正常 locked-锁定 disabled-禁用",
                     "type": "string"
                 },
                 "tenantID": {
@@ -3157,7 +3137,7 @@ const docTemplateiam = `{
                     "type": "string"
                 },
                 "status": {
-                    "description": "Status 状态: active-正常 locked-锁定 disabled-禁用",
+                    "description": "Status 状态: enabled-正常 locked-锁定 disabled-禁用",
                     "type": "string"
                 },
                 "tenantID": {
@@ -3312,7 +3292,7 @@ const docTemplateiam = `{
                     "type": "string"
                 },
                 "status": {
-                    "description": "Status 状态: active-正常 locked-锁定 disabled-禁用",
+                    "description": "Status 状态: enabled-正常 locked-锁定 disabled-禁用",
                     "type": "string"
                 },
                 "tenantID": {
@@ -3341,15 +3321,15 @@ const docTemplateiam = `{
                 }
             }
         },
-        "iammodel.DeptStatus": {
+        "iammodel.UserDeptType": {
             "type": "string",
             "enum": [
-                "active",
-                "inactive"
+                "primary",
+                "secondary"
             ],
             "x-enum-varnames": [
-                "DeptStatusActive",
-                "DeptStatusInactive"
+                "UserDeptTypePrimary",
+                "UserDeptTypeSecondary"
             ]
         }
     }
