@@ -18,6 +18,7 @@ import (
 	"github.com/morehao/golib/gauth/jwtauth"
 	"github.com/morehao/golib/gcrypto"
 	"github.com/morehao/golib/glog"
+	"gorm.io/gorm"
 )
 
 const (
@@ -34,6 +35,7 @@ type AuthSvc interface {
 	SelectTenant(ctx *gin.Context, req *dtoauth.SelectTenantReq) (*dtoauth.SelectTenantResp, error)
 	Logout(ctx *gin.Context, refreshToken string) error
 	RefreshToken(ctx *gin.Context, req *dtoauth.RefreshTokenReq) (*dtoauth.RefreshTokenResp, error)
+	Register(ctx *gin.Context, req *dtoauth.RegisterReq) (*dtoauth.RegisterResp, error)
 }
 
 type authSvc struct {
@@ -595,4 +597,195 @@ func (svc *authSvc) getUserDeptAndRoles(ctx *gin.Context, userID uint, tenantID 
 func hashToken(token string) string {
 	h := sha256.Sum256([]byte(token))
 	return fmt.Sprintf("%x", h)
+}
+
+func (svc *authSvc) Register(ctx *gin.Context, req *dtoauth.RegisterReq) (*dtoauth.RegisterResp, error) {
+	organizationEntity, err := svc.getCurrentOrganization(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	registerEnabled, err := svc.getOrgConfigBool(ctx, organizationEntity.ID, iammodel.OrgConfigKeyRegisterEnabled)
+	if err != nil || !registerEnabled {
+		return nil, code.GetError(code.AuthRegisterDisabled)
+	}
+
+	identityType, _ := svc.getOrgConfigString(ctx, organizationEntity.ID, iammodel.OrgConfigKeyRegisterIdentityType)
+	if identityType == "" {
+		identityType = string(iammodel.RegisterIdentityTypeEmail)
+	}
+	if err := svc.validateRegisterIdentity(ctx, req, iammodel.RegisterIdentityType(identityType)); err != nil {
+		return nil, err
+	}
+
+	requireApproval, _ := svc.getOrgConfigBool(ctx, organizationEntity.ID, iammodel.OrgConfigKeyRegisterRequireApproval)
+	userStatus := iammodel.UserStatusEnabled
+	message := "注册成功"
+	if requireApproval {
+		userStatus = iammodel.UserStatusDisabled
+		message = "注册成功，等待管理员审核"
+	}
+
+	passwordHash, err := gcrypto.GeneratePasswordHash(req.Password)
+	if err != nil {
+		glog.Errorf(ctx, "[svcauth.Register] GeneratePasswordHash fail, err:%v", err)
+		return nil, code.GetError(code.AuthRegisterError)
+	}
+
+	email := strings.TrimSpace(req.Email)
+	personEntity, _ := iamdao.NewPersonDao().GetByCond(ctx, &iamdao.PersonCond{Email: email})
+	personExists := personEntity != nil && personEntity.ID > 0
+
+	var tenantID, userID, personID uint
+	var deptID uint
+	txErr := dbclient.IamDB(ctx).Transaction(func(tx *gorm.DB) error {
+		tenantEntity := &iammodel.TenantEntity{
+			OrganizationID: organizationEntity.ID,
+			TenantName:     req.TenantName,
+			TenantCode:     req.TenantCode,
+			Status:         iammodel.TenantStatusEnabled,
+			CreatedBy:      0,
+			UpdatedBy:      0,
+		}
+		if err := iamdao.NewTenantDao().WithTx(tx).Insert(ctx, tenantEntity); err != nil {
+			glog.Errorf(ctx, "[svcauth.Register] Insert tenant fail, err:%v", err)
+			return err
+		}
+		tenantID = tenantEntity.ID
+
+		deptEntity := &iammodel.DepartmentEntity{
+			TenantID:  tenantID,
+			DeptCode:  req.TenantCode,
+			DeptName:  req.TenantName,
+			DeptLevel: 1,
+			ParentID:  0,
+			Status:    iammodel.DeptStatusEnabled,
+			CreatedBy: 0,
+			UpdatedBy: 0,
+		}
+		if err := iamdao.NewDepartmentDao().WithTx(tx).Insert(ctx, deptEntity); err != nil {
+			glog.Errorf(ctx, "[svcauth.Register] Insert department fail, err:%v", err)
+			return err
+		}
+		deptID = deptEntity.ID
+
+		deptPathMap := map[string]any{"dept_path": fmt.Sprintf("/%d/", deptEntity.ID)}
+		if err := iamdao.NewDepartmentDao().WithTx(tx).UpdateMap(ctx, deptEntity.ID, deptPathMap); err != nil {
+			glog.Errorf(ctx, "[svcauth.Register] Update department path fail, err:%v", err)
+			return err
+		}
+
+		if personExists {
+			personID = personEntity.ID
+		} else {
+			newPerson := &iammodel.PersonEntity{
+				Mobile:       strings.TrimSpace(req.Mobile),
+				Email:        email,
+				RealName:     req.RealName,
+				PasswordHash: passwordHash,
+				CreatedBy:    0,
+				UpdatedBy:    0,
+			}
+			if err := iamdao.NewPersonDao().WithTx(tx).Insert(ctx, newPerson); err != nil {
+				glog.Errorf(ctx, "[svcauth.Register] Insert person fail, err:%v", err)
+				return err
+			}
+			personID = newPerson.ID
+		}
+
+		userEntity := &iammodel.UserEntity{
+			TenantID:  tenantID,
+			DeptID:    deptID,
+			PersonID:  personID,
+			Username:  req.Username,
+			UserType:  iammodel.UserTypeTenantAdmin,
+			Status:    userStatus,
+			CreatedBy: 0,
+			UpdatedBy: 0,
+		}
+		if err := iamdao.NewUserDao().WithTx(tx).Insert(ctx, userEntity); err != nil {
+			glog.Errorf(ctx, "[svcauth.Register] Insert user fail, err:%v", err)
+			return err
+		}
+		userID = userEntity.ID
+
+		userDeptEntity := &iammodel.UserDepartmentEntity{
+			TenantID:  tenantID,
+			UserID:    userID,
+			DeptID:    deptID,
+			DeptType:  iammodel.UserDeptTypePrimary,
+			CreatedBy: 0,
+			UpdatedBy: 0,
+		}
+		if err := iamdao.NewUserDepartmentDao().WithTx(tx).Insert(ctx, userDeptEntity); err != nil {
+			glog.Errorf(ctx, "[svcauth.Register] Insert user department fail, err:%v", err)
+			return err
+		}
+
+		return nil
+	})
+	if txErr != nil {
+		glog.Errorf(ctx, "[svcauth.Register] Transaction fail, err:%v", txErr)
+		return nil, code.GetError(code.AuthRegisterError)
+	}
+
+	return &dtoauth.RegisterResp{
+		TenantID:     tenantID,
+		UserID:       userID,
+		PersonID:     personID,
+		Status:       string(userStatus),
+		PersonExists: personExists,
+		Message:      message,
+	}, nil
+}
+
+func (svc *authSvc) getOrgConfigBool(ctx *gin.Context, orgID uint, configKey string) (bool, error) {
+	configEntity, err := iamdao.NewOrganizationConfigDao().GetByCond(ctx, &iamdao.OrganizationConfigCond{
+		OrganizationID: orgID,
+		ConfigKey:      configKey,
+	})
+	if err != nil {
+		glog.Errorf(ctx, "[svcauth.getOrgConfigBool] GetByCond fail, err:%v, orgID:%d, key:%s", err, orgID, configKey)
+		return false, err
+	}
+	if configEntity == nil || configEntity.ID == 0 {
+		return false, nil
+	}
+	return strings.ToLower(configEntity.ConfigValue) == "true", nil
+}
+
+func (svc *authSvc) getOrgConfigString(ctx *gin.Context, orgID uint, configKey string) (string, error) {
+	configEntity, err := iamdao.NewOrganizationConfigDao().GetByCond(ctx, &iamdao.OrganizationConfigCond{
+		OrganizationID: orgID,
+		ConfigKey:      configKey,
+	})
+	if err != nil {
+		glog.Errorf(ctx, "[svcauth.getOrgConfigString] GetByCond fail, err:%v, orgID:%d, key:%s", err, orgID, configKey)
+		return "", err
+	}
+	if configEntity == nil || configEntity.ID == 0 {
+		return "", nil
+	}
+	return configEntity.ConfigValue, nil
+}
+
+func (svc *authSvc) validateRegisterIdentity(ctx *gin.Context, req *dtoauth.RegisterReq, identityType iammodel.RegisterIdentityType) error {
+	mobile := strings.TrimSpace(req.Mobile)
+	email := strings.TrimSpace(req.Email)
+
+	switch identityType {
+	case iammodel.RegisterIdentityTypeMobile:
+		if mobile == "" {
+			return code.GetError(code.AuthRegisterIdentityRequired)
+		}
+	case iammodel.RegisterIdentityTypeEmail:
+		if email == "" {
+			return code.GetError(code.AuthRegisterIdentityRequired)
+		}
+	case iammodel.RegisterIdentityTypeBoth:
+		if mobile == "" && email == "" {
+			return code.GetError(code.AuthRegisterIdentityRequired)
+		}
+	}
+	return nil
 }

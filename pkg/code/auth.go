@@ -17,6 +17,9 @@ const (
 	AuthTenantNotInOrgError       = 100811
 	AuthTokenRefreshError         = 100812
 	AuthRefreshTokenInvalidError  = 100813
+	AuthRegisterDisabled          = 100814
+	AuthRegisterError             = 100815
+	AuthRegisterIdentityRequired  = 100817
 )
 
 var authErrorMsgMap = gerror.CodeMsgMap{
@@ -34,4 +37,7 @@ var authErrorMsgMap = gerror.CodeMsgMap{
 	AuthTenantNotInOrgError:       "租户不属于当前组织",
 	AuthTokenRefreshError:         "刷新令牌失败",
 	AuthRefreshTokenInvalidError:  "刷新令牌无效或已过期",
+	AuthRegisterDisabled:          "该组织未开放用户注册",
+	AuthRegisterError:             "注册失败",
+	AuthRegisterIdentityRequired:  "请填写邮箱",
 }

@@ -63,3 +63,19 @@ type LoginUserInfo struct {
 	// TenantName 租户名称
 	TenantName string `json:"tenantName"`
 }
+
+// RegisterResp 用户注册响应
+type RegisterResp struct {
+	// TenantID 租户ID
+	TenantID uint `json:"tenantId"`
+	// UserID 用户ID
+	UserID uint `json:"userId"`
+	// PersonID 自然人ID
+	PersonID uint `json:"personId"`
+	// Status 用户状态
+	Status string `json:"status"`
+	// PersonExists Person是否已存在
+	PersonExists bool `json:"personExists"`
+	// Message 提示信息
+	Message string `json:"message"`
+}

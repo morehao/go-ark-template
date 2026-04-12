@@ -15,10 +15,8 @@ func userRouter(groups *ginserver.RouterGroups) {
 	v1RouterGroup.POST("/user/update", userCtr.Update)
 	v1RouterGroup.GET("/user/detail", userCtr.Detail)
 	v1RouterGroup.POST("/user/pageList", userCtr.PageList)
-	v1RouterGroup.POST("/user/assignDepartment", userCtr.AssignDepartment)
-	v1RouterGroup.POST("/user/removeDepartment", userCtr.RemoveDepartment)
+	v1RouterGroup.POST("/user/assignDepartments", userCtr.AssignDepartments)
 	v1RouterGroup.GET("/user/listDepartments", userCtr.ListDepartments)
 	v1RouterGroup.POST("/user/assignRoles", userCtr.AssignRoles)
-	v1RouterGroup.POST("/user/removeRoles", userCtr.RemoveRoles)
 	v1RouterGroup.GET("/user/listRoles", userCtr.ListRoles)
 }

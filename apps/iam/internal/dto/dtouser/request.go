@@ -1,7 +1,6 @@
 package dtouser
 
 import (
-	"github.com/morehao/goark/apps/iam/iammodel"
 	"github.com/morehao/goark/apps/iam/object/objuser"
 	"github.com/morehao/golib/biz/gobject"
 )
@@ -40,34 +39,20 @@ type UserDeleteReq struct {
 	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"`
 }
 
-type UserDepartmentAssignReq struct {
-	UserID       uint                  `json:"userID" validate:"required" label:"用户ID"`
-	DepartmentID uint                  `json:"departmentID" validate:"required" label:"部门ID"`
-	DeptType     iammodel.UserDeptType `json:"deptType" validate:"required" label:"部门类型: primary-secondary"`
-}
-
-type UserDepartmentRemoveReq struct {
-	UserID       uint `json:"userID" validate:"required" label:"用户ID"`
-	DepartmentID uint `json:"departmentID" validate:"required" label:"部门ID"`
+// UserDepartmentsAssignReq 分配用户部门（全量替换）
+type UserDepartmentsAssignReq struct {
+	UserID           uint   `json:"userID" validate:"required" label:"用户ID"`
+	PrimaryDeptID    uint   `json:"primaryDeptID" validate:"required" label:"主部门ID"`
+	SecondaryDeptIDs []uint `json:"secondaryDeptIDs" label:"其他部门ID列表"`
 }
 
 type UserDepartmentsReq struct {
 	UserID uint `json:"userID" form:"userID" validate:"required" label:"用户ID"`
 }
 
-// UserAssignRolesReq 用户分配角色请求
+// UserAssignRolesReq 用户分配角色请求（全量替换）
 type UserAssignRolesReq struct {
-	// UserID 用户ID
-	UserID uint `json:"userId" validate:"required" label:"用户ID"`
-	// RoleIDs 角色ID列表
-	RoleIDs []uint `json:"roleIds" validate:"required" label:"角色ID列表"`
-}
-
-// UserRemoveRolesReq 用户移除角色请求
-type UserRemoveRolesReq struct {
-	// UserID 用户ID
-	UserID uint `json:"userId" validate:"required" label:"用户ID"`
-	// RoleIDs 角色ID列表
+	UserID  uint   `json:"userId" validate:"required" label:"用户ID"`
 	RoleIDs []uint `json:"roleIds" validate:"required" label:"角色ID列表"`
 }
 

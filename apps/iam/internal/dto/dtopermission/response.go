@@ -68,14 +68,26 @@ type RoleMenuListResp struct {
 	List []RoleMenuListItem `json:"list"`
 }
 
-// MenuTreeNode 菜单树节点
+// MenuTreeNode 菜单树节点（实现 gtree.TreeNode[uint] 接口）
 type MenuTreeNode struct {
 	// ID 菜单ID
 	ID uint `json:"id"`
 	objpermission.MenuBaseInfo
 	gobject.OperatorBaseInfo
-	// Children 子菜单列表
+	// Children 子菜单列表（JSON 输出）
 	Children []MenuTreeNode `json:"children"`
+}
+
+func (n *MenuTreeNode) GetKey() uint {
+	return n.ID
+}
+
+func (n *MenuTreeNode) GetParentKey() uint {
+	return n.ParentID
+}
+
+func (n *MenuTreeNode) IsRoot() bool {
+	return n.ParentID == 0
 }
 
 // MenuTreeResp 菜单树响应

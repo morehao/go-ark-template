@@ -24,6 +24,7 @@ func Routers(engine *gin.Engine) {
 			ginmiddleware.AccessLog(),
 			ginmiddleware.JWTAuth(config.Conf.JWT.SignKey, ginmiddleware.WithWhiteList([]string{
 				"/v1/iam/organization/loginConfig",
+				"/v1/iam/auth/register",
 				"/v1/iam/auth/loginByPassword",
 				"/v1/iam/auth/selectTenant",
 			})),

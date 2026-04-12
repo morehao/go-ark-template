@@ -11,6 +11,7 @@ import (
 	"github.com/morehao/golib/biz/genericdao"
 	"github.com/morehao/golib/biz/gobject"
 	"github.com/morehao/golib/glog"
+	"github.com/morehao/golib/gtree"
 	"github.com/morehao/golib/gutil"
 )
 
@@ -32,22 +33,33 @@ func NewMenuSvc() MenuSvc {
 	return &menuSvc{}
 }
 
+type menuSortOrderComparator struct{}
+
+func (c menuSortOrderComparator) Compare(a, b *dtopermission.MenuTreeNode) int {
+	if a.SortOrder < b.SortOrder {
+		return -1
+	} else if a.SortOrder > b.SortOrder {
+		return 1
+	}
+	return 0
+}
+
 // Create 创建菜单管理
 func (svc *menuSvc) Create(ctx *gin.Context, req *dtopermission.MenuCreateReq) (*dtopermission.MenuCreateResp, error) {
 	insertEntity := &iammodel.MenuEntity{
-		CacheType:     iammodel.MenuCacheType(req.CacheType),
+		CacheType:     req.CacheType,
 		ComponentPath: req.ComponentPath,
 		Icon:          req.Icon,
-		LinkType:      iammodel.MenuLinkType(req.LinkType),
+		LinkType:      req.LinkType,
 		MenuCode:      req.MenuCode,
 		MenuName:      req.MenuName,
-		MenuType:      iammodel.MenuType(req.MenuType),
+		MenuType:      req.MenuType,
 		ParentID:      req.ParentID,
 		Permission:    req.Permission,
 		RoutePath:     req.RoutePath,
 		SortOrder:     req.SortOrder,
-		Status:        iammodel.MenuStatus(req.Status),
-		Visibility:    iammodel.MenuVisibility(req.Visibility),
+		Status:        req.Status,
+		Visibility:    req.Visibility,
 	}
 
 	if err := iamdao.NewMenuDao().Insert(ctx, insertEntity); err != nil {
@@ -124,20 +136,20 @@ func (svc *menuSvc) Detail(ctx *gin.Context, req *dtopermission.MenuDetailReq) (
 	resp := &dtopermission.MenuDetailResp{
 		ID: menuEntity.ID,
 		MenuBaseInfo: objpermission.MenuBaseInfo{
-			CacheType:     string(menuEntity.CacheType),
+			CacheType:     menuEntity.CacheType,
 			TenantID:      menuEntity.TenantID,
 			ComponentPath: menuEntity.ComponentPath,
 			Icon:          menuEntity.Icon,
-			LinkType:      string(menuEntity.LinkType),
+			LinkType:      menuEntity.LinkType,
 			MenuCode:      menuEntity.MenuCode,
 			MenuName:      menuEntity.MenuName,
-			MenuType:      string(menuEntity.MenuType),
+			MenuType:      menuEntity.MenuType,
 			ParentID:      menuEntity.ParentID,
 			Permission:    menuEntity.Permission,
 			RoutePath:     menuEntity.RoutePath,
 			SortOrder:     menuEntity.SortOrder,
-			Status:        string(menuEntity.Status),
-			Visibility:    string(menuEntity.Visibility),
+			Status:        menuEntity.Status,
+			Visibility:    menuEntity.Visibility,
 		},
 		OperatorBaseInfo: gobject.OperatorBaseInfo{
 			CreatedAt: menuEntity.CreatedAt.Unix(),
@@ -165,20 +177,20 @@ func (svc *menuSvc) PageList(ctx *gin.Context, req *dtopermission.MenuPageListRe
 		list = append(list, dtopermission.MenuPageListItem{
 			ID: v.ID,
 			MenuBaseInfo: objpermission.MenuBaseInfo{
-				CacheType:     string(v.CacheType),
+				CacheType:     v.CacheType,
 				TenantID:      v.TenantID,
 				ComponentPath: v.ComponentPath,
 				Icon:          v.Icon,
-				LinkType:      string(v.LinkType),
+				LinkType:      v.LinkType,
 				MenuCode:      v.MenuCode,
 				MenuName:      v.MenuName,
-				MenuType:      string(v.MenuType),
+				MenuType:      v.MenuType,
 				ParentID:      v.ParentID,
 				Permission:    v.Permission,
 				RoutePath:     v.RoutePath,
 				SortOrder:     v.SortOrder,
-				Status:        string(v.Status),
-				Visibility:    string(v.Visibility),
+				Status:        v.Status,
+				Visibility:    v.Visibility,
 			},
 			OperatorBaseInfo: gobject.OperatorBaseInfo{
 				UpdatedAt: v.UpdatedAt.Unix(),
@@ -200,54 +212,62 @@ func (svc *menuSvc) Tree(ctx *gin.Context, req *dtopermission.MenuTreeReq) (*dto
 		return nil, code.GetError(code.MenuGetPageListError)
 	}
 
-	var parentID uint
-	if req.ParentID != nil {
-		parentID = *req.ParentID
-	}
-
-	menuMap := make(map[uint][]iammodel.MenuEntity)
-	for _, menu := range allMenus {
-		menuMap[menu.ParentID] = append(menuMap[menu.ParentID], menu)
-	}
-
-	var buildTree func(parentID uint) []dtopermission.MenuTreeNode
-	buildTree = func(parentID uint) []dtopermission.MenuTreeNode {
-		var nodes []dtopermission.MenuTreeNode
-		children, ok := menuMap[parentID]
-		if !ok {
-			return nodes
+	nodes := make([]*dtopermission.MenuTreeNode, len(allMenus))
+	for i, menu := range allMenus {
+		nodes[i] = &dtopermission.MenuTreeNode{
+			ID: menu.ID,
+			MenuBaseInfo: objpermission.MenuBaseInfo{
+				CacheType:     menu.CacheType,
+				TenantID:      menu.TenantID,
+				ComponentPath: menu.ComponentPath,
+				Icon:          menu.Icon,
+				LinkType:      menu.LinkType,
+				MenuCode:      menu.MenuCode,
+				MenuName:      menu.MenuName,
+				MenuType:      menu.MenuType,
+				ParentID:      menu.ParentID,
+				Permission:    menu.Permission,
+				RoutePath:     menu.RoutePath,
+				SortOrder:     menu.SortOrder,
+				Status:        menu.Status,
+				Visibility:    menu.Visibility,
+			},
+			OperatorBaseInfo: gobject.OperatorBaseInfo{
+				UpdatedAt: menu.UpdatedAt.Unix(),
+			},
 		}
-		for _, menu := range children {
-			node := dtopermission.MenuTreeNode{
-				ID: menu.ID,
-				MenuBaseInfo: objpermission.MenuBaseInfo{
-					CacheType:     string(menu.CacheType),
-					TenantID:      menu.TenantID,
-					ComponentPath: menu.ComponentPath,
-					Icon:          menu.Icon,
-					LinkType:      string(menu.LinkType),
-					MenuCode:      menu.MenuCode,
-					MenuName:      menu.MenuName,
-					MenuType:      string(menu.MenuType),
-					ParentID:      menu.ParentID,
-					Permission:    menu.Permission,
-					RoutePath:     menu.RoutePath,
-					SortOrder:     menu.SortOrder,
-					Status:        string(menu.Status),
-					Visibility:    string(menu.Visibility),
-				},
-				OperatorBaseInfo: gobject.OperatorBaseInfo{
-					UpdatedAt: menu.UpdatedAt.Unix(),
-				},
-				Children: buildTree(menu.ID),
-			}
-			nodes = append(nodes, node)
-		}
-		return nodes
 	}
 
-	tree := buildTree(parentID)
-	return &dtopermission.MenuTreeResp{
-		List: tree,
-	}, nil
+	builder := gtree.NewTreeBuilder[uint, *dtopermission.MenuTreeNode](
+		gtree.WithComparator(menuSortOrderComparator{}),
+	)
+	tree := builder.Build(nodes)
+
+	roots := tree.Roots
+	if req.ParentID != nil && *req.ParentID != 0 {
+		if subtree, ok := tree.NodeMap[*req.ParentID]; ok {
+			roots = []*dtopermission.MenuTreeNode{subtree}
+		}
+	}
+
+	result := make([]dtopermission.MenuTreeNode, len(roots))
+	for i, root := range roots {
+		result[i] = *root
+		result[i].Children = svc.buildJSONChildren(tree, root.ID)
+	}
+
+	return &dtopermission.MenuTreeResp{List: result}, nil
+}
+
+func (svc *menuSvc) buildJSONChildren(tree *gtree.Tree[uint, *dtopermission.MenuTreeNode], parentID uint) []dtopermission.MenuTreeNode {
+	children, ok := tree.Children(parentID)
+	if !ok || len(children) == 0 {
+		return nil
+	}
+	result := make([]dtopermission.MenuTreeNode, len(children))
+	for i, child := range children {
+		result[i] = *child
+		result[i].Children = svc.buildJSONChildren(tree, child.ID)
+	}
+	return result
 }

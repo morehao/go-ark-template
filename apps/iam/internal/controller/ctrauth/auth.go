@@ -12,6 +12,7 @@ type AuthCtr interface {
 	SelectTenant(ctx *gin.Context)
 	Logout(ctx *gin.Context)
 	RefreshToken(ctx *gin.Context)
+	Register(ctx *gin.Context)
 }
 
 type authCtr struct {
@@ -105,6 +106,28 @@ func (ctr *authCtr) RefreshToken(ctx *gin.Context) {
 		return
 	}
 	res, err := ctr.authSvc.RefreshToken(ctx, &req)
+	if err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	gincontext.Success(ctx, res)
+}
+
+// Register 用户注册
+// @Tags 认证管理
+// @Summary 用户注册
+// @accept application/json
+// @Produce application/json
+// @Param req body dtoauth.RegisterReq true "用户注册请求"
+// @Success 200 {object} gincontext.DtoRender{data=dtoauth.RegisterResp}
+// @Router /v1/iam/auth/register [post]
+func (ctr *authCtr) Register(ctx *gin.Context) {
+	var req dtoauth.RegisterReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	res, err := ctr.authSvc.Register(ctx, &req)
 	if err != nil {
 		gincontext.Fail(ctx, err)
 		return

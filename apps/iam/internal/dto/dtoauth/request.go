@@ -25,3 +25,21 @@ type LogoutReq struct {
 	// RefreshToken 刷新令牌（可选，传递后一并吊销）
 	RefreshToken string `json:"refreshToken" label:"刷新令牌"`
 }
+
+// RegisterReq 用户注册请求
+type RegisterReq struct {
+	// TenantName 租户名称
+	TenantName string `json:"tenantName" validate:"required" label:"租户名称"`
+	// TenantCode 租户编码
+	TenantCode string `json:"tenantCode" validate:"required" label:"租户编码"`
+	// Username 用户名
+	Username string `json:"username" validate:"required" label:"用户名"`
+	// Password 密码
+	Password string `json:"password" validate:"required" label:"密码"`
+	// Mobile 手机号
+	Mobile string `json:"mobile" label:"手机号"`
+	// Email 邮箱
+	Email string `json:"email" validate:"required" label:"邮箱"`
+	// RealName 真实姓名
+	RealName string `json:"realName" validate:"required" label:"真实姓名"`
+}

@@ -25,9 +25,10 @@ type OrganizationSvc interface {
 	Create(ctx *gin.Context, req *dtoorg.OrganizationCreateReq) (*dtoorg.OrganizationCreateResp, error)
 	Delete(ctx *gin.Context, req *dtoorg.OrganizationDeleteReq) error
 	Update(ctx *gin.Context, req *dtoorg.OrganizationUpdateReq) error
-	LoginConfig(ctx *gin.Context, req *dtoorg.OrganizationLoginConfigReq) (*dtoorg.OrganizationLoginConfigResp, error)
+	GetConfigsByDomain(ctx *gin.Context, req *dtoorg.OrganizationGetConfigsByDomainReq) (*dtoorg.OrganizationConfigsResp, error)
 	Detail(ctx *gin.Context, req *dtoorg.OrganizationDetailReq) (*dtoorg.OrganizationDetailResp, error)
 	PageList(ctx *gin.Context, req *dtoorg.OrganizationPageListReq) (*dtoorg.OrganizationPageListResp, error)
+	ListConfig(ctx *gin.Context) (*dtoorg.OrgConfigListResp, error)
 }
 
 type organizationSvc struct {
@@ -92,6 +93,34 @@ func (svc *organizationSvc) Create(ctx *gin.Context, req *dtoorg.OrganizationCre
 			}
 			adminID = result.UserID
 		}
+
+		if len(req.Configs) > 0 {
+			for _, cfg := range req.Configs {
+				meta := iammodel.GetOrgConfigMetaByKey(cfg.Key)
+				if meta == nil {
+					continue
+				}
+				configValue := cfg.Value
+				if configValue == "" {
+					configValue = meta.DefaultValue
+				}
+				if !meta.ValidateValue(configValue) {
+					continue
+				}
+				configEntity := &iammodel.OrganizationConfigEntity{
+					ConfigGroup:    meta.Group,
+					ConfigKey:      meta.Key,
+					ConfigType:     meta.Type,
+					ConfigValue:    configValue,
+					Description:    meta.Description,
+					OrganizationID: insertEntity.ID,
+				}
+				if err := iamdao.NewOrganizationConfigDao().WithTx(tx).Insert(ctx, configEntity); err != nil {
+					glog.Errorf(ctx, "[svcorg.OrganizationCreate] Insert config fail, err:%v, key:%s", err, cfg.Key)
+					return err
+				}
+			}
+		}
 		return nil
 	})
 	if txErr != nil {
@@ -132,14 +161,55 @@ func (svc *organizationSvc) Update(ctx *gin.Context, req *dtoorg.OrganizationUpd
 		"organization_code": req.OrganizationCode,
 		"organization_name": req.OrganizationName,
 	}
-	if err := iamdao.NewOrganizationDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
-		glog.Errorf(ctx, "[svcorg.OrganizationUpdate] daoOrganization UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+
+	txErr := dbclient.IamDB(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := iamdao.NewOrganizationDao().WithTx(tx).UpdateMap(ctx, req.ID, updateMap); err != nil {
+			glog.Errorf(ctx, "[svcorg.OrganizationUpdate] daoOrganization UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+			return code.GetError(code.TenantUpdateError)
+		}
+
+		if len(req.Configs) > 0 {
+			if err := tx.Where("organization_id = ?", req.ID).Delete(&iammodel.OrganizationConfigEntity{}).Error; err != nil {
+				glog.Errorf(ctx, "[svcorg.OrganizationUpdate] Delete configs fail, err:%v, organizationID:%d", err, req.ID)
+				return code.GetError(code.TenantUpdateError)
+			}
+
+			for _, cfg := range req.Configs {
+				meta := iammodel.GetOrgConfigMetaByKey(cfg.Key)
+				if meta == nil {
+					continue
+				}
+				configValue := cfg.Value
+				if configValue == "" {
+					configValue = meta.DefaultValue
+				}
+				if !meta.ValidateValue(configValue) {
+					continue
+				}
+				configEntity := &iammodel.OrganizationConfigEntity{
+					ConfigGroup:    meta.Group,
+					ConfigKey:      meta.Key,
+					ConfigType:     meta.Type,
+					ConfigValue:    configValue,
+					Description:    meta.Description,
+					OrganizationID: req.ID,
+				}
+				if err := iamdao.NewOrganizationConfigDao().WithTx(tx).Insert(ctx, configEntity); err != nil {
+					glog.Errorf(ctx, "[svcorg.OrganizationUpdate] Insert config fail, err:%v, key:%s", err, cfg.Key)
+					return err
+				}
+			}
+		}
+		return nil
+	})
+	if txErr != nil {
+		glog.Errorf(ctx, "[svcorg.OrganizationUpdate] Transaction fail, err:%v, req:%s", txErr, gutil.ToJsonString(req))
 		return code.GetError(code.TenantUpdateError)
 	}
 	return nil
 }
 
-func (svc *organizationSvc) LoginConfig(ctx *gin.Context, req *dtoorg.OrganizationLoginConfigReq) (*dtoorg.OrganizationLoginConfigResp, error) {
+func (svc *organizationSvc) GetConfigsByDomain(ctx *gin.Context, req *dtoorg.OrganizationGetConfigsByDomainReq) (*dtoorg.OrganizationConfigsResp, error) {
 	domain := resolveDomain(ctx, req.Domain)
 	if domain == "" {
 		return nil, code.GetError(code.AuthOrganizationNotFoundError)
@@ -150,7 +220,7 @@ func (svc *organizationSvc) LoginConfig(ctx *gin.Context, req *dtoorg.Organizati
 		Status: iammodel.OrgStatusEnabled,
 	})
 	if err != nil {
-		glog.Errorf(ctx, "[svcorg.OrganizationLoginConfig] daoOrganization GetByCond fail, err:%v, domain:%s", err, domain)
+		glog.Errorf(ctx, "[svcorg.GetConfigsByDomain] daoOrganization GetByCond fail, err:%v, domain:%s", err, domain)
 		return nil, code.GetError(code.AuthLoginError)
 	}
 	if organizationEntity == nil || organizationEntity.ID == 0 {
@@ -161,30 +231,24 @@ func (svc *organizationSvc) LoginConfig(ctx *gin.Context, req *dtoorg.Organizati
 		OrganizationID: organizationEntity.ID,
 	})
 	if err != nil {
-		glog.Errorf(ctx, "[svcorg.OrganizationLoginConfig] daoOrganizationConfig GetListByCond fail, err:%v, organizationID:%d", err, organizationEntity.ID)
+		glog.Errorf(ctx, "[svcorg.GetConfigsByDomain] daoOrganizationConfig GetListByCond fail, err:%v, organizationID:%d", err, organizationEntity.ID)
 		return nil, code.GetError(code.AuthLoginError)
 	}
 
-	configs := map[string]map[string]string{
-		"auth":    {},
-		"general": {},
-	}
+	configs := make(map[string]map[string]string)
 	for _, v := range configEntityList {
-		if v.ConfigGroup != "auth" && v.ConfigGroup != "general" {
-			continue
-		}
 		if _, ok := configs[v.ConfigGroup]; !ok {
 			configs[v.ConfigGroup] = make(map[string]string)
 		}
 		configs[v.ConfigGroup][v.ConfigKey] = v.ConfigValue
 	}
 
-	return &dtoorg.OrganizationLoginConfigResp{
+	return &dtoorg.OrganizationConfigsResp{
 		OrganizationID:   organizationEntity.ID,
 		OrganizationName: organizationEntity.OrganizationName,
 		Domain:           organizationEntity.Domain,
 		Logo:             organizationEntity.Logo,
-		Status:           string(organizationEntity.Status),
+		Status:           organizationEntity.Status,
 		Configs:          configs,
 	}, nil
 }
@@ -198,8 +262,26 @@ func (svc *organizationSvc) Detail(ctx *gin.Context, req *dtoorg.OrganizationDet
 	if organizationEntity == nil || organizationEntity.ID == 0 {
 		return nil, code.GetError(code.TenantNotExistError)
 	}
+
+	configEntityList, err := iamdao.NewOrganizationConfigDao().GetListByCond(ctx, &iamdao.OrganizationConfigCond{
+		OrganizationID: organizationEntity.ID,
+	})
+	if err != nil {
+		glog.Errorf(ctx, "[svcorg.OrganizationDetail] daoOrganizationConfig GetListByCond fail, err:%v, organizationID:%d", err, organizationEntity.ID)
+		return nil, code.GetError(code.TenantGetDetailError)
+	}
+
+	configs := make(map[string]map[string]string)
+	for _, v := range configEntityList {
+		if _, ok := configs[v.ConfigGroup]; !ok {
+			configs[v.ConfigGroup] = make(map[string]string)
+		}
+		configs[v.ConfigGroup][v.ConfigKey] = v.ConfigValue
+	}
+
 	resp := &dtoorg.OrganizationDetailResp{
-		ID: organizationEntity.ID,
+		ID:      organizationEntity.ID,
+		Configs: configs,
 		OrganizationBaseInfo: objorg.OrganizationBaseInfo{
 			Domain:           organizationEntity.Domain,
 			Logo:             organizationEntity.Logo,
@@ -275,4 +357,26 @@ func resolveDomain(ctx *gin.Context, reqDomain string) string {
 
 	host = strings.TrimSuffix(strings.ToLower(strings.TrimSpace(host)), ".")
 	return host
+}
+
+func (svc *organizationSvc) ListConfig(ctx *gin.Context) (*dtoorg.OrgConfigListResp, error) {
+	configs := make([]dtoorg.OrgConfigMetaResp, 0, len(iammodel.OrgConfigMetaList))
+	for _, meta := range iammodel.OrgConfigMetaList {
+		options := make([]dtoorg.OrgConfigOptionResp, 0, len(meta.Options))
+		for _, opt := range meta.Options {
+			options = append(options, dtoorg.OrgConfigOptionResp{
+				Value:       opt.Value,
+				Description: opt.Description,
+			})
+		}
+		configs = append(configs, dtoorg.OrgConfigMetaResp{
+			Group:        meta.Group,
+			Key:          meta.Key,
+			Type:         meta.Type,
+			DefaultValue: meta.DefaultValue,
+			Description:  meta.Description,
+			Options:      options,
+		})
+	}
+	return &dtoorg.OrgConfigListResp{Configs: configs}, nil
 }
