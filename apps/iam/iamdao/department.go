@@ -9,10 +9,9 @@ import (
 
 type DepartmentCond struct {
 	*genericdao.BaseCond
-	TenantID uint
-	ParentID uint
-	// ParentIDNil 是否显式查询 ParentID（包括 ParentID=0 的情况）
-	ParentIDNil bool
+	TenantID    uint
+	ParentID    uint
+	ParentIDNil bool // 是否显式查询 ParentID（包括 ParentID=0 的情况）
 	DeptName    string
 	DeptCode    string
 	Status      iammodel.DeptStatus

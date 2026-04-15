@@ -7,103 +7,106 @@ import (
 )
 
 type TenantCreateResp struct {
-	ID       uint `json:"id"`
-	AdminID  uint `json:"adminID"`
-	PersonID uint `json:"personID"`
+	ID       uint `json:"id"`       // 租户ID
+	AdminID  uint `json:"adminID"`  // 管理员ID
+	PersonID uint `json:"personID"` // 自然人ID
 }
 
 type TenantDetailResp struct {
-	ID uint `json:"id" validate:"required"`
+	ID uint `json:"id" validate:"required"` // 数据自增id
 	objorg.TenantBaseInfo
 	gobject.OperatorBaseInfo
 }
 
 type TenantPageListItem struct {
-	ID uint `json:"id" validate:"required"`
+	ID uint `json:"id" validate:"required"` // 数据自增id
 	objorg.TenantBaseInfo
 	gobject.OperatorBaseInfo
 }
 
 type TenantPageListResp struct {
-	List  []TenantPageListItem `json:"list"`
-	Total int64                `json:"total"`
+	List  []TenantPageListItem `json:"list"`  // 数据列表
+	Total int64                `json:"total"` // 数据总条数
 }
 
 type DepartmentCreateResp struct {
-	ID uint `json:"id"`
+	ID uint `json:"id"` // 数据自增id
 }
+
 type DepartmentDetailResp struct {
-	ID uint `json:"id" validate:"required"`
+	ID uint `json:"id" validate:"required"` // 数据自增id
 	objorg.DepartmentBaseInfo
 	gobject.OperatorBaseInfo
 }
+
 type DepartmentPageListItem struct {
-	ID uint `json:"id" validate:"required"`
+	ID uint `json:"id" validate:"required"` // 数据自增id
 	objorg.DepartmentBaseInfo
 	gobject.OperatorBaseInfo
 }
+
 type DepartmentPageListResp struct {
-	List  []DepartmentPageListItem `json:"list"`
-	Total int64                    `json:"total"`
+	List  []DepartmentPageListItem `json:"list"`  // 数据列表
+	Total int64                    `json:"total"` // 数据总条数
 }
 
 type DepartmentTreeNode struct {
-	ID uint `json:"id"`
+	ID       uint                 `json:"id"`       // 数据自增id
+	Children []DepartmentTreeNode `json:"children"` // 子部门列表
 	objorg.DepartmentBaseInfo
 	gobject.OperatorBaseInfo
-	Children []DepartmentTreeNode `json:"children"`
 }
 
 type DepartmentTreeResp struct {
-	List []DepartmentTreeNode `json:"list"`
+	List []DepartmentTreeNode `json:"list"` // 部门树列表
 }
 
 type OrganizationCreateResp struct {
-	ID      uint `json:"id"`
-	AdminID uint `json:"adminID"`
+	ID      uint `json:"id"`      // 组织ID
+	AdminID uint `json:"adminID"` // 管理员ID
 }
 
 type OrganizationConfigsResp struct {
-	OrganizationID   uint                         `json:"organizationId"`
-	OrganizationName string                       `json:"organizationName"`
-	Domain           string                       `json:"domain"`
-	Logo             string                       `json:"logo"`
-	Status           iammodel.OrgStatus           `json:"status"`
-	Configs          map[string]map[string]string `json:"configs"`
+	OrganizationID   uint                         `json:"organizationId"`   // 组织ID
+	OrganizationName string                       `json:"organizationName"` // 组织名称
+	Domain           string                       `json:"domain"`           // 域名
+	Logo             string                       `json:"logo"`             // Logo
+	Status           iammodel.OrgStatus           `json:"status"`           // 状态
+	Configs          map[string]map[string]string `json:"configs"`          // 配置信息
 }
 
 type OrganizationDetailResp struct {
-	ID      uint                         `json:"id" validate:"required"`
-	Configs map[string]map[string]string `json:"configs"`
+	ID      uint                         `json:"id" validate:"required"` // 数据自增id
+	Configs map[string]map[string]string `json:"configs"`                // 配置信息
 	objorg.OrganizationBaseInfo
 	gobject.OperatorBaseInfo
 }
 
 type OrganizationPageListItem struct {
-	ID uint `json:"id" validate:"required"`
+	ID uint `json:"id" validate:"required"` // 数据自增id
 	objorg.OrganizationBaseInfo
 	gobject.OperatorBaseInfo
 }
 
 type OrganizationPageListResp struct {
-	List  []OrganizationPageListItem `json:"list"`
-	Total int64                      `json:"total"`
+	List  []OrganizationPageListItem `json:"list"`  // 数据列表
+	Total int64                      `json:"total"` // 数据总条数
 }
 
 type OrgConfigOptionResp struct {
-	Value       string `json:"value"`
-	Description string `json:"description"`
+	Value       string `json:"value"`       // 配置值
+	Description string `json:"description"` // 配置说明
 }
 
 type OrgConfigMetaResp struct {
-	Group        string                `json:"group"`
-	Key          string                `json:"key"`
-	Type         string                `json:"type"`
-	DefaultValue string                `json:"defaultValue"`
-	Description  string                `json:"description"`
-	Options      []OrgConfigOptionResp `json:"options,omitempty"`
+	Group        string                `json:"group"`             // 配置分组
+	Key          string                `json:"key"`               // 配置键
+	Type         string                `json:"type"`              // 配置类型
+	DefaultValue string                `json:"defaultValue"`      // 默认值
+	Description  string                `json:"description"`       // 配置说明
+	Options      []OrgConfigOptionResp `json:"options,omitempty"` // 配置选项
 }
 
 type OrgConfigListResp struct {
-	Configs []OrgConfigMetaResp `json:"configs"`
+	Configs []OrgConfigMetaResp `json:"configs"` // 配置列表
 }
