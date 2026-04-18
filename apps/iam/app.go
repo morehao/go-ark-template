@@ -5,8 +5,8 @@ import (
 	_ "github.com/morehao/goark/apps/iam/docs"
 
 	"github.com/morehao/goark/apps/iam/config"
-	"github.com/morehao/goark/apps/iam/internal/middleware"
 	"github.com/morehao/goark/apps/iam/internal/router"
+	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/biz/gconstant"
 	"github.com/morehao/golib/biz/gmiddleware/ginmiddleware"
 	"github.com/morehao/golib/biz/gserver/gindocs"
@@ -22,13 +22,13 @@ func Routers(engine *gin.Engine) {
 		Middlewares: []gin.HandlerFunc{
 			otelgin.Middleware(AppName),
 			ginmiddleware.AccessLog(),
-			ginmiddleware.JWTAuth(config.Conf.JWT.SignKey, ginmiddleware.WithWhiteList([]string{
-				"/v1/iam/organization/loginConfig",
+			ginmiddleware.JWTAuth(config.Conf.JWT.SignKey, ginmiddleware.WithAuthSkipPaths(
+				"/v1/iam/organization/getConfigsByDomain",
 				"/v1/iam/auth/register",
 				"/v1/iam/auth/loginByPassword",
 				"/v1/iam/auth/selectTenant",
-			})),
-			middleware.TokenBlacklistCheck(),
+			)),
+			ginmiddleware.TokenBlacklistCheck(dbclient.RedisCli, ginmiddleware.WithBlacklistKeyPrefix("iam:token:blacklist:")),
 		},
 	})
 

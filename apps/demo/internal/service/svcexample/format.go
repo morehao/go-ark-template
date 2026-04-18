@@ -6,7 +6,7 @@ import (
 )
 
 type FormatSvc interface {
-	FormatRes(ctx *gin.Context) *dtoexample.FormatResResp
+	FormatResponse(ctx *gin.Context) *dtoexample.FormatResponseResp
 }
 
 var _ FormatSvc = (*formatSvc)(nil)
@@ -18,8 +18,9 @@ func NewFormatSvc() FormatSvc {
 	return &formatSvc{}
 }
 
-func (svc *formatSvc) FormatRes(ctx *gin.Context) *dtoexample.FormatResResp {
-	return &dtoexample.FormatResResp{
+func (svc *formatSvc) FormatResponse(ctx *gin.Context) *dtoexample.FormatResponseResp {
+	pricePtr := 1.22245
+	return &dtoexample.FormatResponseResp{
 		Items: []dtoexample.FormatDataItem{
 			{
 				Price:     1.22245,
@@ -46,5 +47,12 @@ func (svc *formatSvc) FormatRes(ctx *gin.Context) *dtoexample.FormatResResp {
 		PriceMap: map[string]float64{
 			"1": 1.22245,
 		},
+		PricePtr:   &pricePtr,
+		AnyVal:     &dtoexample.FormatDataItem{Price: 1.22245, PriceList: []float64{1.22245}},
+		AnyMap:     map[string]any{"k": &dtoexample.FormatDataItem{Price: 1.22245}},
+		PtrItemMap: map[string]*dtoexample.FormatDataItem{"k": &dtoexample.FormatDataItem{Price: 1.22245}},
+		NilSlice:   nil,
+		NilMap:     nil,
+		NoTagPrice: 1.22245,
 	}
 }

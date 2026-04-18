@@ -10,6 +10,7 @@ import (
 	"github.com/morehao/golib/dbaccess/dbgorm"
 	"github.com/morehao/golib/dbaccess/dbredis"
 	"github.com/morehao/golib/glog"
+	"github.com/morehao/golib/gtrace"
 	"github.com/morehao/golib/protocol/ghttp"
 )
 
@@ -18,6 +19,7 @@ var Conf *Config
 type Config struct {
 	Server      Server                    `yaml:"server"`
 	Log         map[string]glog.LogConfig `yaml:"log"`
+	Trace       gtrace.TraceConfig        `yaml:"trace"`
 	DBConfigs   []dbgorm.GormConfig       `yaml:"db_configs"`
 	RedisConfig dbredis.RedisConfig       `yaml:"redis_config"`
 	ESConfigs   []dbes.ESConfig           `yaml:"es_configs"`
