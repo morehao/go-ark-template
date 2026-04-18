@@ -5,7 +5,7 @@ go 1.26.1
 require (
 	github.com/elastic/go-elasticsearch/v8 v8.19.3
 	github.com/gin-gonic/gin v1.12.0
-	github.com/morehao/golib v1.26.1
+	github.com/morehao/golib v0.1.0
 	github.com/redis/go-redis/v9 v9.18.0
 	github.com/stretchr/testify v1.11.1
 	github.com/swaggo/swag v1.16.6
@@ -15,7 +15,7 @@ require (
 	gorm.io/gorm v1.31.1
 )
 
-replace github.com/morehao/golib => ../golib
+// replace github.com/morehao/golib => ../golib
 
 require (
 	filippo.io/edwards25519 v1.2.0 // indirect
