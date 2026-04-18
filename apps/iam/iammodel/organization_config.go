@@ -31,3 +31,94 @@ func (l OrganizationConfigEntityList) ToMap() map[uint]OrganizationConfigEntity 
 	}
 	return m
 }
+
+const (
+	OrgConfigGroupAuth    = "auth"
+	OrgConfigGroupGeneral = "general"
+	OrgConfigGroupTheme   = "theme"
+)
+
+const (
+	OrgConfigTypeString  = "string"
+	OrgConfigTypeBoolean = "boolean"
+	OrgConfigTypeNumber  = "number"
+	OrgConfigTypeJSON    = "json"
+)
+
+const (
+	OrgConfigKeyRegisterEnabled         = "auth.register.enabled"
+	OrgConfigKeyRegisterRequireApproval = "auth.register.requireApproval"
+	OrgConfigKeyRegisterIdentityType    = "auth.register.identityType"
+)
+
+type RegisterIdentityType string
+
+const (
+	RegisterIdentityTypeMobile RegisterIdentityType = "mobile"
+	RegisterIdentityTypeEmail  RegisterIdentityType = "email"
+	RegisterIdentityTypeBoth   RegisterIdentityType = "both"
+)
+
+type OrgConfigMeta struct {
+	Group        string            `json:"group"`
+	Key          string            `json:"key"`
+	Type         string            `json:"type"`
+	DefaultValue string            `json:"defaultValue"`
+	Description  string            `json:"description"`
+	Options      []OrgConfigOption `json:"options,omitempty"`
+}
+
+type OrgConfigOption struct {
+	Value       string `json:"value"`
+	Description string `json:"description"`
+}
+
+var OrgConfigMetaList = []OrgConfigMeta{
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyRegisterEnabled,
+		Type:         OrgConfigTypeBoolean,
+		DefaultValue: "true",
+		Description:  "是否开放注册",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyRegisterRequireApproval,
+		Type:         OrgConfigTypeBoolean,
+		DefaultValue: "false",
+		Description:  "注册是否需要审核",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyRegisterIdentityType,
+		Type:         OrgConfigTypeString,
+		DefaultValue: string(RegisterIdentityTypeEmail),
+		Description:  "注册身份认证类型",
+		Options: []OrgConfigOption{
+			{Value: string(RegisterIdentityTypeMobile), Description: "手机号注册"},
+			{Value: string(RegisterIdentityTypeEmail), Description: "邮箱注册"},
+			{Value: string(RegisterIdentityTypeBoth), Description: "手机号或邮箱注册"},
+		},
+	},
+}
+
+func (m *OrgConfigMeta) ValidateValue(value string) bool {
+	if len(m.Options) == 0 {
+		return true
+	}
+	for _, opt := range m.Options {
+		if opt.Value == value {
+			return true
+		}
+	}
+	return false
+}
+
+func GetOrgConfigMetaByKey(key string) *OrgConfigMeta {
+	for i := range OrgConfigMetaList {
+		if OrgConfigMetaList[i].Key == key {
+			return &OrgConfigMetaList[i]
+		}
+	}
+	return nil
+}

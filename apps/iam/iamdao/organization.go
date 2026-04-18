@@ -9,8 +9,10 @@ import (
 
 type OrganizationCond struct {
 	*genericdao.BaseCond
-	ID   uint
-	Name string
+	ID     uint
+	Name   string
+	Domain string
+	Status iammodel.OrgStatus
 }
 
 func (c *OrganizationCond) BuildCondition(db *gorm.DB, tableName string) {
@@ -22,6 +24,12 @@ func (c *OrganizationCond) BuildCondition(db *gorm.DB, tableName string) {
 	}
 	if c.ID > 0 {
 		db.Where("id = ?", c.ID)
+	}
+	if c.Domain != "" {
+		db.Where("domain = ?", c.Domain)
+	}
+	if c.Status != "" {
+		db.Where("status = ?", c.Status)
 	}
 }
 

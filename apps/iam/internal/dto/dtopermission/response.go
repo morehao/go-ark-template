@@ -6,80 +6,76 @@ import (
 )
 
 type MenuCreateResp struct {
-	// ID 数据自增 ID
-	ID uint `json:"id"`
+	ID uint `json:"id"` // 数据自增 ID
 }
 
 type MenuDetailResp struct {
-	// ID 数据自增 ID
-	ID uint `json:"id" validate:"required"`
+	ID uint `json:"id" validate:"required"` // 数据自增 ID
 	objpermission.MenuBaseInfo
 	gobject.OperatorBaseInfo
 }
 
 type MenuPageListItem struct {
-	// ID 数据自增 ID
-	ID uint `json:"id" validate:"required"`
+	ID uint `json:"id" validate:"required"` // 数据自增 ID
 	objpermission.MenuBaseInfo
 	gobject.OperatorBaseInfo
 }
 
 type MenuPageListResp struct {
-	// List 数据列表
-	List []MenuPageListItem `json:"list"`
-	// Total 数据总条数
-	Total int64 `json:"total"`
+	List  []MenuPageListItem `json:"list"`  // 数据列表
+	Total int64              `json:"total"` // 数据总条数
 }
 
 type RoleCreateResp struct {
-	// ID 数据自增 ID
-	ID uint `json:"id"`
+	ID uint `json:"id"` // 数据自增 ID
 }
+
 type RoleDetailResp struct {
-	// ID 数据自增 ID
-	ID uint `json:"id" validate:"required"`
+	ID uint `json:"id" validate:"required"` // 数据自增 ID
 	objpermission.RoleBaseInfo
 	gobject.OperatorBaseInfo
 }
+
 type RolePageListItem struct {
-	// ID 数据自增 ID
-	ID uint `json:"id" validate:"required"`
+	ID uint `json:"id" validate:"required"` // 数据自增 ID
 	objpermission.RoleBaseInfo
 	gobject.OperatorBaseInfo
 }
+
 type RolePageListResp struct {
-	// List 数据列表
-	List []RolePageListItem `json:"list"`
-	// Total 数据总条数
-	Total int64 `json:"total"`
+	List  []RolePageListItem `json:"list"`  // 数据列表
+	Total int64              `json:"total"` // 数据总条数
 }
 
-// RoleMenuListItem 角色菜单列表项
 type RoleMenuListItem struct {
-	// ID 菜单ID
-	ID uint `json:"id"`
+	ID uint `json:"id"` // 菜单ID
 	objpermission.MenuBaseInfo
 	gobject.OperatorBaseInfo
 }
 
-// RoleMenuListResp 角色菜单列表响应
 type RoleMenuListResp struct {
-	// List 菜单列表
-	List []RoleMenuListItem `json:"list"`
+	List []RoleMenuListItem `json:"list"` // 菜单列表
 }
 
-// MenuTreeNode 菜单树节点
 type MenuTreeNode struct {
-	// ID 菜单ID
-	ID uint `json:"id"`
+	ID       uint           `json:"id"`       // 菜单ID
+	Children []MenuTreeNode `json:"children"` // 子菜单列表（JSON 输出）
 	objpermission.MenuBaseInfo
 	gobject.OperatorBaseInfo
-	// Children 子菜单列表
-	Children []MenuTreeNode `json:"children"`
 }
 
-// MenuTreeResp 菜单树响应
+func (n *MenuTreeNode) GetKey() uint {
+	return n.ID
+}
+
+func (n *MenuTreeNode) GetParentKey() uint {
+	return n.ParentID
+}
+
+func (n *MenuTreeNode) IsRoot() bool {
+	return n.ParentID == 0
+}
+
 type MenuTreeResp struct {
-	// List 菜单树列表
-	List []MenuTreeNode `json:"list"`
+	List []MenuTreeNode `json:"list"` // 菜单树列表
 }

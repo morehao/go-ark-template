@@ -7,7 +7,7 @@ import (
 )
 
 type FormatCtr interface {
-	FormatRes(ctx *gin.Context)
+	FormatResponse(ctx *gin.Context)
 }
 
 type formatCtr struct {
@@ -22,8 +22,8 @@ func NewFormatCtr() FormatCtr {
 	}
 }
 
-func (ctr *formatCtr) FormatRes(ctx *gin.Context) {
-	res := ctr.exampleSvc.FormatRes(ctx)
+func (ctr *formatCtr) FormatResponse(ctx *gin.Context) {
+	res := ctr.exampleSvc.FormatResponse(ctx)
 
 	gincontext.SuccessWithFormat(ctx, res)
 }

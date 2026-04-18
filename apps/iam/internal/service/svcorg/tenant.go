@@ -47,7 +47,7 @@ func (svc *tenantSvc) Create(ctx *gin.Context, req *dtoorg.TenantCreateReq) (*dt
 		Logo:                    req.Logo,
 		OrganizationID:          req.OrganizationID,
 		ShortName:               req.ShortName,
-		Status:                  req.Status,
+		Status:                  iammodel.TenantStatus(req.Status),
 		TenantCode:              req.TenantCode,
 		TenantName:              req.TenantName,
 		UnifiedSocialCreditCode: req.UnifiedSocialCreditCode,
@@ -74,7 +74,7 @@ func (svc *tenantSvc) Create(ctx *gin.Context, req *dtoorg.TenantCreateReq) (*dt
 			DeptName:  req.TenantName,
 			DeptLevel: 1,
 			ParentID:  0,
-			Status:    "active",
+			Status:    iammodel.DeptStatusEnabled,
 			CreatedBy: operatorID,
 			UpdatedBy: operatorID,
 		}
@@ -98,8 +98,8 @@ func (svc *tenantSvc) Create(ctx *gin.Context, req *dtoorg.TenantCreateReq) (*dt
 			TenantID:   tenantID,
 			DeptID:     deptID,
 			Username:   adminInfo.Username,
-			UserType:   "tenant_admin",
-			Status:     "active",
+			UserType:   iammodel.UserTypeTenantAdmin,
+			Status:     iammodel.UserStatusEnabled,
 		}
 		var err error
 		result, err = user.CreatePersonWithUser(ctx, tx, params)
@@ -188,7 +188,7 @@ func (svc *tenantSvc) Detail(ctx *gin.Context, req *dtoorg.TenantDetailReq) (*dt
 			Logo:                    tenantEntity.Logo,
 			OrganizationID:          tenantEntity.OrganizationID,
 			ShortName:               tenantEntity.ShortName,
-			Status:                  tenantEntity.Status,
+			Status:                  string(tenantEntity.Status),
 			TenantCode:              tenantEntity.TenantCode,
 			TenantName:              tenantEntity.TenantName,
 			UnifiedSocialCreditCode: tenantEntity.UnifiedSocialCreditCode,
@@ -234,7 +234,7 @@ func (svc *tenantSvc) PageList(ctx *gin.Context, req *dtoorg.TenantPageListReq) 
 				Logo:                    v.Logo,
 				OrganizationID:          v.OrganizationID,
 				ShortName:               v.ShortName,
-				Status:                  v.Status,
+				Status:                  string(v.Status),
 				TenantCode:              v.TenantCode,
 				TenantName:              v.TenantName,
 				UnifiedSocialCreditCode: v.UnifiedSocialCreditCode,

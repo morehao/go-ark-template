@@ -38,13 +38,13 @@ func NewRoleSvc() RoleSvc {
 // Create 创建角色管理
 func (svc *roleSvc) Create(ctx *gin.Context, req *dtopermission.RoleCreateReq) (*dtopermission.RoleCreateResp, error) {
 	insertEntity := &iammodel.RoleEntity{
-		DataScope:   req.DataScope,
+		DataScope:   iammodel.RoleDataScope(req.DataScope),
 		Description: req.Description,
 		RoleCode:    req.RoleCode,
 		RoleName:    req.RoleName,
-		RoleType:    req.RoleType,
+		RoleType:    iammodel.RoleType(req.RoleType),
 		SortOrder:   req.SortOrder,
-		Status:      req.Status,
+		Status:      iammodel.RoleStatus(req.Status),
 	}
 
 	if err := iamdao.NewRoleDao().Insert(ctx, insertEntity); err != nil {

@@ -13,11 +13,9 @@ type UserCtr interface {
 	Update(ctx *gin.Context)
 	Detail(ctx *gin.Context)
 	PageList(ctx *gin.Context)
-	AssignDepartment(ctx *gin.Context)
-	RemoveDepartment(ctx *gin.Context)
+	AssignDepartments(ctx *gin.Context)
 	ListDepartments(ctx *gin.Context)
 	AssignRoles(ctx *gin.Context)
-	RemoveRoles(ctx *gin.Context)
 	ListRoles(ctx *gin.Context)
 }
 
@@ -129,12 +127,12 @@ func (ctr *userCtr) Detail(ctx *gin.Context) {
 // @Summary 用户管理列表分页
 // @accept application/json
 // @Produce application/json
-// @Param req query dtouser.UserPageListReq true "用户管理列表"
+// @Param req body dtouser.UserPageListReq true "用户管理列表"
 // @Success 200 {object} gincontext.DtoRender{data=dtouser.UserPageListResp} "{"code": 0,"data": "ok","msg": "success"}"
 // @Router /v1/iam/user/pageList [post]
 func (ctr *userCtr) PageList(ctx *gin.Context) {
 	var req dtouser.UserPageListReq
-	if err := ctx.ShouldBindQuery(&req); err != nil {
+	if err := ctx.ShouldBindJSON(&req); err != nil {
 		gincontext.Fail(ctx, err)
 		return
 	}
@@ -147,46 +145,25 @@ func (ctr *userCtr) PageList(ctx *gin.Context) {
 	}
 }
 
-// AssignDepartment 分配用户部门
+// AssignDepartments 分配用户部门（全量替换）
 // @Tags 用户管理
-// @Summary 分配用户部门
+// @Summary 分配用户部门（全量替换）
 // @accept application/json
 // @Produce application/json
-// @Param req body dtouser.UserDepartmentAssignReq true "分配用户部门"
-// @Success 200 {object} gincontext.DtoRender{data=string} "{"code": 0,"data": "ok","msg": "success"}"
-// @Router /v1/iam/user/assignDepartment [post]
-func (ctr *userCtr) AssignDepartment(ctx *gin.Context) {
-	var req dtouser.UserDepartmentAssignReq
+// @Param req body dtouser.UserDepartmentsAssignReq true "分配用户部门"
+// @Success 200 {object} gincontext.DtoRender{data=string} "{"code": 0,"data": "ok","msg": "分配成功"}"
+// @Router /v1/iam/user/assignDepartments [post]
+func (ctr *userCtr) AssignDepartments(ctx *gin.Context) {
+	var req dtouser.UserDepartmentsAssignReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		gincontext.Fail(ctx, err)
 		return
 	}
-	if err := ctr.userSvc.AssignDepartment(ctx, &req); err != nil {
+	if err := ctr.userSvc.AssignDepartments(ctx, &req); err != nil {
 		gincontext.Fail(ctx, err)
 		return
 	}
 	gincontext.Success(ctx, "分配成功")
-}
-
-// RemoveDepartment 移除用户部门
-// @Tags 用户管理
-// @Summary 移除用户部门
-// @accept application/json
-// @Produce application/json
-// @Param req body dtouser.UserDepartmentRemoveReq true "移除用户部门"
-// @Success 200 {object} gincontext.DtoRender{data=string} "{"code": 0,"data": "ok","msg": "success"}"
-// @Router /v1/iam/user/removeDepartment [post]
-func (ctr *userCtr) RemoveDepartment(ctx *gin.Context) {
-	var req dtouser.UserDepartmentRemoveReq
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		gincontext.Fail(ctx, err)
-		return
-	}
-	if err := ctr.userSvc.RemoveDepartment(ctx, &req); err != nil {
-		gincontext.Fail(ctx, err)
-		return
-	}
-	gincontext.Success(ctx, "移除成功")
 }
 
 // ListDepartments 获取用户部门列表
@@ -230,27 +207,6 @@ func (ctr *userCtr) AssignRoles(ctx *gin.Context) {
 		return
 	}
 	gincontext.Success(ctx, "分配成功")
-}
-
-// RemoveRoles 移除用户角色
-// @Tags 用户管理
-// @Summary 移除用户角色
-// @accept application/json
-// @Produce application/json
-// @Param req body dtouser.UserRemoveRolesReq true "移除用户角色"
-// @Success 200 {object} gincontext.DtoRender{data=string} "{"code": 0,"data": "ok","msg": "移除成功"}"
-// @Router /v1/iam/user/removeRoles [post]
-func (ctr *userCtr) RemoveRoles(ctx *gin.Context) {
-	var req dtouser.UserRemoveRolesReq
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		gincontext.Fail(ctx, err)
-		return
-	}
-	if err := ctr.userSvc.RemoveRoles(ctx, &req); err != nil {
-		gincontext.Fail(ctx, err)
-		return
-	}
-	gincontext.Success(ctx, "移除成功")
 }
 
 // ListRoles 查询用户角色列表

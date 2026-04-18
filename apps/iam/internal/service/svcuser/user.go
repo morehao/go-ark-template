@@ -25,11 +25,9 @@ type UserSvc interface {
 	Update(ctx *gin.Context, req *dtouser.UserUpdateReq) error
 	Detail(ctx *gin.Context, req *dtouser.UserDetailReq) (*dtouser.UserDetailResp, error)
 	PageList(ctx *gin.Context, req *dtouser.UserPageListReq) (*dtouser.UserPageListResp, error)
-	AssignDepartment(ctx *gin.Context, req *dtouser.UserDepartmentAssignReq) error
-	RemoveDepartment(ctx *gin.Context, req *dtouser.UserDepartmentRemoveReq) error
+	AssignDepartments(ctx *gin.Context, req *dtouser.UserDepartmentsAssignReq) error
 	ListDepartments(ctx *gin.Context, req *dtouser.UserDepartmentsReq) (*dtouser.UserDepartmentsResp, error)
 	AssignRoles(ctx *gin.Context, req *dtouser.UserAssignRolesReq) error
-	RemoveRoles(ctx *gin.Context, req *dtouser.UserRemoveRolesReq) error
 	ListRoles(ctx *gin.Context, req *dtouser.UserRolesReq) (*dtouser.UserRolesResp, error)
 }
 
@@ -64,8 +62,8 @@ func (svc *userSvc) Create(ctx *gin.Context, req *dtouser.UserCreateReq) (*dtous
 		TenantID:    tenantID,
 		DeptID:      primaryDeptID,
 		Username:    req.Username,
-		UserType:    req.UserType,
-		Status:      req.Status,
+		UserType:    iammodel.UserType(req.UserType),
+		Status:      iammodel.UserStatus(req.Status),
 		EmployeeNo:  req.EmployeeNo,
 		JobLevel:    req.JobLevel,
 		Position:    req.Position,
@@ -168,8 +166,8 @@ func (svc *userSvc) Detail(ctx *gin.Context, req *dtouser.UserDetailReq) (*dtous
 			LoginCount:  userEntity.LoginCount,
 			PersonID:    userEntity.PersonID,
 			Position:    userEntity.Position,
-			Status:      userEntity.Status,
-			UserType:    userEntity.UserType,
+			Status:      string(userEntity.Status),
+			UserType:    string(userEntity.UserType),
 			Username:    userEntity.Username,
 		},
 		OperatorBaseInfo: gobject.OperatorBaseInfo{
@@ -208,8 +206,8 @@ func (svc *userSvc) PageList(ctx *gin.Context, req *dtouser.UserPageListReq) (*d
 				LoginCount:  v.LoginCount,
 				PersonID:    v.PersonID,
 				Position:    v.Position,
-				Status:      v.Status,
-				UserType:    v.UserType,
+				Status:      string(v.Status),
+				UserType:    string(v.UserType),
 				Username:    v.Username,
 			},
 			OperatorBaseInfo: gobject.OperatorBaseInfo{
@@ -297,101 +295,96 @@ func (svc *userSvc) createUserDeptRelations(ctx *gin.Context, tx *gorm.DB, tenan
 	return nil
 }
 
-func (svc *userSvc) AssignDepartment(ctx *gin.Context, req *dtouser.UserDepartmentAssignReq) error {
+func (svc *userSvc) AssignDepartments(ctx *gin.Context, req *dtouser.UserDepartmentsAssignReq) error {
 	operatorID := gincontext.GetUserID(ctx)
 	tenantID := gincontext.GetTenantID(ctx)
 
 	userEntity, err := iamdao.NewUserDao().GetByID(ctx, req.UserID)
 	if err != nil || userEntity == nil || userEntity.ID == 0 {
-		glog.Errorf(ctx, "[svcuser.AssignDepartment] user not found, userID:%d", req.UserID)
+		glog.Errorf(ctx, "[svcuser.AssignDepartments] user not found, userID:%d", req.UserID)
 		return code.GetError(code.UserNotExistError)
 	}
 
-	deptEntity, err := iamdao.NewDepartmentDao().GetByID(ctx, req.DepartmentID)
-	if err != nil || deptEntity == nil || deptEntity.ID == 0 {
-		glog.Errorf(ctx, "[svcuser.AssignDepartment] department not found, departmentID:%d", req.DepartmentID)
+	primaryDeptEntity, err := iamdao.NewDepartmentDao().GetByID(ctx, req.PrimaryDeptID)
+	if err != nil || primaryDeptEntity == nil || primaryDeptEntity.ID == 0 {
+		glog.Errorf(ctx, "[svcuser.AssignDepartments] primary department not found, primaryDeptID:%d", req.PrimaryDeptID)
 		return code.GetError(code.DepartmentNotExistError)
 	}
 
-	if deptEntity.TenantID != tenantID {
+	if primaryDeptEntity.TenantID != tenantID {
 		return code.GetError(code.TenantScopeForbiddenError)
 	}
 
-	userDeptDao := iamdao.NewUserDepartmentDao()
-	cond := &iamdao.UserDepartmentCond{
-		UserID:   req.UserID,
-		DeptID:   req.DepartmentID,
-		TenantID: tenantID,
-	}
-	existingDepts, _, err := userDeptDao.GetPageListByCond(ctx, cond)
-	if err != nil {
-		glog.Errorf(ctx, "[svcuser.AssignDepartment] GetPageListByCond fail, err:%v", err)
-		return code.GetError(code.UserUpdateError)
+	secondaryDeptIDs := make([]uint, 0)
+	for _, deptID := range req.SecondaryDeptIDs {
+		if deptID != req.PrimaryDeptID {
+			secondaryDeptIDs = append(secondaryDeptIDs, deptID)
+		}
 	}
 
-	if len(existingDepts) > 0 {
-		return nil
+	for _, deptID := range secondaryDeptIDs {
+		deptEntity, err := iamdao.NewDepartmentDao().GetByID(ctx, deptID)
+		if err != nil || deptEntity == nil || deptEntity.ID == 0 {
+			glog.Errorf(ctx, "[svcuser.AssignDepartments] secondary department not found, deptID:%d", deptID)
+			return code.GetError(code.DepartmentNotExistError)
+		}
+		if deptEntity.TenantID != tenantID {
+			return code.GetError(code.TenantScopeForbiddenError)
+		}
 	}
 
-	deptType := iammodel.UserDeptType(req.DeptType)
-	if deptType == iammodel.UserDeptTypePrimary {
-		primaryCond := &iamdao.UserDepartmentCond{
+	txErr := dbclient.IamDB(ctx).Transaction(func(tx *gorm.DB) error {
+		userDeptDao := iamdao.NewUserDepartmentDao().WithTx(tx)
+
+		existingList, err := userDeptDao.GetListByCond(ctx, &iamdao.UserDepartmentCond{
 			UserID:   req.UserID,
 			TenantID: tenantID,
-			DeptType: iammodel.UserDeptTypePrimary,
-		}
-		primaryDepts, _, _ := userDeptDao.GetPageListByCond(ctx, primaryCond)
-		for _, pd := range primaryDepts {
-			updateMap := map[string]any{
-				"dept_type": iammodel.UserDeptTypeSecondary,
-			}
-			if err := userDeptDao.UpdateMap(ctx, pd.ID, updateMap); err != nil {
-				glog.Errorf(ctx, "[svcuser.AssignDepartment] update primary to secondary fail, err:%v", err)
-			}
-		}
-	}
-
-	userDeptEntity := &iammodel.UserDepartmentEntity{
-		TenantID:  tenantID,
-		UserID:    req.UserID,
-		DeptID:    req.DepartmentID,
-		DeptType:  deptType,
-		CreatedBy: operatorID,
-		UpdatedBy: operatorID,
-	}
-	if err := userDeptDao.Insert(ctx, userDeptEntity); err != nil {
-		glog.Errorf(ctx, "[svcuser.AssignDepartment] Insert fail, err:%v", err)
-		return code.GetError(code.UserUpdateError)
-	}
-
-	return nil
-}
-
-func (svc *userSvc) RemoveDepartment(ctx *gin.Context, req *dtouser.UserDepartmentRemoveReq) error {
-	tenantID := gincontext.GetTenantID(ctx)
-
-	userDeptDao := iamdao.NewUserDepartmentDao()
-	cond := &iamdao.UserDepartmentCond{
-		UserID:   req.UserID,
-		DeptID:   req.DepartmentID,
-		TenantID: tenantID,
-	}
-	existingDepts, _, err := userDeptDao.GetPageListByCond(ctx, cond)
-	if err != nil {
-		glog.Errorf(ctx, "[svcuser.RemoveDepartment] GetPageListByCond fail, err:%v", err)
-		return code.GetError(code.UserUpdateError)
-	}
-
-	if len(existingDepts) == 0 {
-		return nil
-	}
-
-	userID := gincontext.GetUserID(ctx)
-	for _, dept := range existingDepts {
-		if err := userDeptDao.Delete(ctx, dept.ID, userID); err != nil {
-			glog.Errorf(ctx, "[svcuser.RemoveDepartment] Delete fail, err:%v", err)
+		})
+		if err != nil {
+			glog.Errorf(ctx, "[svcuser.AssignDepartments] GetListByCond fail, err:%v, userID:%d", err, req.UserID)
 			return code.GetError(code.UserUpdateError)
 		}
+
+		for _, existing := range existingList {
+			if err := userDeptDao.Delete(ctx, existing.ID, operatorID); err != nil {
+				glog.Errorf(ctx, "[svcuser.AssignDepartments] Delete fail, err:%v, id:%d", err, existing.ID)
+				return code.GetError(code.UserUpdateError)
+			}
+		}
+
+		primaryDeptEntity := &iammodel.UserDepartmentEntity{
+			TenantID:  tenantID,
+			UserID:    req.UserID,
+			DeptID:    req.PrimaryDeptID,
+			DeptType:  iammodel.UserDeptTypePrimary,
+			CreatedBy: operatorID,
+			UpdatedBy: operatorID,
+		}
+		if err := userDeptDao.Insert(ctx, primaryDeptEntity); err != nil {
+			glog.Errorf(ctx, "[svcuser.AssignDepartments] Insert primary dept fail, err:%v, userID:%d, deptID:%d", err, req.UserID, req.PrimaryDeptID)
+			return code.GetError(code.UserUpdateError)
+		}
+
+		for _, deptID := range secondaryDeptIDs {
+			secondaryDeptEntity := &iammodel.UserDepartmentEntity{
+				TenantID:  tenantID,
+				UserID:    req.UserID,
+				DeptID:    deptID,
+				DeptType:  iammodel.UserDeptTypeSecondary,
+				CreatedBy: operatorID,
+				UpdatedBy: operatorID,
+			}
+			if err := userDeptDao.Insert(ctx, secondaryDeptEntity); err != nil {
+				glog.Errorf(ctx, "[svcuser.AssignDepartments] Insert secondary dept fail, err:%v, userID:%d, deptID:%d", err, req.UserID, deptID)
+				return code.GetError(code.UserUpdateError)
+			}
+		}
+
+		return nil
+	})
+	if txErr != nil {
+		glog.Errorf(ctx, "[svcuser.AssignDepartments] Transaction fail, err:%v", txErr)
+		return code.GetError(code.UserUpdateError)
 	}
 
 	return nil
@@ -483,33 +476,6 @@ func (svc *userSvc) AssignRoles(ctx *gin.Context, req *dtouser.UserAssignRolesRe
 	return nil
 }
 
-// RemoveRoles 移除用户角色
-func (svc *userSvc) RemoveRoles(ctx *gin.Context, req *dtouser.UserRemoveRolesReq) error {
-	operatorID := gincontext.GetUserID(ctx)
-	tenantID := gincontext.GetTenantID(ctx)
-
-	userRoleDao := iamdao.NewUserRoleDao()
-	for _, roleID := range req.RoleIDs {
-		existingList, err := userRoleDao.GetListByCond(ctx, &iamdao.UserRoleCond{
-			UserID:   req.UserID,
-			RoleID:   roleID,
-			TenantID: tenantID,
-		})
-		if err != nil {
-			glog.Errorf(ctx, "[svcuser.RemoveRoles] GetListByCond fail, err:%v, userID:%d, roleID:%d", err, req.UserID, roleID)
-			return code.GetError(code.UserUpdateError)
-		}
-		for _, existing := range existingList {
-			if err := userRoleDao.Delete(ctx, existing.ID, operatorID); err != nil {
-				glog.Errorf(ctx, "[svcuser.RemoveRoles] Delete fail, err:%v, id:%d", err, existing.ID)
-				return code.GetError(code.UserUpdateError)
-			}
-		}
-	}
-	return nil
-}
-
-// ListRoles 查询用户角色列表
 func (svc *userSvc) ListRoles(ctx *gin.Context, req *dtouser.UserRolesReq) (*dtouser.UserRolesResp, error) {
 	tenantID := gincontext.GetTenantID(ctx)
 
@@ -532,7 +498,7 @@ func (svc *userSvc) ListRoles(ctx *gin.Context, req *dtouser.UserRolesReq) (*dto
 			RoleID:   roleEntity.ID,
 			RoleName: roleEntity.RoleName,
 			RoleCode: roleEntity.RoleCode,
-			RoleType: roleEntity.RoleType,
+			RoleType: string(roleEntity.RoleType),
 		})
 	}
 

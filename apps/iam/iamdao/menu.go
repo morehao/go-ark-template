@@ -13,8 +13,8 @@ type MenuCond struct {
 	ParentID uint
 	MenuName string
 	MenuCode string
-	MenuType string
-	Status   string
+	MenuType iammodel.MenuType
+	Status   iammodel.MenuStatus
 }
 
 func (c *MenuCond) BuildCondition(db *gorm.DB, tableName string) {

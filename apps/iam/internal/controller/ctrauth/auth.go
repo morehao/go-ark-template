@@ -8,9 +8,11 @@ import (
 )
 
 type AuthCtr interface {
-	Login(ctx *gin.Context)
+	LoginByPassword(ctx *gin.Context)
 	SelectTenant(ctx *gin.Context)
 	Logout(ctx *gin.Context)
+	RefreshToken(ctx *gin.Context)
+	Register(ctx *gin.Context)
 }
 
 type authCtr struct {
@@ -25,21 +27,21 @@ func NewAuthCtr() AuthCtr {
 	}
 }
 
-// Login 用户登录
+// LoginByPassword 密码登录
 // @Tags 认证管理
-// @Summary 用户登录
+// @Summary 密码登录
 // @accept application/json
 // @Produce application/json
-// @Param req body dtoauth.LoginReq true "登录请求"
-// @Success 200 {object} gincontext.DtoRender{data=dtoauth.LoginResp} "{"code": 0,"data": "ok","msg": "success"}"
-// @Router /v1/iam/auth/login [post]
-func (ctr *authCtr) Login(ctx *gin.Context) {
-	var req dtoauth.LoginReq
+// @Param req body dtoauth.LoginByPasswordReq true "密码登录请求"
+// @Success 200 {object} gincontext.DtoRender{data=dtoauth.LoginByPasswordResp} "{"code": 0,"data": "ok","msg": "success"}"
+// @Router /v1/iam/auth/loginByPassword [post]
+func (ctr *authCtr) LoginByPassword(ctx *gin.Context) {
+	var req dtoauth.LoginByPasswordReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		gincontext.Fail(ctx, err)
 		return
 	}
-	res, err := ctr.authSvc.Login(ctx, &req)
+	res, err := ctr.authSvc.LoginByPassword(ctx, &req)
 	if err != nil {
 		gincontext.Fail(ctx, err)
 		return
@@ -74,12 +76,61 @@ func (ctr *authCtr) SelectTenant(ctx *gin.Context) {
 // @Summary 用户登出
 // @accept application/json
 // @Produce application/json
+// @Param req body dtoauth.LogoutReq true "登出请求"
 // @Success 200 {object} gincontext.DtoRender{data=string} "{"code": 0,"data": "ok","msg": "登出成功"}"
 // @Router /v1/iam/auth/logout [post]
 func (ctr *authCtr) Logout(ctx *gin.Context) {
-	if err := ctr.authSvc.Logout(ctx); err != nil {
+	var req dtoauth.LogoutReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		req.RefreshToken = ""
+	}
+	if err := ctr.authSvc.Logout(ctx, req.RefreshToken); err != nil {
 		gincontext.Fail(ctx, err)
 		return
 	}
 	gincontext.Success(ctx, "登出成功")
+}
+
+// RefreshToken 刷新令牌
+// @Tags 认证管理
+// @Summary 刷新令牌
+// @accept application/json
+// @Produce application/json
+// @Param req body dtoauth.RefreshTokenReq true "刷新令牌请求"
+// @Success 200 {object} gincontext.DtoRender{data=dtoauth.RefreshTokenResp} "{"code": 0,"data": {"token":"...","refreshToken":"..."},"msg": "success"}"
+// @Router /v1/iam/auth/refreshToken [post]
+func (ctr *authCtr) RefreshToken(ctx *gin.Context) {
+	var req dtoauth.RefreshTokenReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	res, err := ctr.authSvc.RefreshToken(ctx, &req)
+	if err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	gincontext.Success(ctx, res)
+}
+
+// Register 用户注册
+// @Tags 认证管理
+// @Summary 用户注册
+// @accept application/json
+// @Produce application/json
+// @Param req body dtoauth.RegisterReq true "用户注册请求"
+// @Success 200 {object} gincontext.DtoRender{data=dtoauth.RegisterResp}
+// @Router /v1/iam/auth/register [post]
+func (ctr *authCtr) Register(ctx *gin.Context) {
+	var req dtoauth.RegisterReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	res, err := ctr.authSvc.Register(ctx, &req)
+	if err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	gincontext.Success(ctx, res)
 }

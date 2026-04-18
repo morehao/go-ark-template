@@ -7,27 +7,20 @@ import (
 
 type UserCreateReq struct {
 	objuser.UserBaseInfo
-	// Mobile 手机号
-	Mobile string `json:"mobile" form:"mobile"`
-	// Email 邮箱
-	Email string `json:"email" form:"email"`
-	// RealName 真实姓名
-	RealName string `json:"realName" form:"realName"`
-	// PrimaryDeptID 主部门ID，未传入时自动使用租户顶级部门
-	PrimaryDeptID uint `json:"primaryDeptID" form:"primaryDeptID"`
-	// SecondaryDeptIDs 其他关联部门ID列表（第二部门）
-	SecondaryDeptIDs []uint `json:"secondaryDeptIDs" form:"secondaryDeptIDs"`
+	Mobile           string `json:"mobile" form:"mobile"`                     // 手机号
+	Email            string `json:"email" form:"email"`                       // 邮箱
+	RealName         string `json:"realName" form:"realName"`                 // 真实姓名
+	PrimaryDeptID    uint   `json:"primaryDeptID" form:"primaryDeptID"`       // 主部门ID，未传入时自动使用租户顶级部门
+	SecondaryDeptIDs []uint `json:"secondaryDeptIDs" form:"secondaryDeptIDs"` // 其他关联部门ID列表（第二部门）
 }
 
 type UserUpdateReq struct {
-	// ID 数据自增 ID
-	ID uint `json:"id" validate:"required" label:"数据自增id"`
+	ID uint `json:"id" validate:"required" label:"数据自增id"` // 数据自增 ID
 	objuser.UserBaseInfo
 }
 
 type UserDetailReq struct {
-	// ID 数据自增 ID
-	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"`
+	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增 ID
 }
 
 type UserPageListReq struct {
@@ -35,43 +28,24 @@ type UserPageListReq struct {
 }
 
 type UserDeleteReq struct {
-	// ID 数据自增 ID
-	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"`
+	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增 ID
 }
 
-type UserDepartmentAssignReq struct {
-	UserID       uint   `json:"userID" validate:"required" label:"用户ID"`
-	DepartmentID uint   `json:"departmentID" validate:"required" label:"部门ID"`
-	DeptType     string `json:"deptType" validate:"required" label:"部门类型: primary-secondary"`
-}
-
-type UserDepartmentRemoveReq struct {
-	UserID       uint `json:"userID" validate:"required" label:"用户ID"`
-	DepartmentID uint `json:"departmentID" validate:"required" label:"部门ID"`
+type UserDepartmentsAssignReq struct {
+	UserID           uint   `json:"userID" validate:"required" label:"用户ID"`         // 用户ID
+	PrimaryDeptID    uint   `json:"primaryDeptID" validate:"required" label:"主部门ID"` // 主部门ID
+	SecondaryDeptIDs []uint `json:"secondaryDeptIDs" label:"其他部门ID列表"`               // 其他部门ID列表
 }
 
 type UserDepartmentsReq struct {
-	UserID uint `json:"userID" form:"userID" validate:"required" label:"用户ID"`
+	UserID uint `json:"userID" form:"userID" validate:"required" label:"用户ID"` // 用户ID
 }
 
-// UserAssignRolesReq 用户分配角色请求
 type UserAssignRolesReq struct {
-	// UserID 用户ID
-	UserID uint `json:"userId" validate:"required" label:"用户ID"`
-	// RoleIDs 角色ID列表
-	RoleIDs []uint `json:"roleIds" validate:"required" label:"角色ID列表"`
+	UserID  uint   `json:"userId" validate:"required" label:"用户ID"`    // 用户ID
+	RoleIDs []uint `json:"roleIds" validate:"required" label:"角色ID列表"` // 角色ID列表
 }
 
-// UserRemoveRolesReq 用户移除角色请求
-type UserRemoveRolesReq struct {
-	// UserID 用户ID
-	UserID uint `json:"userId" validate:"required" label:"用户ID"`
-	// RoleIDs 角色ID列表
-	RoleIDs []uint `json:"roleIds" validate:"required" label:"角色ID列表"`
-}
-
-// UserRolesReq 查询用户角色请求
 type UserRolesReq struct {
-	// UserID 用户ID
-	UserID uint `json:"userId" form:"userId" validate:"required" label:"用户ID"`
+	UserID uint `json:"userId" form:"userId" validate:"required" label:"用户ID"` // 用户ID
 }

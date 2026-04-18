@@ -12,7 +12,7 @@ type RoleCond struct {
 	TenantID uint
 	RoleName string
 	RoleCode string
-	Status   string
+	Status   iammodel.RoleStatus
 }
 
 func (c *RoleCond) BuildCondition(db *gorm.DB, tableName string) {

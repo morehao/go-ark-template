@@ -11,8 +11,10 @@ type OrganizationCtr interface {
 	Create(ctx *gin.Context)
 	Delete(ctx *gin.Context)
 	Update(ctx *gin.Context)
+	GetConfigsByDomain(ctx *gin.Context)
 	Detail(ctx *gin.Context)
 	PageList(ctx *gin.Context)
+	ListConfig(ctx *gin.Context)
 }
 
 type organizationCtr struct {
@@ -68,6 +70,28 @@ func (ctr *organizationCtr) Update(ctx *gin.Context) {
 	gincontext.Success(ctx, "修改成功")
 }
 
+// GetConfigsByDomain 根据域名获取组织配置
+// @Tags 组织管理
+// @Summary 根据域名获取组织配置
+// @accept application/json
+// @Produce application/json
+// @Param domain query string false "组织域名(可选)"
+// @Success 200 {object} gincontext.DtoRender{data=dtoorg.OrganizationConfigsResp} "{"code": 0,"data": "ok","msg": "success"}"
+// @Router /v1/iam/organization/getConfigsByDomain [get]
+func (ctr *organizationCtr) GetConfigsByDomain(ctx *gin.Context) {
+	var req dtoorg.OrganizationGetConfigsByDomainReq
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	res, err := ctr.organizationSvc.GetConfigsByDomain(ctx, &req)
+	if err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	gincontext.Success(ctx, res)
+}
+
 func (ctr *organizationCtr) Detail(ctx *gin.Context) {
 	var req dtoorg.OrganizationDetailReq
 	if err := ctx.ShouldBindQuery(&req); err != nil {
@@ -84,11 +108,20 @@ func (ctr *organizationCtr) Detail(ctx *gin.Context) {
 
 func (ctr *organizationCtr) PageList(ctx *gin.Context) {
 	var req dtoorg.OrganizationPageListReq
-	if err := ctx.ShouldBindQuery(&req); err != nil {
+	if err := ctx.ShouldBindJSON(&req); err != nil {
 		gincontext.Fail(ctx, err)
 		return
 	}
 	res, err := ctr.organizationSvc.PageList(ctx, &req)
+	if err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	gincontext.Success(ctx, res)
+}
+
+func (ctr *organizationCtr) ListConfig(ctx *gin.Context) {
+	res, err := ctr.organizationSvc.ListConfig(ctx)
 	if err != nil {
 		gincontext.Fail(ctx, err)
 		return

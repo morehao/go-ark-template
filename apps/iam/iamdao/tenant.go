@@ -12,7 +12,7 @@ type TenantCond struct {
 	OrganizationID uint
 	TenantName     string
 	TenantCode     string
-	Status         string
+	Status         iammodel.TenantStatus
 }
 
 func (c *TenantCond) BuildCondition(db *gorm.DB, tableName string) {

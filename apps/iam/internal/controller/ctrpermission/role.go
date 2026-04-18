@@ -125,12 +125,12 @@ func (ctr *roleCtr) Detail(ctx *gin.Context) {
 // @Summary 角色管理列表分页
 // @accept application/json
 // @Produce application/json
-// @Param req query dtopermission.RolePageListReq true "角色管理列表"
+// @Param req body dtopermission.RolePageListReq true "角色管理列表"
 // @Success 200 {object} gincontext.DtoRender{data=dtopermission.RolePageListResp} "{"code": 0,"data": "ok","msg": "success"}"
 // @Router /v1/iam/role/pageList [post]
 func (ctr *roleCtr) PageList(ctx *gin.Context) {
 	var req dtopermission.RolePageListReq
-	if err := ctx.ShouldBindQuery(&req); err != nil {
+	if err := ctx.ShouldBindJSON(&req); err != nil {
 		gincontext.Fail(ctx, err)
 		return
 	}

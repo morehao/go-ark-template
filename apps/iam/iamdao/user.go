@@ -12,7 +12,7 @@ type UserCond struct {
 	Username string
 	TenantID uint
 	PersonID uint
-	Status   string
+	Status   iammodel.UserStatus
 }
 
 func (c *UserCond) BuildCondition(db *gorm.DB, tableName string) {

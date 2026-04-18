@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/morehao/goark/apps/demo"
 	"github.com/morehao/goark/apps/demo/config"
-	"github.com/morehao/golib/biz/gmiddleware/ginmiddleware"
 	"github.com/morehao/golib/glog"
 )
 
@@ -18,11 +17,11 @@ func main() {
 	if config.Conf.Server.Env == "prod" {
 		gin.SetMode(gin.ReleaseMode)
 	}
+	defer shutdownTraceProvider()
 	defer glog.Close()
 
 	engine := gin.New()
 	engine.Use(gin.Recovery())
-	engine.Use(ginmiddleware.AccessLog())
 	demo.Routers(engine)
 
 	if err := engine.Run(fmt.Sprintf(":%s", config.Conf.Server.Port)); err != nil {

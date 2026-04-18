@@ -6,57 +6,44 @@ import (
 )
 
 type UserCreateResp struct {
-	// UserID 用户UserID
-	UserID uint `json:"userID"`
-	// PersonID 自然人ID
-	PersonID uint `json:"personID"`
+	UserID   uint `json:"userID"`   // 用户UserID
+	PersonID uint `json:"personID"` // 自然人ID
 }
 
 type UserDetailResp struct {
-	// ID 数据自增 ID
-	ID uint `json:"id" validate:"required"`
+	ID uint `json:"id" validate:"required"` // 数据自增 ID
 	objuser.UserBaseInfo
 	gobject.OperatorBaseInfo
 }
 
 type UserPageListItem struct {
-	// ID 数据自增 ID
-	ID uint `json:"id" validate:"required"`
+	ID uint `json:"id" validate:"required"` // 数据自增 ID
 	objuser.UserBaseInfo
 	gobject.OperatorBaseInfo
 }
 
 type UserPageListResp struct {
-	// List 数据列表
-	List []UserPageListItem `json:"list"`
-	// Total 数据总条数
-	Total int64 `json:"total"`
+	List  []UserPageListItem `json:"list"`  // 数据列表
+	Total int64              `json:"total"` // 数据总条数
 }
 
 type UserDepartmentItem struct {
-	DepartmentID   uint   `json:"departmentID"`
-	DepartmentName string `json:"departmentName"`
-	DeptType       string `json:"deptType"`
+	DepartmentID   uint   `json:"departmentID"`   // 部门ID
+	DepartmentName string `json:"departmentName"` // 部门名称
+	DeptType       string `json:"deptType"`       // 部门类型
 }
 
 type UserDepartmentsResp struct {
-	List []UserDepartmentItem `json:"list"`
+	List []UserDepartmentItem `json:"list"` // 用户部门列表
 }
 
-// UserRoleItem 用户角色列表项
 type UserRoleItem struct {
-	// RoleID 角色ID
-	RoleID uint `json:"roleId"`
-	// RoleName 角色名称
-	RoleName string `json:"roleName"`
-	// RoleCode 角色编码
-	RoleCode string `json:"roleCode"`
-	// RoleType 角色类型
-	RoleType string `json:"roleType"`
+	RoleID   uint   `json:"roleId"`   // 角色ID
+	RoleName string `json:"roleName"` // 角色名称
+	RoleCode string `json:"roleCode"` // 角色编码
+	RoleType string `json:"roleType"` // 角色类型
 }
 
-// UserRolesResp 用户角色列表响应
 type UserRolesResp struct {
-	// List 角色列表
-	List []UserRoleItem `json:"list"`
+	List []UserRoleItem `json:"list"` // 角色列表
 }

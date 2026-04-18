@@ -1,19 +1,19 @@
 package objorg
 
 type OrganizationBaseInfo struct {
-	Domain           string `json:"domain" form:"domain"`
-	Logo             string `json:"logo" form:"logo"`
-	Description      string `json:"description" form:"description"`
-	SortOrder        int32  `json:"sortOrder" form:"sortOrder"`
-	Status           string `json:"status" form:"status"`
-	OrganizationCode string `json:"organizationCode" form:"organizationCode"`
-	OrganizationName string `json:"organizationName" form:"organizationName"`
+	Domain           string `json:"domain" form:"domain"`                     // 域名
+	Logo             string `json:"logo" form:"logo"`                         // Logo
+	Description      string `json:"description" form:"description"`           // 描述
+	SortOrder        int32  `json:"sortOrder" form:"sortOrder"`               // 排序
+	Status           string `json:"status" form:"status"`                     // 状态
+	OrganizationCode string `json:"organizationCode" form:"organizationCode"` // 组织编码
+	OrganizationName string `json:"organizationName" form:"organizationName"` // 组织名称
 }
 
 type OrganizationAdminInfo struct {
-	Username string `json:"username" form:"username" validate:"required" label:"管理员用户名"`
-	Mobile   string `json:"mobile" form:"mobile" label:"管理员手机号"`
-	Email    string `json:"email" form:"email" label:"管理员邮箱"`
-	RealName string `json:"realName" form:"realName" validate:"required" label:"管理员真实姓名"`
-	Password string `json:"password" form:"password" label:"管理员密码"`
+	Username string `json:"username" form:"username" validate:"required" label:"管理员用户名"`  // 管理员用户名
+	Mobile   string `json:"mobile" form:"mobile" label:"管理员手机号"`                          // 管理员手机号
+	Email    string `json:"email" form:"email" label:"管理员邮箱"`                             // 管理员邮箱
+	RealName string `json:"realName" form:"realName" validate:"required" label:"管理员真实姓名"` // 管理员真实姓名
+	Password string `json:"password" form:"password" label:"管理员密码"`                       // 管理员密码
 }

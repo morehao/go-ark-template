@@ -6,6 +6,22 @@ import (
 	"gorm.io/gorm"
 )
 
+type UserStatus string
+
+const (
+	UserStatusEnabled  UserStatus = "enabled"
+	UserStatusLocked   UserStatus = "locked"
+	UserStatusDisabled UserStatus = "disabled"
+)
+
+type UserType string
+
+const (
+	UserTypeNormal        UserType = "normal"
+	UserTypeTenantAdmin   UserType = "tenant_admin"
+	UserTypePlatformAdmin UserType = "platform_admin"
+)
+
 // UserEntity 用户管理表结构体
 type UserEntity struct {
 	gorm.Model
@@ -21,9 +37,9 @@ type UserEntity struct {
 	LoginCount  int32      `gorm:"column:login_count;type:int;;default 0;comment: 登录次数"`
 	PersonID    uint       `gorm:"column:person_id;type:bigint;not null;default '';comment: 自然人ID"`
 	Position    string     `gorm:"column:position;type:varchar(64);;default '';comment: 职位"`
-	Status      string     `gorm:"column:status;type:varchar(16);;default active;comment: 状态: active-正常 locked-锁定 disabled-禁用"`
+	Status      UserStatus `gorm:"column:status;type:varchar(16);;default enabled;comment: 状态: enabled-正常 locked-锁定 disabled-禁用"`
 	UpdatedBy   uint       `gorm:"column:updated_by;type:bigint;not null;default 0;comment: 更新人ID"`
-	UserType    string     `gorm:"column:user_type;type:varchar(16);;default normal;comment: 用户类型: normal-普通用户 tenant_admin-租户管理员 platform_admin-平台管理员(可管理所有租户)"`
+	UserType    UserType   `gorm:"column:user_type;type:varchar(16);;default normal;comment: 用户类型: normal-普通用户 tenant_admin-租户管理员 platform_admin-平台管理员(可管理所有租户)"`
 	Username    string     `gorm:"column:username;type:varchar(32);not null;default '';comment: 用户名(租户用户:租户内唯一,平台管理员:全局唯一,需应用层保证)"`
 }
 

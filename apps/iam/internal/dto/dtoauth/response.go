@@ -1,51 +1,48 @@
 package dtoauth
 
-// LoginResp 登录响应
-type LoginResp struct {
-	// Token JWT令牌(单租户时直接返回完整token)
-	Token string `json:"token"`
-	// NeedSelectTenant 是否需要选择租户
-	NeedSelectTenant bool `json:"needSelectTenant"`
-	// Tenants 可选租户列表(多租户时返回)
-	Tenants []TenantItem `json:"tenants"`
-	// UserInfo 用户信息(单租户时返回)
-	UserInfo *LoginUserInfo `json:"userInfo"`
+import "github.com/morehao/goark/apps/iam/iammodel"
+
+type LoginByPasswordResp struct {
+	TempToken        string           `json:"tempToken"`        // JWT临时令牌(需通过selectTenant换取正式token)
+	NeedSelectTenant bool             `json:"needSelectTenant"` // 是否需要选择租户
+	TenantList       []TenantListItem `json:"tenantList"`       // 可选租户列表
+	PersonID         uint             `json:"personId"`         // 自然人ID
+	RealName         string           `json:"realName"`         // 真实姓名
 }
 
-// TenantItem 租户列表项
-type TenantItem struct {
-	// TenantID 租户ID
-	TenantID uint `json:"tenantId"`
-	// TenantName 租户名称
-	TenantName string `json:"tenantName"`
-	// OrgID 产品线ID
-	OrgID uint `json:"orgId"`
-	// OrgName 产品线名称
-	OrgName string `json:"orgName"`
+type TenantListItem struct {
+	TenantID   uint   `json:"tenantId"`   // 租户ID
+	TenantName string `json:"tenantName"` // 租户名称
+	OrgID      uint   `json:"orgId"`      // 产品线ID
+	OrgName    string `json:"orgName"`    // 产品线名称
 }
 
-// SelectTenantResp 选择租户响应
 type SelectTenantResp struct {
-	// Token JWT令牌
-	Token string `json:"token"`
-	// UserInfo 用户信息
-	UserInfo *LoginUserInfo `json:"userInfo"`
+	Token        string        `json:"token"`        // JWT令牌
+	RefreshToken string        `json:"refreshToken"` // 刷新令牌
+	UserInfo     LoginUserInfo `json:"userInfo"`     // 用户信息
 }
 
-// LoginUserInfo 登录用户信息
+type RefreshTokenResp struct {
+	Token        string `json:"token"`        // 新的JWT令牌
+	RefreshToken string `json:"refreshToken"` // 新的刷新令牌
+}
+
 type LoginUserInfo struct {
-	// UserID 用户ID
-	UserID uint `json:"userId"`
-	// PersonID 自然人ID
-	PersonID uint `json:"personId"`
-	// Username 用户名
-	Username string `json:"username"`
-	// RealName 真实姓名
-	RealName string `json:"realName"`
-	// UserType 用户类型
-	UserType string `json:"userType"`
-	// TenantID 租户ID
-	TenantID uint `json:"tenantId"`
-	// TenantName 租户名称
-	TenantName string `json:"tenantName"`
+	UserID     uint              `json:"userId"`     // 用户ID
+	PersonID   uint              `json:"personId"`   // 自然人ID
+	Username   string            `json:"username"`   // 用户名
+	RealName   string            `json:"realName"`   // 真实姓名
+	UserType   iammodel.UserType `json:"userType"`   // 用户类型
+	TenantID   uint              `json:"tenantId"`   // 租户ID
+	TenantName string            `json:"tenantName"` // 租户名称
+}
+
+type RegisterResp struct {
+	TenantID     uint   `json:"tenantId"`     // 租户ID
+	UserID       uint   `json:"userId"`       // 用户ID
+	PersonID     uint   `json:"personId"`     // 自然人ID
+	Status       string `json:"status"`       // 用户状态
+	PersonExists bool   `json:"personExists"` // Person是否已存在
+	Message      string `json:"message"`      // 提示信息
 }

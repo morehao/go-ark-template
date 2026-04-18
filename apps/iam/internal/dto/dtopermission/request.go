@@ -10,14 +10,12 @@ type MenuCreateReq struct {
 }
 
 type MenuUpdateReq struct {
-	// ID 数据自增 ID
-	ID uint `json:"id" validate:"required" label:"数据自增id"`
+	ID uint `json:"id" validate:"required" label:"数据自增id"` // 数据自增 ID
 	objpermission.MenuBaseInfo
 }
 
 type MenuDetailReq struct {
-	// ID 数据自增 ID
-	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"`
+	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增 ID
 }
 
 type MenuPageListReq struct {
@@ -25,46 +23,39 @@ type MenuPageListReq struct {
 }
 
 type MenuDeleteReq struct {
-	// ID 数据自增 ID
-	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"`
+	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增 ID
 }
 
 type RoleCreateReq struct {
 	objpermission.RoleBaseInfo
 }
+
 type RoleUpdateReq struct {
-	// ID 数据自增 ID
-	ID uint `json:"id" validate:"required" label:"数据自增id"`
+	ID uint `json:"id" validate:"required" label:"数据自增id"` // 数据自增 ID
 	objpermission.RoleBaseInfo
 }
+
 type RoleDetailReq struct {
-	// ID 数据自增 ID
-	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"`
+	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增 ID
 }
+
 type RolePageListReq struct {
 	gobject.PageQuery
 }
+
 type RoleDeleteReq struct {
-	// ID 数据自增 ID
-	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"`
+	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增 ID
 }
 
-// RoleAssignMenusReq 角色分配菜单请求
 type RoleAssignMenusReq struct {
-	// RoleID 角色ID
-	RoleID uint `json:"roleId" validate:"required" label:"角色ID"`
-	// MenuIDs 菜单ID列表
-	MenuIDs []uint `json:"menuIds" validate:"required" label:"菜单ID列表"`
+	RoleID  uint   `json:"roleId" validate:"required" label:"角色ID"`    // 角色ID
+	MenuIDs []uint `json:"menuIds" validate:"required" label:"菜单ID列表"` // 菜单ID列表
 }
 
-// RoleListMenusReq 查询角色菜单请求
 type RoleListMenusReq struct {
-	// RoleID 角色ID
-	RoleID uint `json:"roleId" form:"roleId" validate:"required" label:"角色ID"`
+	RoleID uint `json:"roleId" form:"roleId" validate:"required" label:"角色ID"` // 角色ID
 }
 
-// MenuTreeReq 菜单树请求
 type MenuTreeReq struct {
-	// ParentID 父菜单ID
-	ParentID *uint `json:"parentID" form:"parentID" label:"父菜单ID"`
+	ParentID *uint `json:"parentID" form:"parentID" label:"父菜单ID"` // 父菜单ID
 }
