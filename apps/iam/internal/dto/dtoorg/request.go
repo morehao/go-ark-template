@@ -52,36 +52,36 @@ type DepartmentDeleteReq struct {
 	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增id
 }
 
-type OrganizationConfigItem struct {
+type OrgConfigItem struct {
 	Key   string `json:"key" validate:"required" label:"配置键"` // 配置键
 	Value string `json:"value" label:"配置值"`                   // 配置值
 }
 
-type OrganizationCreateReq struct {
-	objorg.OrganizationBaseInfo
-	Admin   *objorg.OrganizationAdminInfo `json:"admin" validate:"required" label:"管理员信息"` // 管理员信息
-	Configs []OrganizationConfigItem      `json:"configs" label:"初始化配置"`                   // 初始化配置
+type OrgCreateReq struct {
+	objorg.OrgBaseInfo
+	Admin   *objorg.OrgAdminInfo  `json:"admin" validate:"required" label:"管理员信息"` // 管理员信息
+	Configs []OrgConfigItem       `json:"configs" label:"初始化配置"`                   // 初始化配置
 }
 
-type OrganizationUpdateReq struct {
-	ID      uint                     `json:"id" validate:"required" label:"数据自增id"` // 数据自增id
-	Configs []OrganizationConfigItem `json:"configs" label:"配置信息"`                  // 配置信息
-	objorg.OrganizationBaseInfo
+type OrgUpdateReq struct {
+	ID      uint              `json:"id" validate:"required" label:"数据自增id"` // 数据自增id
+	Configs []OrgConfigItem   `json:"configs" label:"配置信息"`                  // 配置信息
+	objorg.OrgBaseInfo
 }
 
-type OrganizationDetailReq struct {
+type OrgDetailReq struct {
 	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增id
 }
 
-type OrganizationGetConfigsByDomainReq struct {
+type OrgGetConfigsByDomainReq struct {
 	Domain string `json:"domain" form:"domain" label:"组织域名"` // 组织域名
 }
 
-type OrganizationPageListReq struct {
+type OrgPageListReq struct {
 	gobject.PageQuery
 	Name string `json:"name" form:"name" label:"组织名称"` // 组织名称
 }
 
-type OrganizationDeleteReq struct {
+type OrgDeleteReq struct {
 	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增id
 }

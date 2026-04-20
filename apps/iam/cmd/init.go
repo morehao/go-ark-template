@@ -8,7 +8,6 @@ import (
 
 	"github.com/morehao/goark/apps/iam"
 	"github.com/morehao/goark/apps/iam/config"
-	"github.com/morehao/goark/apps/iam/iamdao"
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/glog"
 	"github.com/morehao/golib/gtrace"
@@ -47,9 +46,7 @@ func resourceInit() error {
 	if err := dbclient.InitMultiDB(config.Conf.DBConfigs, gormLogConfig); err != nil {
 		return fmt.Errorf("init db failed: %w", err)
 	}
-	if err := iamdao.RegisterOrganizationCallbacks(); err != nil {
-		return fmt.Errorf("register organization callbacks failed: %w", err)
-	}
+	
 	var redisLogConfig *glog.LogConfig
 	if cfg, ok := config.Conf.Log["redis"]; ok {
 		redisLogConfig = &cfg

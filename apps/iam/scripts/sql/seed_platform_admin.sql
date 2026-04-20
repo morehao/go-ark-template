@@ -16,23 +16,23 @@ SET @platform_admin_email = 'admin@platform.com';
 SET @platform_admin_real_name = '平台管理员';
 
 -- 检查是否已存在平台组织
-SET @org_exists = (SELECT COUNT(*) FROM iam_organization WHERE organization_code = @platform_org_code);
+SET @org_exists = (SELECT COUNT(*) FROM iam_org WHERE org_code = @platform_org_code);
 
 -- 1. 创建平台组织
-INSERT INTO iam_organization 
-(organization_code, organization_name, description, status, created_at, updated_at)
+INSERT INTO iam_org 
+(org_code, org_name, description, status, created_at, updated_at)
 SELECT @platform_org_code, '平台管理组织', '平台系统管理专用组织', 'active', NOW(), NOW()
 FROM DUAL WHERE @org_exists = 0;
 
 -- 获取平台组织ID
-SET @org_id = (SELECT id FROM iam_organization WHERE organization_code = @platform_org_code LIMIT 1);
+SET @org_id = (SELECT id FROM iam_org WHERE org_code = @platform_org_code LIMIT 1);
 
 -- 检查是否已存在平台租户
 SET @tenant_exists = (SELECT COUNT(*) FROM iam_tenant WHERE tenant_code = @platform_tenant_code);
 
 -- 2. 创建平台租户
 INSERT INTO iam_tenant 
-(organization_id, tenant_code, tenant_name, status, created_at, updated_at)
+(org_id, tenant_code, tenant_name, status, created_at, updated_at)
 SELECT @org_id, @platform_tenant_code, '平台管理租户', 'active', NOW(), NOW()
 FROM DUAL WHERE @tenant_exists = 0;
 
@@ -80,7 +80,7 @@ FROM DUAL WHERE @user_exists = 0;
 -- 输出结果
 SELECT 
     '初始化完成' AS status,
-    @org_id AS organization_id,
+    @org_id AS org_id,
     @tenant_id AS tenant_id,
     @dept_id AS department_id,
     @person_id AS person_id,

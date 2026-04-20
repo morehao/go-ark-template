@@ -12,7 +12,7 @@ const (
 	AuthPersonNotFoundError       = 100806
 	AuthNoTenantError             = 100807
 	AuthTokenGenerateError        = 100808
-	AuthOrganizationNotFoundError = 100809
+	AuthOrgNotFoundError = 100809
 	AuthTempTokenRequiredError    = 100810
 	AuthTenantNotInOrgError       = 100811
 	AuthTokenRefreshError         = 100812
@@ -32,7 +32,7 @@ var authErrorMsgMap = gerror.CodeMsgMap{
 	AuthPersonNotFoundError:       "用户不存在",
 	AuthNoTenantError:             "该用户未关联任何租户",
 	AuthTokenGenerateError:        "生成token失败",
-	AuthOrganizationNotFoundError: "未找到对应组织",
+	AuthOrgNotFoundError: "未找到对应组织",
 	AuthTempTokenRequiredError:    "请先完成租户选择流程",
 	AuthTenantNotInOrgError:       "租户不属于当前组织",
 	AuthTokenRefreshError:         "刷新令牌失败",

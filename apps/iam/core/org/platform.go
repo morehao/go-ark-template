@@ -17,7 +17,7 @@ func GetPlatformTenant(ctx *gin.Context) (*iammodel.TenantEntity, error) {
 		TenantCode: PlatformTenantCode,
 	})
 	if err != nil {
-		glog.Errorf(ctx, "[organization.GetPlatformTenant] GetByCond fail, err:%v", err)
+		glog.Errorf(ctx, "[org.GetPlatformTenant] GetByCond fail, err:%v", err)
 		return nil, err
 	}
 	return tenantEntity, nil
@@ -29,7 +29,7 @@ func GetPlatformDept(ctx *gin.Context, tenantID uint) (*iammodel.DepartmentEntit
 		DeptCode: PlatformDeptCode,
 	})
 	if err != nil {
-		glog.Errorf(ctx, "[organization.GetPlatformDept] GetByCond fail, err:%v, tenantID:%d", err, tenantID)
+		glog.Errorf(ctx, "[org.GetPlatformDept] GetByCond fail, err:%v, tenantID:%d", err, tenantID)
 		return nil, err
 	}
 	return deptEntity, nil

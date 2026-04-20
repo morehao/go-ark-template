@@ -23,7 +23,7 @@ func Routers(engine *gin.Engine) {
 			otelgin.Middleware(AppName),
 			ginmiddleware.AccessLog(),
 			ginmiddleware.JWTAuth(config.Conf.JWT.SignKey, ginmiddleware.WithAuthSkipPaths(
-				"/v1/iam/organization/getConfigsByDomain",
+				"/v1/iam/org/getConfigsByDomain",
 				"/v1/iam/auth/register",
 				"/v1/iam/auth/loginByPassword",
 				"/v1/iam/auth/selectTenant",

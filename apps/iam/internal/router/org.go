@@ -6,17 +6,17 @@ import (
 	"github.com/morehao/golib/biz/gserver/ginserver"
 )
 
-func organizationRouter(groups *ginserver.RouterGroups) {
-	organizationCtr := ctrorg.NewOrganizationCtr()
+func orgRouter(groups *ginserver.RouterGroups) {
+	orgCtr := ctrorg.NewOrgCtr()
 	v1RouterGroup := groups.MustGetGroup(gconstant.ApiVersionV1)
 
-	v1RouterGroup.POST("/organization/create", organizationCtr.Create)
-	v1RouterGroup.POST("/organization/delete", organizationCtr.Delete)
-	v1RouterGroup.POST("/organization/update", organizationCtr.Update)
-	v1RouterGroup.GET("/organization/detail", organizationCtr.Detail)
-	v1RouterGroup.POST("/organization/pageList", organizationCtr.PageList)
-	v1RouterGroup.GET("/organization/getConfigsByDomain", organizationCtr.GetConfigsByDomain)
-	v1RouterGroup.GET("/organization/listConfig", organizationCtr.ListConfig)
+	v1RouterGroup.POST("/org/create", orgCtr.Create)
+	v1RouterGroup.POST("/org/delete", orgCtr.Delete)
+	v1RouterGroup.POST("/org/update", orgCtr.Update)
+	v1RouterGroup.GET("/org/detail", orgCtr.Detail)
+	v1RouterGroup.POST("/org/pageList", orgCtr.PageList)
+	v1RouterGroup.GET("/org/getConfigsByDomain", orgCtr.GetConfigsByDomain)
+	v1RouterGroup.GET("/org/listConfig", orgCtr.ListConfig)
 }
 
 func tenantRouter(groups *ginserver.RouterGroups) {

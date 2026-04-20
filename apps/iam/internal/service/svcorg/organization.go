@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	org "github.com/morehao/goark/apps/iam/core/organization"
+	org "github.com/morehao/goark/apps/iam/core/org"
 	"github.com/morehao/goark/apps/iam/core/user"
 	"github.com/morehao/goark/apps/iam/iamdao"
 	"github.com/morehao/goark/apps/iam/iammodel"
@@ -21,57 +21,57 @@ import (
 	"gorm.io/gorm"
 )
 
-type OrganizationSvc interface {
-	Create(ctx *gin.Context, req *dtoorg.OrganizationCreateReq) (*dtoorg.OrganizationCreateResp, error)
-	Delete(ctx *gin.Context, req *dtoorg.OrganizationDeleteReq) error
-	Update(ctx *gin.Context, req *dtoorg.OrganizationUpdateReq) error
-	GetConfigsByDomain(ctx *gin.Context, req *dtoorg.OrganizationGetConfigsByDomainReq) (*dtoorg.OrganizationConfigsResp, error)
-	Detail(ctx *gin.Context, req *dtoorg.OrganizationDetailReq) (*dtoorg.OrganizationDetailResp, error)
-	PageList(ctx *gin.Context, req *dtoorg.OrganizationPageListReq) (*dtoorg.OrganizationPageListResp, error)
+type OrgSvc interface {
+	Create(ctx *gin.Context, req *dtoorg.OrgCreateReq) (*dtoorg.OrgCreateResp, error)
+	Delete(ctx *gin.Context, req *dtoorg.OrgDeleteReq) error
+	Update(ctx *gin.Context, req *dtoorg.OrgUpdateReq) error
+	GetConfigsByDomain(ctx *gin.Context, req *dtoorg.OrgGetConfigsByDomainReq) (*dtoorg.OrgConfigsResp, error)
+	Detail(ctx *gin.Context, req *dtoorg.OrgDetailReq) (*dtoorg.OrgDetailResp, error)
+	PageList(ctx *gin.Context, req *dtoorg.OrgPageListReq) (*dtoorg.OrgPageListResp, error)
 	ListConfig(ctx *gin.Context) (*dtoorg.OrgConfigListResp, error)
 }
 
-type organizationSvc struct {
+type orgSvc struct {
 }
 
-var _ OrganizationSvc = (*organizationSvc)(nil)
+var _ OrgSvc = (*orgSvc)(nil)
 
-func NewOrganizationSvc() OrganizationSvc {
-	return &organizationSvc{}
+func NewOrgSvc() OrgSvc {
+	return &orgSvc{}
 }
 
-func (svc *organizationSvc) Create(ctx *gin.Context, req *dtoorg.OrganizationCreateReq) (*dtoorg.OrganizationCreateResp, error) {
+func (svc *orgSvc) Create(ctx *gin.Context, req *dtoorg.OrgCreateReq) (*dtoorg.OrgCreateResp, error) {
 	operatorID := gincontext.GetUserID(ctx)
 
-	insertEntity := &iammodel.OrganizationEntity{
-		Domain:           req.Domain,
-		Logo:             req.Logo,
-		Description:      req.Description,
-		SortOrder:        req.SortOrder,
-		Status:           iammodel.OrgStatus(req.Status),
-		OrganizationCode: req.OrganizationCode,
-		OrganizationName: req.OrganizationName,
-		CreatedBy:        operatorID,
-		UpdatedBy:        operatorID,
+	insertEntity := &iammodel.OrgEntity{
+		Domain:      req.Domain,
+		Logo:        req.Logo,
+		Description: req.Description,
+		SortOrder:   req.SortOrder,
+		Status:      iammodel.OrgStatus(req.Status),
+		OrgCode:     req.OrgCode,
+		OrgName:     req.OrgName,
+		CreatedBy:   operatorID,
+		UpdatedBy:   operatorID,
 	}
 
 	var adminID uint
 	txErr := dbclient.IamDB(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := iamdao.NewOrganizationDao().WithTx(tx).Insert(ctx, insertEntity); err != nil {
-			glog.Errorf(ctx, "[svcorg.OrganizationCreate] Insert organization fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+		if err := iamdao.NewOrgDao().WithTx(tx).Insert(ctx, insertEntity); err != nil {
+			glog.Errorf(ctx, "[svcorg.OrgCreate] Insert org fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 			return code.GetError(code.TenantCreateError)
 		}
 
 		if req.Admin != nil && req.Admin.Username != "" {
 			platformTenant, err := org.GetPlatformTenant(ctx)
 			if err != nil || platformTenant == nil || platformTenant.ID == 0 {
-				glog.Errorf(ctx, "[svcorg.OrganizationCreate] GetPlatformTenant fail, err:%v", err)
+				glog.Errorf(ctx, "[svcorg.OrgCreate] GetPlatformTenant fail, err:%v", err)
 				return code.GetError(code.TenantCreateError)
 			}
 
 			platformDept, err := org.GetPlatformDept(ctx, platformTenant.ID)
 			if err != nil || platformDept == nil || platformDept.ID == 0 {
-				glog.Errorf(ctx, "[svcorg.OrganizationCreate] GetPlatformDept fail, err:%v", err)
+				glog.Errorf(ctx, "[svcorg.OrgCreate] GetPlatformDept fail, err:%v", err)
 				return code.GetError(code.TenantCreateError)
 			}
 
@@ -88,7 +88,7 @@ func (svc *organizationSvc) Create(ctx *gin.Context, req *dtoorg.OrganizationCre
 			}
 			result, err := user.CreatePersonWithUser(ctx, tx, params)
 			if err != nil {
-				glog.Errorf(ctx, "[svcorg.OrganizationCreate] CreatePersonWithUser fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+				glog.Errorf(ctx, "[svcorg.OrgCreate] CreatePersonWithUser fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 				return err
 			}
 			adminID = result.UserID
@@ -107,16 +107,16 @@ func (svc *organizationSvc) Create(ctx *gin.Context, req *dtoorg.OrganizationCre
 				if !meta.ValidateValue(configValue) {
 					continue
 				}
-				configEntity := &iammodel.OrganizationConfigEntity{
-					ConfigGroup:    meta.Group,
-					ConfigKey:      meta.Key,
-					ConfigType:     meta.Type,
-					ConfigValue:    configValue,
-					Description:    meta.Description,
-					OrganizationID: insertEntity.ID,
+				configEntity := &iammodel.OrgConfigEntity{
+					ConfigGroup: meta.Group,
+					ConfigKey:   meta.Key,
+					ConfigType:  meta.Type,
+					ConfigValue: configValue,
+					Description: meta.Description,
+					OrgID:       insertEntity.ID,
 				}
-				if err := iamdao.NewOrganizationConfigDao().WithTx(tx).Insert(ctx, configEntity); err != nil {
-					glog.Errorf(ctx, "[svcorg.OrganizationCreate] Insert config fail, err:%v, key:%s", err, cfg.Key)
+				if err := iamdao.NewOrgConfigDao().WithTx(tx).Insert(ctx, configEntity); err != nil {
+					glog.Errorf(ctx, "[svcorg.OrgCreate] Insert config fail, err:%v, key:%s", err, cfg.Key)
 					return err
 				}
 			}
@@ -124,53 +124,53 @@ func (svc *organizationSvc) Create(ctx *gin.Context, req *dtoorg.OrganizationCre
 		return nil
 	})
 	if txErr != nil {
-		glog.Errorf(ctx, "[svcorg.OrganizationCreate] Transaction fail, err:%v, req:%s", txErr, gutil.ToJsonString(req))
+		glog.Errorf(ctx, "[svcorg.OrgCreate] Transaction fail, err:%v, req:%s", txErr, gutil.ToJsonString(req))
 		return nil, code.GetError(code.TenantCreateError)
 	}
-	return &dtoorg.OrganizationCreateResp{
+	return &dtoorg.OrgCreateResp{
 		ID:      insertEntity.ID,
 		AdminID: adminID,
 	}, nil
 }
 
-func (svc *organizationSvc) Delete(ctx *gin.Context, req *dtoorg.OrganizationDeleteReq) error {
+func (svc *orgSvc) Delete(ctx *gin.Context, req *dtoorg.OrgDeleteReq) error {
 	userID := gincontext.GetUserID(ctx)
-	organizationEntity, err := iamdao.NewOrganizationDao().GetByID(ctx, req.ID)
+	orgEntity, err := iamdao.NewOrgDao().GetByID(ctx, req.ID)
 	if err != nil {
-		glog.Errorf(ctx, "[svcorg.OrganizationDelete] daoOrganization GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+		glog.Errorf(ctx, "[svcorg.OrgDelete] daoOrg GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.TenantDeleteError)
 	}
-	if organizationEntity == nil || organizationEntity.ID == 0 {
+	if orgEntity == nil || orgEntity.ID == 0 {
 		return code.GetError(code.TenantNotExistError)
 	}
 
-	if err = iamdao.NewOrganizationDao().Delete(ctx, req.ID, userID); err != nil {
-		glog.Errorf(ctx, "[svcorg.OrganizationDelete] daoOrganization Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+	if err = iamdao.NewOrgDao().Delete(ctx, req.ID, userID); err != nil {
+		glog.Errorf(ctx, "[svcorg.OrgDelete] daoOrg Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.TenantDeleteError)
 	}
 	return nil
 }
 
-func (svc *organizationSvc) Update(ctx *gin.Context, req *dtoorg.OrganizationUpdateReq) error {
+func (svc *orgSvc) Update(ctx *gin.Context, req *dtoorg.OrgUpdateReq) error {
 	updateMap := map[string]any{
-		"domain":            req.Domain,
-		"logo":              req.Logo,
-		"description":       req.Description,
-		"sort_order":        req.SortOrder,
-		"status":            req.Status,
-		"organization_code": req.OrganizationCode,
-		"organization_name": req.OrganizationName,
+		"domain":      req.Domain,
+		"logo":        req.Logo,
+		"description": req.Description,
+		"sort_order":  req.SortOrder,
+		"status":      req.Status,
+		"org_code":    req.OrgCode,
+		"org_name":    req.OrgName,
 	}
 
 	txErr := dbclient.IamDB(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := iamdao.NewOrganizationDao().WithTx(tx).UpdateMap(ctx, req.ID, updateMap); err != nil {
-			glog.Errorf(ctx, "[svcorg.OrganizationUpdate] daoOrganization UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+		if err := iamdao.NewOrgDao().WithTx(tx).UpdateMap(ctx, req.ID, updateMap); err != nil {
+			glog.Errorf(ctx, "[svcorg.OrgUpdate] daoOrg UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 			return code.GetError(code.TenantUpdateError)
 		}
 
 		if len(req.Configs) > 0 {
-			if err := tx.Where("organization_id = ?", req.ID).Delete(&iammodel.OrganizationConfigEntity{}).Error; err != nil {
-				glog.Errorf(ctx, "[svcorg.OrganizationUpdate] Delete configs fail, err:%v, organizationID:%d", err, req.ID)
+			if err := tx.Where("org_id = ?", req.ID).Delete(&iammodel.OrgConfigEntity{}).Error; err != nil {
+				glog.Errorf(ctx, "[svcorg.OrgUpdate] Delete configs fail, err:%v, orgID:%d", err, req.ID)
 				return code.GetError(code.TenantUpdateError)
 			}
 
@@ -186,16 +186,16 @@ func (svc *organizationSvc) Update(ctx *gin.Context, req *dtoorg.OrganizationUpd
 				if !meta.ValidateValue(configValue) {
 					continue
 				}
-				configEntity := &iammodel.OrganizationConfigEntity{
-					ConfigGroup:    meta.Group,
-					ConfigKey:      meta.Key,
-					ConfigType:     meta.Type,
-					ConfigValue:    configValue,
-					Description:    meta.Description,
-					OrganizationID: req.ID,
+				configEntity := &iammodel.OrgConfigEntity{
+					ConfigGroup: meta.Group,
+					ConfigKey:   meta.Key,
+					ConfigType:  meta.Type,
+					ConfigValue: configValue,
+					Description: meta.Description,
+					OrgID:       req.ID,
 				}
-				if err := iamdao.NewOrganizationConfigDao().WithTx(tx).Insert(ctx, configEntity); err != nil {
-					glog.Errorf(ctx, "[svcorg.OrganizationUpdate] Insert config fail, err:%v, key:%s", err, cfg.Key)
+				if err := iamdao.NewOrgConfigDao().WithTx(tx).Insert(ctx, configEntity); err != nil {
+					glog.Errorf(ctx, "[svcorg.OrgUpdate] Insert config fail, err:%v, key:%s", err, cfg.Key)
 					return err
 				}
 			}
@@ -203,35 +203,35 @@ func (svc *organizationSvc) Update(ctx *gin.Context, req *dtoorg.OrganizationUpd
 		return nil
 	})
 	if txErr != nil {
-		glog.Errorf(ctx, "[svcorg.OrganizationUpdate] Transaction fail, err:%v, req:%s", txErr, gutil.ToJsonString(req))
+		glog.Errorf(ctx, "[svcorg.OrgUpdate] Transaction fail, err:%v, req:%s", txErr, gutil.ToJsonString(req))
 		return code.GetError(code.TenantUpdateError)
 	}
 	return nil
 }
 
-func (svc *organizationSvc) GetConfigsByDomain(ctx *gin.Context, req *dtoorg.OrganizationGetConfigsByDomainReq) (*dtoorg.OrganizationConfigsResp, error) {
+func (svc *orgSvc) GetConfigsByDomain(ctx *gin.Context, req *dtoorg.OrgGetConfigsByDomainReq) (*dtoorg.OrgConfigsResp, error) {
 	domain := resolveDomain(ctx, req.Domain)
 	if domain == "" {
-		return nil, code.GetError(code.AuthOrganizationNotFoundError)
+		return nil, code.GetError(code.AuthOrgNotFoundError)
 	}
 
-	organizationEntity, err := iamdao.NewOrganizationDao().GetByCond(ctx, &iamdao.OrganizationCond{
+	orgEntity, err := iamdao.NewOrgDao().GetByCond(ctx, &iamdao.OrgCond{
 		Domain: domain,
 		Status: iammodel.OrgStatusEnabled,
 	})
 	if err != nil {
-		glog.Errorf(ctx, "[svcorg.GetConfigsByDomain] daoOrganization GetByCond fail, err:%v, domain:%s", err, domain)
+		glog.Errorf(ctx, "[svcorg.GetConfigsByDomain] daoOrg GetByCond fail, err:%v, domain:%s", err, domain)
 		return nil, code.GetError(code.AuthLoginError)
 	}
-	if organizationEntity == nil || organizationEntity.ID == 0 {
-		return nil, code.GetError(code.AuthOrganizationNotFoundError)
+	if orgEntity == nil || orgEntity.ID == 0 {
+		return nil, code.GetError(code.AuthOrgNotFoundError)
 	}
 
-	configEntityList, err := iamdao.NewOrganizationConfigDao().GetListByCond(ctx, &iamdao.OrganizationConfigCond{
-		OrganizationID: organizationEntity.ID,
+	configEntityList, err := iamdao.NewOrgConfigDao().GetListByCond(ctx, &iamdao.OrgConfigCond{
+		OrgID: orgEntity.ID,
 	})
 	if err != nil {
-		glog.Errorf(ctx, "[svcorg.GetConfigsByDomain] daoOrganizationConfig GetListByCond fail, err:%v, organizationID:%d", err, organizationEntity.ID)
+		glog.Errorf(ctx, "[svcorg.GetConfigsByDomain] daoOrgConfig GetListByCond fail, err:%v, orgID:%d", err, orgEntity.ID)
 		return nil, code.GetError(code.AuthLoginError)
 	}
 
@@ -243,31 +243,31 @@ func (svc *organizationSvc) GetConfigsByDomain(ctx *gin.Context, req *dtoorg.Org
 		configs[v.ConfigGroup][v.ConfigKey] = v.ConfigValue
 	}
 
-	return &dtoorg.OrganizationConfigsResp{
-		OrganizationID:   organizationEntity.ID,
-		OrganizationName: organizationEntity.OrganizationName,
-		Domain:           organizationEntity.Domain,
-		Logo:             organizationEntity.Logo,
-		Status:           organizationEntity.Status,
-		Configs:          configs,
+	return &dtoorg.OrgConfigsResp{
+		OrgID:   orgEntity.ID,
+		OrgName: orgEntity.OrgName,
+		Domain:  orgEntity.Domain,
+		Logo:    orgEntity.Logo,
+		Status:  orgEntity.Status,
+		Configs: configs,
 	}, nil
 }
 
-func (svc *organizationSvc) Detail(ctx *gin.Context, req *dtoorg.OrganizationDetailReq) (*dtoorg.OrganizationDetailResp, error) {
-	organizationEntity, err := iamdao.NewOrganizationDao().GetByID(ctx, req.ID)
+func (svc *orgSvc) Detail(ctx *gin.Context, req *dtoorg.OrgDetailReq) (*dtoorg.OrgDetailResp, error) {
+	orgEntity, err := iamdao.NewOrgDao().GetByID(ctx, req.ID)
 	if err != nil {
-		glog.Errorf(ctx, "[svcorg.OrganizationDetail] daoOrganization GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+		glog.Errorf(ctx, "[svcorg.OrgDetail] daoOrg GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.TenantGetDetailError)
 	}
-	if organizationEntity == nil || organizationEntity.ID == 0 {
+	if orgEntity == nil || orgEntity.ID == 0 {
 		return nil, code.GetError(code.TenantNotExistError)
 	}
 
-	configEntityList, err := iamdao.NewOrganizationConfigDao().GetListByCond(ctx, &iamdao.OrganizationConfigCond{
-		OrganizationID: organizationEntity.ID,
+	configEntityList, err := iamdao.NewOrgConfigDao().GetListByCond(ctx, &iamdao.OrgConfigCond{
+		OrgID: orgEntity.ID,
 	})
 	if err != nil {
-		glog.Errorf(ctx, "[svcorg.OrganizationDetail] daoOrganizationConfig GetListByCond fail, err:%v, organizationID:%d", err, organizationEntity.ID)
+		glog.Errorf(ctx, "[svcorg.OrgDetail] daoOrgConfig GetListByCond fail, err:%v, orgID:%d", err, orgEntity.ID)
 		return nil, code.GetError(code.TenantGetDetailError)
 	}
 
@@ -279,58 +279,58 @@ func (svc *organizationSvc) Detail(ctx *gin.Context, req *dtoorg.OrganizationDet
 		configs[v.ConfigGroup][v.ConfigKey] = v.ConfigValue
 	}
 
-	resp := &dtoorg.OrganizationDetailResp{
-		ID:      organizationEntity.ID,
+	resp := &dtoorg.OrgDetailResp{
+		ID:      orgEntity.ID,
 		Configs: configs,
-		OrganizationBaseInfo: objorg.OrganizationBaseInfo{
-			Domain:           organizationEntity.Domain,
-			Logo:             organizationEntity.Logo,
-			Description:      organizationEntity.Description,
-			SortOrder:        organizationEntity.SortOrder,
-			Status:           string(organizationEntity.Status),
-			OrganizationCode: organizationEntity.OrganizationCode,
-			OrganizationName: organizationEntity.OrganizationName,
+		OrgBaseInfo: objorg.OrgBaseInfo{
+			Domain:      orgEntity.Domain,
+			Logo:        orgEntity.Logo,
+			Description: orgEntity.Description,
+			SortOrder:   orgEntity.SortOrder,
+			Status:      string(orgEntity.Status),
+			OrgCode:     orgEntity.OrgCode,
+			OrgName:     orgEntity.OrgName,
 		},
 		OperatorBaseInfo: gobject.OperatorBaseInfo{
-			CreatedAt: organizationEntity.CreatedAt.Unix(),
-			UpdatedAt: organizationEntity.UpdatedAt.Unix(),
+			CreatedAt: orgEntity.CreatedAt.Unix(),
+			UpdatedAt: orgEntity.UpdatedAt.Unix(),
 		},
 	}
 	return resp, nil
 }
 
-func (svc *organizationSvc) PageList(ctx *gin.Context, req *dtoorg.OrganizationPageListReq) (*dtoorg.OrganizationPageListResp, error) {
-	cond := &iamdao.OrganizationCond{
+func (svc *orgSvc) PageList(ctx *gin.Context, req *dtoorg.OrgPageListReq) (*dtoorg.OrgPageListResp, error) {
+	cond := &iamdao.OrgCond{
 		BaseCond: &genericdao.BaseCond{
 			Page:     req.Page,
 			PageSize: req.PageSize,
 		},
 		Name: req.Name,
 	}
-	organizationEntityList, total, err := iamdao.NewOrganizationDao().GetPageListByCond(ctx, cond)
+	orgEntityList, total, err := iamdao.NewOrgDao().GetPageListByCond(ctx, cond)
 	if err != nil {
-		glog.Errorf(ctx, "[svcorg.OrganizationPageList] daoOrganization GetPageListByCond fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+		glog.Errorf(ctx, "[svcorg.OrgPageList] daoOrg GetPageListByCond fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.TenantGetPageListError)
 	}
-	list := make([]dtoorg.OrganizationPageListItem, 0, len(organizationEntityList))
-	for _, v := range organizationEntityList {
-		list = append(list, dtoorg.OrganizationPageListItem{
+	list := make([]dtoorg.OrgPageListItem, 0, len(orgEntityList))
+	for _, v := range orgEntityList {
+		list = append(list, dtoorg.OrgPageListItem{
 			ID: v.ID,
-			OrganizationBaseInfo: objorg.OrganizationBaseInfo{
-				Domain:           v.Domain,
-				Logo:             v.Logo,
-				Description:      v.Description,
-				SortOrder:        v.SortOrder,
-				Status:           string(v.Status),
-				OrganizationCode: v.OrganizationCode,
-				OrganizationName: v.OrganizationName,
+			OrgBaseInfo: objorg.OrgBaseInfo{
+				Domain:      v.Domain,
+				Logo:        v.Logo,
+				Description: v.Description,
+				SortOrder:   v.SortOrder,
+				Status:      string(v.Status),
+				OrgCode:     v.OrgCode,
+				OrgName:     v.OrgName,
 			},
 			OperatorBaseInfo: gobject.OperatorBaseInfo{
 				UpdatedAt: v.UpdatedAt.Unix(),
 			},
 		})
 	}
-	return &dtoorg.OrganizationPageListResp{
+	return &dtoorg.OrgPageListResp{
 		List:  list,
 		Total: total,
 	}, nil
@@ -359,7 +359,7 @@ func resolveDomain(ctx *gin.Context, reqDomain string) string {
 	return host
 }
 
-func (svc *organizationSvc) ListConfig(ctx *gin.Context) (*dtoorg.OrgConfigListResp, error) {
+func (svc *orgSvc) ListConfig(ctx *gin.Context) (*dtoorg.OrgConfigListResp, error) {
 	configs := make([]dtoorg.OrgConfigMetaResp, 0, len(iammodel.OrgConfigMetaList))
 	for _, meta := range iammodel.OrgConfigMetaList {
 		options := make([]dtoorg.OrgConfigOptionResp, 0, len(meta.Options))

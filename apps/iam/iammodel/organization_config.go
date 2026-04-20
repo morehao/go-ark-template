@@ -4,28 +4,28 @@ import (
 	"gorm.io/gorm"
 )
 
-// OrganizationConfigEntity 产品线配置表结构体
-type OrganizationConfigEntity struct {
+// OrgConfigEntity 组织配置表结构体
+type OrgConfigEntity struct {
 	gorm.Model
-	ConfigGroup    string `gorm:"column:config_group;type:varchar(32);;default general;comment: 配置分组: general-通用/auth-认证/theme-主题等"`
-	ConfigKey      string `gorm:"column:config_key;type:varchar(100);not null;default '';comment: 配置键"`
-	ConfigType     string `gorm:"column:config_type;type:varchar(32);;default string;comment: 配置类型: string/json/boolean/number"`
-	ConfigValue    string `gorm:"column:config_value;type:text;;default '';comment: 配置值(支持JSON)"`
-	Description    string `gorm:"column:description;type:varchar(255);not null;default '';comment: 配置说明"`
-	SortOrder      int32  `gorm:"column:sort_order;type:int;;default 0;comment: 排序"`
-	OrganizationID uint   `gorm:"column:organization_id;type:bigint;not null;default 0;comment: 产品线ID"`
+	ConfigGroup string `gorm:"column:config_group;type:varchar(32);;default general;comment: 配置分组: general-通用/auth-认证/theme-主题等"`
+	ConfigKey   string `gorm:"column:config_key;type:varchar(100);not null;default '';comment: 配置键"`
+	ConfigType  string `gorm:"column:config_type;type:varchar(32);;default string;comment: 配置类型: string/json/boolean/number"`
+	ConfigValue string `gorm:"column:config_value;type:text;;default '';comment: 配置值(支持JSON)"`
+	Description string `gorm:"column:description;type:varchar(255);not null;default '';comment: 配置说明"`
+	SortOrder   int32  `gorm:"column:sort_order;type:int;;default 0;comment: 排序"`
+	OrgID       uint   `gorm:"column:org_id;type:bigint;not null;default 0;comment: 组织ID"`
 }
 
-type OrganizationConfigEntityList []OrganizationConfigEntity
+type OrgConfigEntityList []OrgConfigEntity
 
-const TableNameOrganizationConfig = "iam_organization_config"
+const TableNameOrgConfig = "iam_org_config"
 
-func (OrganizationConfigEntity) TableName() string {
-	return TableNameOrganizationConfig
+func (OrgConfigEntity) TableName() string {
+	return TableNameOrgConfig
 }
 
-func (l OrganizationConfigEntityList) ToMap() map[uint]OrganizationConfigEntity {
-	m := make(map[uint]OrganizationConfigEntity)
+func (l OrgConfigEntityList) ToMap() map[uint]OrgConfigEntity {
+	m := make(map[uint]OrgConfigEntity)
 	for _, v := range l {
 		m[v.ID] = v
 	}

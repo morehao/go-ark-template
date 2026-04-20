@@ -13,8 +13,8 @@ type LoginByPasswordResp struct {
 type TenantListItem struct {
 	TenantID   uint   `json:"tenantId"`   // 租户ID
 	TenantName string `json:"tenantName"` // 租户名称
-	OrgID      uint   `json:"orgId"`      // 产品线ID
-	OrgName    string `json:"orgName"`    // 产品线名称
+	OrgID      uint   `json:"orgId"`      // 组织ID
+	OrgName    string `json:"orgName"`    // 组织名称
 }
 
 type SelectTenantResp struct {

@@ -6,7 +6,7 @@ type TenantBaseInfo struct {
 	ContactPhone            string `json:"contactPhone" form:"contactPhone"`                       // 联系电话
 	LegalPerson             string `json:"legalPerson" form:"legalPerson"`                         // 法人
 	Logo                    string `json:"logo" form:"logo"`                                       // Logo
-	OrganizationID          uint   `json:"organizationID" form:"organizationID"`                   // 组织ID
+	OrgID                   uint   `json:"orgID" form:"orgID"`                                     // 组织ID
 	ShortName               string `json:"shortName" form:"shortName"`                             // 简称
 	Status                  string `json:"status" form:"status"`                                   // 状态
 	TenantCode              string `json:"tenantCode" form:"tenantCode"`                           // 租户编码

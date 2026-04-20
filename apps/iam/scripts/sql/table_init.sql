@@ -14,14 +14,14 @@ USE ark_iam;
 -- 1. 租户核心表
 -- ============================================
 
--- 产品线表(最高层级)
-CREATE TABLE IF NOT EXISTS iam_organization (
-    id BIGINT AUTO_INCREMENT COMMENT '产品线ID',
-    organization_code VARCHAR(32) UNIQUE NOT NULL COMMENT '产品线编码',
-    organization_name VARCHAR(64) NOT NULL COMMENT '产品线名称',
-    description VARCHAR(255) COMMENT '产品线描述',
-    domain VARCHAR(255) COMMENT '产品线域名',
-    logo VARCHAR(255) COMMENT '产品线Logo',
+-- 组织表(最高层级)
+CREATE TABLE IF NOT EXISTS iam_org (
+    id BIGINT AUTO_INCREMENT COMMENT '组织ID',
+    org_code VARCHAR(32) UNIQUE NOT NULL COMMENT '组织编码',
+    org_name VARCHAR(64) NOT NULL COMMENT '组织名称',
+    description VARCHAR(255) COMMENT '组织描述',
+    domain VARCHAR(255) COMMENT '组织域名',
+    logo VARCHAR(255) COMMENT '组织Logo',
     sort_order INT DEFAULT 0 COMMENT '排序',
     status VARCHAR(16) DEFAULT 'enabled' COMMENT '状态: enabled-启用 disabled-停用',
     created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
@@ -31,15 +31,15 @@ CREATE TABLE IF NOT EXISTS iam_organization (
     updated_by BIGINT NOT NULL DEFAULT 0 COMMENT '更新人ID',
     deleted_by BIGINT NOT NULL DEFAULT 0 COMMENT '删除人ID',
     PRIMARY KEY (`id`),
-    UNIQUE KEY uk_organization_code (organization_code),
+    UNIQUE KEY uk_org_code (org_code),
     INDEX idx_created_at (created_at),
     INDEX idx_deleted_at (deleted_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='产品线表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='组织表';
 
--- 产品线配置表(统一配置表)
-CREATE TABLE IF NOT EXISTS iam_organization_config (
+-- 组织配置表(统一配置表)
+CREATE TABLE IF NOT EXISTS iam_org_config (
     id BIGINT AUTO_INCREMENT COMMENT '配置ID',
-    organization_id BIGINT NOT NULL COMMENT '产品线ID',
+    org_id BIGINT NOT NULL COMMENT '组织ID',
     config_key VARCHAR(100) NOT NULL COMMENT '配置键',
     config_value TEXT COMMENT '配置值(支持JSON)',
     config_type VARCHAR(32) DEFAULT 'string' COMMENT '配置类型: string/json/boolean/number',
@@ -49,16 +49,16 @@ CREATE TABLE IF NOT EXISTS iam_organization_config (
     created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`id`),
-    UNIQUE KEY uk_organization_config (organization_id, config_group, config_key),
-    INDEX idx_organization_id (organization_id),
+    UNIQUE KEY uk_org_config (org_id, config_group, config_key),
+    INDEX idx_org_id (org_id),
     INDEX idx_config_group (config_group),
     INDEX idx_config_key (config_key)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='产品线配置表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='组织配置表';
 
 -- 租户表(租户主体)
 CREATE TABLE IF NOT EXISTS iam_tenant (
     id BIGINT AUTO_INCREMENT COMMENT '租户ID',
-    organization_id BIGINT NOT NULL COMMENT '所属产品线ID',
+    org_id BIGINT NOT NULL COMMENT '所属组织ID',
     tenant_code VARCHAR(32) NOT NULL COMMENT '租户编码',
     tenant_name VARCHAR(128) NOT NULL COMMENT '租户名称',
     short_name VARCHAR(64) COMMENT '租户简称',
@@ -75,9 +75,9 @@ CREATE TABLE IF NOT EXISTS iam_tenant (
     updated_by BIGINT NOT NULL DEFAULT 0 COMMENT '更新人ID',
     deleted_by BIGINT NOT NULL DEFAULT 0 COMMENT '删除人ID',
     PRIMARY KEY (`id`),
-    UNIQUE KEY uk_organization_tenant_code (organization_id, tenant_code),
-    INDEX idx_organization_id (organization_id),
-    INDEX idx_organization_tenant_status (organization_id, status),
+    UNIQUE KEY uk_org_tenant_code (org_id, tenant_code),
+    INDEX idx_org_id (org_id),
+    INDEX idx_org_tenant_status (org_id, status),
     INDEX idx_deleted_at (deleted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='租户表';
 
