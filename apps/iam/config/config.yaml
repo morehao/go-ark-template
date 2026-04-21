@@ -17,24 +17,27 @@ log:
     level: info
     writer: file
     dir: ../../../log
+    enable_otel_trace: true
     extra_keys:
-      - requestId
+      - requestID
   gorm:
     service: iam
     module: gorm
     level: debug
     writer: file
     dir: ../../../log
+    enable_otel_trace: true
     extra_keys:
-      - requestId
+      - requestID
   redis:
     service: iam
     module: redis
     level: debug
     writer: file
     dir: ../../../log
+    enable_otel_trace: true
     extra_keys:
-      - requestId
+      - requestID
 
 trace:
   enable: true

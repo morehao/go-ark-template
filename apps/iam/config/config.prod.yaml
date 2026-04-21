@@ -10,6 +10,7 @@ log:
     level: info
     writer: file
     dir: ../../../log
+    enable_otel_trace: true
     extra_keys:
       - requestId
   gorm:
@@ -18,6 +19,7 @@ log:
     level: info
     writer: file
     dir: ../../../log
+    enable_otel_trace: true
     extra_keys:
       - requestId
   redis:
@@ -26,6 +28,7 @@ log:
     level: info
     writer: file
     dir: ../../../log
+    enable_otel_trace: true
     extra_keys:
       - requestId
   es:
@@ -34,6 +37,7 @@ log:
     level: info
     writer: file
     dir: ../../../log
+    enable_otel_trace: true
     extra_keys:
       - requestId
 

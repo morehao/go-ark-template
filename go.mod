@@ -18,7 +18,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.43.0 // indirect
 )
 
-// replace github.com/morehao/golib => ../golib
+replace github.com/morehao/golib => ../golib
 
 require (
 	filippo.io/edwards25519 v1.2.0 // indirect

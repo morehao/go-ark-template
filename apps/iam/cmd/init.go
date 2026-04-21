@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/morehao/goark/apps/iam"
@@ -58,34 +57,7 @@ func resourceInit() error {
 }
 
 func initTrace() error {
-	traceCfg := config.Conf.Trace
-	if !traceCfg.Enable {
-		glog.Infof(context.Background(), "[%s.initTrace] trace disabled, skip init", iam.AppName)
-		return nil
-	}
-	if strings.TrimSpace(traceCfg.OTLP.Endpoint) == "" {
-		glog.Infof(context.Background(), "[%s.initTrace] trace enabled but otlp endpoint empty, skip init", iam.AppName)
-		return nil
-	}
-
-	tCfg := gtrace.DefaultConfig(iam.AppName)
-	tCfg.ServiceVersion = traceCfg.ServiceVersion
-	tCfg.Environment = config.Conf.Server.Env
-	tCfg.TraceIDRatio = traceCfg.TraceIDRatio
-	sampler, err := gtrace.ParseSampler(traceCfg.Sampler)
-	if err != nil {
-		return fmt.Errorf("init trace failed: %w", err)
-	}
-	tCfg.Sampler = sampler
-
-	eCfg := otlptracegrpc.DefaultConfig()
-	eCfg.Endpoint = traceCfg.OTLP.Endpoint
-	eCfg.Insecure = traceCfg.OTLP.Insecure
-	if traceCfg.OTLP.Timeout > 0 {
-		eCfg.Timeout = traceCfg.OTLP.Timeout
-	}
-
-	provider, err := gtrace.Init(context.Background(), tCfg, otlptracegrpc.NewExporterFactory(eCfg))
+	provider, err := otlptracegrpc.NewGRPCProvider(context.Background(), iam.AppName, config.Conf.Server.Env, config.Conf.Trace)
 	if err != nil {
 		glog.Errorf(context.Background(), "[%s.initTrace] init trace failed, fallback to disabled mode, err:%v", iam.AppName, err)
 		return nil
