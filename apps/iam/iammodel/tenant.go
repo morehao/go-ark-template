@@ -22,7 +22,7 @@ type TenantEntity struct {
 	DeletedBy               uint         `gorm:"column:deleted_by;type:bigint;not null;default 0;comment: 删除人ID"`
 	LegalPerson             string       `gorm:"column:legal_person;type:varchar(32);;default '';comment: 法人代表"`
 	Logo                    string       `gorm:"column:logo;type:varchar(255);;default '';comment: 租户Logo"`
-	OrganizationID          uint         `gorm:"column:organization_id;type:bigint;not null;default 0;comment: 所属产品线ID"`
+	OrgID                   uint         `gorm:"column:org_id;type:bigint;not null;default 0;comment: 所属组织ID"`
 	ShortName               string       `gorm:"column:short_name;type:varchar(64);;default '';comment: 租户简称"`
 	Status                  TenantStatus `gorm:"column:status;type:varchar(16);;default enabled;comment: 状态: enabled-启用 trial-试用 expired-已过期 disabled-停用"`
 	TenantCode              string       `gorm:"column:tenant_code;type:varchar(32);not null;default '';comment: 租户编码"`

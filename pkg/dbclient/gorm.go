@@ -28,8 +28,8 @@ func InitMultiDB(configs []dbgorm.GormConfig, logConfig *glog.LogConfig) error {
 
 	tenantPlugin := gormplugin.NewPlugin(
 		"iam_tenant",
-		"iam_organization",
-		"iam_organization_config",
+		"iam_org",
+		"iam_org_config",
 		"iam_menu",
 		"iam_role",
 		"iam_role_menu",
@@ -42,10 +42,10 @@ func InitMultiDB(configs []dbgorm.GormConfig, logConfig *glog.LogConfig) error {
 	for _, cfg := range configs {
 		client, err := dbgorm.New(&cfg, opts...)
 		if err != nil {
-			return fmt.Errorf("init mysql failed: " + err.Error())
+			return fmt.Errorf("init mysql failed: %v", err)
 		}
 		if err := client.Use(tenantPlugin); err != nil {
-			return fmt.Errorf("register tenant plugin failed: " + err.Error())
+			return fmt.Errorf("register tenant plugin failed: %v", err)
 		}
 		dbMutex.Lock()
 		dbMap[cfg.Service] = client

@@ -61,36 +61,36 @@ type DepartmentTreeResp struct {
 	List []DepartmentTreeNode `json:"list"` // 部门树列表
 }
 
-type OrganizationCreateResp struct {
+type OrgCreateResp struct {
 	ID      uint `json:"id"`      // 组织ID
 	AdminID uint `json:"adminID"` // 管理员ID
 }
 
-type OrganizationConfigsResp struct {
-	OrganizationID   uint                         `json:"organizationId"`   // 组织ID
-	OrganizationName string                       `json:"organizationName"` // 组织名称
-	Domain           string                       `json:"domain"`           // 域名
-	Logo             string                       `json:"logo"`             // Logo
-	Status           iammodel.OrgStatus           `json:"status"`           // 状态
-	Configs          map[string]map[string]string `json:"configs"`          // 配置信息
+type OrgConfigsResp struct {
+	OrgID    uint                         `json:"orgId"`             // 组织ID
+	OrgName  string                       `json:"orgName"`           // 组织名称
+	Domain   string                       `json:"domain"`            // 域名
+	Logo     string                       `json:"logo"`              // Logo
+	Status   iammodel.OrgStatus           `json:"status"`            // 状态
+	Configs  map[string]map[string]string `json:"configs"`           // 配置信息
 }
 
-type OrganizationDetailResp struct {
+type OrgDetailResp struct {
 	ID      uint                         `json:"id" validate:"required"` // 数据自增id
 	Configs map[string]map[string]string `json:"configs"`                // 配置信息
-	objorg.OrganizationBaseInfo
+	objorg.OrgBaseInfo
 	gobject.OperatorBaseInfo
 }
 
-type OrganizationPageListItem struct {
+type OrgPageListItem struct {
 	ID uint `json:"id" validate:"required"` // 数据自增id
-	objorg.OrganizationBaseInfo
+	objorg.OrgBaseInfo
 	gobject.OperatorBaseInfo
 }
 
-type OrganizationPageListResp struct {
-	List  []OrganizationPageListItem `json:"list"`  // 数据列表
-	Total int64                      `json:"total"` // 数据总条数
+type OrgPageListResp struct {
+	List  []OrgPageListItem `json:"list"`  // 数据列表
+	Total int64             `json:"total"` // 数据总条数
 }
 
 type OrgConfigOptionResp struct {

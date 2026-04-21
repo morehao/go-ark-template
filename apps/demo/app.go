@@ -9,7 +9,6 @@ import (
 	"github.com/morehao/golib/biz/gconstant"
 	"github.com/morehao/golib/biz/gserver/gindocs"
 	"github.com/morehao/golib/biz/gserver/ginserver"
-	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 )
 
 const AppName = "demo"
@@ -18,7 +17,6 @@ func Routers(engine *gin.Engine) {
 	routerGroups := ginserver.NewRouterGroups(engine, AppName, ginserver.Version{
 		Name: gconstant.ApiVersionV1,
 		Middlewares: []gin.HandlerFunc{
-			otelgin.Middleware(AppName),
 			middleware.Example(),
 		},
 	})

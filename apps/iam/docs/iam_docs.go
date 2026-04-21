@@ -150,6 +150,51 @@ const docTemplateiam = `{
                 }
             }
         },
+        "/v1/iam/auth/register": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证管理"
+                ],
+                "summary": "用户注册",
+                "parameters": [
+                    {
+                        "description": "用户注册请求",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtoauth.RegisterReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/gincontext.DtoRender"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dtoauth.RegisterResp"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/v1/iam/auth/selectTenant": {
             "post": {
                 "consumes": [
@@ -300,6 +345,7 @@ const docTemplateiam = `{
                 "parameters": [
                     {
                         "type": "integer",
+                        "description": "数据自增id",
                         "name": "id",
                         "in": "query",
                         "required": true
@@ -387,6 +433,7 @@ const docTemplateiam = `{
                 "parameters": [
                     {
                         "type": "integer",
+                        "description": "父部门ID",
                         "name": "parentID",
                         "in": "query"
                     }
@@ -563,7 +610,7 @@ const docTemplateiam = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "ID 数据自增 ID",
+                        "description": "数据自增 ID",
                         "name": "id",
                         "in": "query",
                         "required": true
@@ -651,7 +698,7 @@ const docTemplateiam = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "ParentID 父菜单ID",
+                        "description": "父菜单ID",
                         "name": "parentID",
                         "in": "query"
                     }
@@ -723,7 +770,7 @@ const docTemplateiam = `{
                 }
             }
         },
-        "/v1/iam/organization/loginConfig": {
+        "/v1/iam/org/getConfigsByDomain": {
             "get": {
                 "consumes": [
                     "application/json"
@@ -734,7 +781,7 @@ const docTemplateiam = `{
                 "tags": [
                     "组织管理"
                 ],
-                "summary": "获取组织登录配置",
+                "summary": "根据域名获取组织配置",
                 "parameters": [
                     {
                         "type": "string",
@@ -755,7 +802,7 @@ const docTemplateiam = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/dtoorg.OrganizationLoginConfigResp"
+                                            "$ref": "#/definitions/dtoorg.OrgConfigsResp"
                                         }
                                     }
                                 }
@@ -915,7 +962,7 @@ const docTemplateiam = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "ID 数据自增 ID",
+                        "description": "数据自增 ID",
                         "name": "id",
                         "in": "query",
                         "required": true
@@ -958,7 +1005,7 @@ const docTemplateiam = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "RoleID 角色ID",
+                        "description": "角色ID",
                         "name": "roleId",
                         "in": "query",
                         "required": true
@@ -1076,7 +1123,7 @@ const docTemplateiam = `{
                 }
             }
         },
-        "/v1/iam/user/assignDepartment": {
+        "/v1/iam/user/assignDepartments": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -1087,7 +1134,7 @@ const docTemplateiam = `{
                 "tags": [
                     "用户管理"
                 ],
-                "summary": "分配用户部门",
+                "summary": "分配用户部门（全量替换）",
                 "parameters": [
                     {
                         "description": "分配用户部门",
@@ -1095,13 +1142,13 @@ const docTemplateiam = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dtouser.UserDepartmentAssignReq"
+                            "$ref": "#/definitions/dtouser.UserDepartmentsAssignReq"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "{\"code\": 0,\"data\": \"ok\",\"msg\": \"success\"}",
+                        "description": "{\"code\": 0,\"data\": \"ok\",\"msg\": \"分配成功\"}",
                         "schema": {
                             "allOf": [
                                 {
@@ -1271,7 +1318,7 @@ const docTemplateiam = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "ID 数据自增 ID",
+                        "description": "数据自增 ID",
                         "name": "id",
                         "in": "query",
                         "required": true
@@ -1314,6 +1361,7 @@ const docTemplateiam = `{
                 "parameters": [
                     {
                         "type": "integer",
+                        "description": "用户ID",
                         "name": "userID",
                         "in": "query",
                         "required": true
@@ -1356,7 +1404,7 @@ const docTemplateiam = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "UserID 用户ID",
+                        "description": "用户ID",
                         "name": "userId",
                         "in": "query",
                         "required": true
@@ -1429,96 +1477,6 @@ const docTemplateiam = `{
                 }
             }
         },
-        "/v1/iam/user/removeDepartment": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "用户管理"
-                ],
-                "summary": "移除用户部门",
-                "parameters": [
-                    {
-                        "description": "移除用户部门",
-                        "name": "req",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dtouser.UserDepartmentRemoveReq"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "{\"code\": 0,\"data\": \"ok\",\"msg\": \"success\"}",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/gincontext.DtoRender"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/iam/user/removeRoles": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "用户管理"
-                ],
-                "summary": "移除用户角色",
-                "parameters": [
-                    {
-                        "description": "移除用户角色",
-                        "name": "req",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dtouser.UserRemoveRolesReq"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "{\"code\": 0,\"data\": \"ok\",\"msg\": \"移除成功\"}",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/gincontext.DtoRender"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
-        },
         "/v1/iam/user/update": {
             "post": {
                 "consumes": [
@@ -1574,11 +1532,11 @@ const docTemplateiam = `{
             ],
             "properties": {
                 "account": {
-                    "description": "Account 登录账号(手机号或邮箱)",
+                    "description": "登录账号(手机号或邮箱)",
                     "type": "string"
                 },
                 "password": {
-                    "description": "Password 登录密码",
+                    "description": "登录密码",
                     "type": "string"
                 }
             }
@@ -1587,23 +1545,23 @@ const docTemplateiam = `{
             "type": "object",
             "properties": {
                 "needSelectTenant": {
-                    "description": "NeedSelectTenant 是否需要选择租户",
+                    "description": "是否需要选择租户",
                     "type": "boolean"
                 },
                 "personId": {
-                    "description": "PersonID 自然人ID",
+                    "description": "自然人ID",
                     "type": "integer"
                 },
                 "realName": {
-                    "description": "RealName 真实姓名",
+                    "description": "真实姓名",
                     "type": "string"
                 },
                 "tempToken": {
-                    "description": "TempToken JWT临时令牌(需通过selectTenant换取正式token)",
+                    "description": "JWT临时令牌(需通过selectTenant换取正式token)",
                     "type": "string"
                 },
                 "tenantList": {
-                    "description": "TenantList 可选租户列表",
+                    "description": "可选租户列表",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dtoauth.TenantListItem"
@@ -1615,27 +1573,27 @@ const docTemplateiam = `{
             "type": "object",
             "properties": {
                 "personId": {
-                    "description": "PersonID 自然人ID",
+                    "description": "自然人ID",
                     "type": "integer"
                 },
                 "realName": {
-                    "description": "RealName 真实姓名",
+                    "description": "真实姓名",
                     "type": "string"
                 },
                 "tenantId": {
-                    "description": "TenantID 租户ID",
+                    "description": "租户ID",
                     "type": "integer"
                 },
                 "tenantName": {
-                    "description": "TenantName 租户名称",
+                    "description": "租户名称",
                     "type": "string"
                 },
                 "userId": {
-                    "description": "UserID 用户ID",
+                    "description": "用户ID",
                     "type": "integer"
                 },
                 "userType": {
-                    "description": "UserType 用户类型",
+                    "description": "用户类型",
                     "allOf": [
                         {
                             "$ref": "#/definitions/iammodel.UserType"
@@ -1643,7 +1601,7 @@ const docTemplateiam = `{
                     ]
                 },
                 "username": {
-                    "description": "Username 用户名",
+                    "description": "用户名",
                     "type": "string"
                 }
             }
@@ -1652,7 +1610,7 @@ const docTemplateiam = `{
             "type": "object",
             "properties": {
                 "refreshToken": {
-                    "description": "RefreshToken 刷新令牌（可选，传递后一并吊销）",
+                    "description": "刷新令牌（可选，传递后一并吊销）",
                     "type": "string"
                 }
             }
@@ -1664,7 +1622,7 @@ const docTemplateiam = `{
             ],
             "properties": {
                 "refreshToken": {
-                    "description": "RefreshToken 刷新令牌",
+                    "description": "刷新令牌",
                     "type": "string"
                 }
             }
@@ -1673,12 +1631,82 @@ const docTemplateiam = `{
             "type": "object",
             "properties": {
                 "refreshToken": {
-                    "description": "RefreshToken 新的刷新令牌",
+                    "description": "新的刷新令牌",
                     "type": "string"
                 },
                 "token": {
-                    "description": "Token 新的JWT令牌",
+                    "description": "新的JWT令牌",
                     "type": "string"
+                }
+            }
+        },
+        "dtoauth.RegisterReq": {
+            "type": "object",
+            "required": [
+                "email",
+                "password",
+                "realName",
+                "tenantCode",
+                "tenantName",
+                "username"
+            ],
+            "properties": {
+                "email": {
+                    "description": "邮箱",
+                    "type": "string"
+                },
+                "mobile": {
+                    "description": "手机号",
+                    "type": "string"
+                },
+                "password": {
+                    "description": "密码",
+                    "type": "string"
+                },
+                "realName": {
+                    "description": "真实姓名",
+                    "type": "string"
+                },
+                "tenantCode": {
+                    "description": "租户编码",
+                    "type": "string"
+                },
+                "tenantName": {
+                    "description": "租户名称",
+                    "type": "string"
+                },
+                "username": {
+                    "description": "用户名",
+                    "type": "string"
+                }
+            }
+        },
+        "dtoauth.RegisterResp": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "提示信息",
+                    "type": "string"
+                },
+                "personExists": {
+                    "description": "Person是否已存在",
+                    "type": "boolean"
+                },
+                "personId": {
+                    "description": "自然人ID",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "用户状态",
+                    "type": "string"
+                },
+                "tenantId": {
+                    "description": "租户ID",
+                    "type": "integer"
+                },
+                "userId": {
+                    "description": "用户ID",
+                    "type": "integer"
                 }
             }
         },
@@ -1689,7 +1717,7 @@ const docTemplateiam = `{
             ],
             "properties": {
                 "tenantId": {
-                    "description": "TenantID 租户ID",
+                    "description": "租户ID",
                     "type": "integer"
                 }
             }
@@ -1698,15 +1726,15 @@ const docTemplateiam = `{
             "type": "object",
             "properties": {
                 "refreshToken": {
-                    "description": "RefreshToken 刷新令牌",
+                    "description": "刷新令牌",
                     "type": "string"
                 },
                 "token": {
-                    "description": "Token JWT令牌",
+                    "description": "JWT令牌",
                     "type": "string"
                 },
                 "userInfo": {
-                    "description": "UserInfo 用户信息",
+                    "description": "用户信息",
                     "allOf": [
                         {
                             "$ref": "#/definitions/dtoauth.LoginUserInfo"
@@ -1719,19 +1747,19 @@ const docTemplateiam = `{
             "type": "object",
             "properties": {
                 "orgId": {
-                    "description": "OrgID 产品线ID",
+                    "description": "组织ID",
                     "type": "integer"
                 },
                 "orgName": {
-                    "description": "OrgName 产品线名称",
+                    "description": "组织名称",
                     "type": "string"
                 },
                 "tenantId": {
-                    "description": "TenantID 租户ID",
+                    "description": "租户ID",
                     "type": "integer"
                 },
                 "tenantName": {
-                    "description": "TenantName 租户名称",
+                    "description": "租户名称",
                     "type": "string"
                 }
             }
@@ -1740,39 +1768,39 @@ const docTemplateiam = `{
             "type": "object",
             "properties": {
                 "deptCode": {
-                    "description": "DeptCode 部门编码",
+                    "description": "部门编码",
                     "type": "string"
                 },
                 "deptLevel": {
-                    "description": "DeptLevel 部门层级",
+                    "description": "部门层级",
                     "type": "integer"
                 },
                 "deptName": {
-                    "description": "DeptName 部门名称",
+                    "description": "部门名称",
                     "type": "string"
                 },
                 "deptPath": {
-                    "description": "DeptPath 部门路径: /1/2/3/",
+                    "description": "部门路径: /1/2/3/",
                     "type": "string"
                 },
                 "leaderID": {
-                    "description": "LeaderID 部门负责人ID",
+                    "description": "部门负责人ID",
                     "type": "integer"
                 },
                 "parentID": {
-                    "description": "ParentID 父部门ID,0表示根部门",
+                    "description": "父部门ID,0表示根部门",
                     "type": "integer"
                 },
                 "sortOrder": {
-                    "description": "SortOrder 排序",
+                    "description": "排序",
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: enabled-启用 disabled-停用",
+                    "description": "状态: enabled-启用 disabled-停用",
                     "type": "string"
                 },
                 "tenantID": {
-                    "description": "TenantID 所属租户ID",
+                    "description": "所属租户ID",
                     "type": "integer"
                 }
             }
@@ -1781,6 +1809,7 @@ const docTemplateiam = `{
             "type": "object",
             "properties": {
                 "id": {
+                    "description": "数据自增id",
                     "type": "integer"
                 }
             }
@@ -1792,6 +1821,7 @@ const docTemplateiam = `{
             ],
             "properties": {
                 "id": {
+                    "description": "数据自增id",
                     "type": "integer"
                 }
             }
@@ -1811,42 +1841,43 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "deptCode": {
-                    "description": "DeptCode 部门编码",
+                    "description": "部门编码",
                     "type": "string"
                 },
                 "deptLevel": {
-                    "description": "DeptLevel 部门层级",
+                    "description": "部门层级",
                     "type": "integer"
                 },
                 "deptName": {
-                    "description": "DeptName 部门名称",
+                    "description": "部门名称",
                     "type": "string"
                 },
                 "deptPath": {
-                    "description": "DeptPath 部门路径: /1/2/3/",
+                    "description": "部门路径: /1/2/3/",
                     "type": "string"
                 },
                 "id": {
+                    "description": "数据自增id",
                     "type": "integer"
                 },
                 "leaderID": {
-                    "description": "LeaderID 部门负责人ID",
+                    "description": "部门负责人ID",
                     "type": "integer"
                 },
                 "parentID": {
-                    "description": "ParentID 父部门ID,0表示根部门",
+                    "description": "父部门ID,0表示根部门",
                     "type": "integer"
                 },
                 "sortOrder": {
-                    "description": "SortOrder 排序",
+                    "description": "排序",
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: enabled-启用 disabled-停用",
+                    "description": "状态: enabled-启用 disabled-停用",
                     "type": "string"
                 },
                 "tenantID": {
-                    "description": "TenantID 所属租户ID",
+                    "description": "所属租户ID",
                     "type": "integer"
                 },
                 "updatedAt": {
@@ -1874,42 +1905,43 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "deptCode": {
-                    "description": "DeptCode 部门编码",
+                    "description": "部门编码",
                     "type": "string"
                 },
                 "deptLevel": {
-                    "description": "DeptLevel 部门层级",
+                    "description": "部门层级",
                     "type": "integer"
                 },
                 "deptName": {
-                    "description": "DeptName 部门名称",
+                    "description": "部门名称",
                     "type": "string"
                 },
                 "deptPath": {
-                    "description": "DeptPath 部门路径: /1/2/3/",
+                    "description": "部门路径: /1/2/3/",
                     "type": "string"
                 },
                 "id": {
+                    "description": "数据自增id",
                     "type": "integer"
                 },
                 "leaderID": {
-                    "description": "LeaderID 部门负责人ID",
+                    "description": "部门负责人ID",
                     "type": "integer"
                 },
                 "parentID": {
-                    "description": "ParentID 父部门ID,0表示根部门",
+                    "description": "父部门ID,0表示根部门",
                     "type": "integer"
                 },
                 "sortOrder": {
-                    "description": "SortOrder 排序",
+                    "description": "排序",
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: enabled-启用 disabled-停用",
+                    "description": "状态: enabled-启用 disabled-停用",
                     "type": "string"
                 },
                 "tenantID": {
-                    "description": "TenantID 所属租户ID",
+                    "description": "所属租户ID",
                     "type": "integer"
                 },
                 "updatedAt": {
@@ -1940,12 +1972,14 @@ const docTemplateiam = `{
             "type": "object",
             "properties": {
                 "list": {
+                    "description": "数据列表",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dtoorg.DepartmentPageListItem"
                     }
                 },
                 "total": {
+                    "description": "数据总条数",
                     "type": "integer"
                 }
             }
@@ -1954,6 +1988,7 @@ const docTemplateiam = `{
             "type": "object",
             "properties": {
                 "children": {
+                    "description": "子部门列表",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dtoorg.DepartmentTreeNode"
@@ -1968,42 +2003,43 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "deptCode": {
-                    "description": "DeptCode 部门编码",
+                    "description": "部门编码",
                     "type": "string"
                 },
                 "deptLevel": {
-                    "description": "DeptLevel 部门层级",
+                    "description": "部门层级",
                     "type": "integer"
                 },
                 "deptName": {
-                    "description": "DeptName 部门名称",
+                    "description": "部门名称",
                     "type": "string"
                 },
                 "deptPath": {
-                    "description": "DeptPath 部门路径: /1/2/3/",
+                    "description": "部门路径: /1/2/3/",
                     "type": "string"
                 },
                 "id": {
+                    "description": "数据自增id",
                     "type": "integer"
                 },
                 "leaderID": {
-                    "description": "LeaderID 部门负责人ID",
+                    "description": "部门负责人ID",
                     "type": "integer"
                 },
                 "parentID": {
-                    "description": "ParentID 父部门ID,0表示根部门",
+                    "description": "父部门ID,0表示根部门",
                     "type": "integer"
                 },
                 "sortOrder": {
-                    "description": "SortOrder 排序",
+                    "description": "排序",
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: enabled-启用 disabled-停用",
+                    "description": "状态: enabled-启用 disabled-停用",
                     "type": "string"
                 },
                 "tenantID": {
-                    "description": "TenantID 所属租户ID",
+                    "description": "所属租户ID",
                     "type": "integer"
                 },
                 "updatedAt": {
@@ -2020,6 +2056,7 @@ const docTemplateiam = `{
             "type": "object",
             "properties": {
                 "list": {
+                    "description": "部门树列表",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dtoorg.DepartmentTreeNode"
@@ -2034,43 +2071,83 @@ const docTemplateiam = `{
             ],
             "properties": {
                 "deptCode": {
-                    "description": "DeptCode 部门编码",
+                    "description": "部门编码",
                     "type": "string"
                 },
                 "deptLevel": {
-                    "description": "DeptLevel 部门层级",
+                    "description": "部门层级",
                     "type": "integer"
                 },
                 "deptName": {
-                    "description": "DeptName 部门名称",
+                    "description": "部门名称",
                     "type": "string"
                 },
                 "deptPath": {
-                    "description": "DeptPath 部门路径: /1/2/3/",
+                    "description": "部门路径: /1/2/3/",
                     "type": "string"
                 },
                 "id": {
+                    "description": "数据自增id",
                     "type": "integer"
                 },
                 "leaderID": {
-                    "description": "LeaderID 部门负责人ID",
+                    "description": "部门负责人ID",
                     "type": "integer"
                 },
                 "parentID": {
-                    "description": "ParentID 父部门ID,0表示根部门",
+                    "description": "父部门ID,0表示根部门",
                     "type": "integer"
                 },
                 "sortOrder": {
-                    "description": "SortOrder 排序",
+                    "description": "排序",
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: enabled-启用 disabled-停用",
+                    "description": "状态: enabled-启用 disabled-停用",
                     "type": "string"
                 },
                 "tenantID": {
-                    "description": "TenantID 所属租户ID",
+                    "description": "所属租户ID",
                     "type": "integer"
+                }
+            }
+        },
+        "dtoorg.OrgConfigsResp": {
+            "type": "object",
+            "properties": {
+                "configs": {
+                    "description": "配置信息",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "domain": {
+                    "description": "域名",
+                    "type": "string"
+                },
+                "logo": {
+                    "description": "Logo",
+                    "type": "string"
+                },
+                "orgId": {
+                    "description": "组织ID",
+                    "type": "integer"
+                },
+                "orgName": {
+                    "description": "组织名称",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "状态",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.OrgStatus"
+                        }
+                    ]
                 }
             }
         },
@@ -2107,60 +2184,80 @@ const docTemplateiam = `{
             "type": "object",
             "properties": {
                 "cacheType": {
-                    "description": "CacheType 缓存类型: enabled-启用 disabled-禁用",
-                    "type": "string"
+                    "description": "缓存类型: enabled-启用 disabled-禁用",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuCacheType"
+                        }
+                    ]
                 },
                 "componentPath": {
-                    "description": "ComponentPath 组件路径",
+                    "description": "组件路径",
                     "type": "string"
                 },
                 "icon": {
-                    "description": "Icon 菜单图标",
+                    "description": "菜单图标",
                     "type": "string"
                 },
                 "linkType": {
-                    "description": "LinkType 链接类型: internal-内部链接 external-外部链接",
-                    "type": "string"
+                    "description": "链接类型: internal-内部链接 external-外部链接",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuLinkType"
+                        }
+                    ]
                 },
                 "menuCode": {
-                    "description": "MenuCode 菜单编码",
+                    "description": "菜单编码",
                     "type": "string"
                 },
                 "menuName": {
-                    "description": "MenuName 菜单名称",
+                    "description": "菜单名称",
                     "type": "string"
                 },
                 "menuType": {
-                    "description": "MenuType 菜单类型: directory-目录 menu-菜单 button-按钮",
-                    "type": "string"
+                    "description": "菜单类型: directory-目录 menu-菜单 button-按钮",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuType"
+                        }
+                    ]
                 },
                 "parentID": {
-                    "description": "ParentID 父菜单ID",
+                    "description": "父菜单ID",
                     "type": "integer"
                 },
                 "permission": {
-                    "description": "Permission 权限标识: sys:user:add",
+                    "description": "权限标识: sys:user:add",
                     "type": "string"
                 },
                 "routePath": {
-                    "description": "RoutePath 路由地址",
+                    "description": "路由地址",
                     "type": "string"
                 },
                 "sortOrder": {
-                    "description": "SortOrder 排序",
+                    "description": "排序",
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: enabled-启用 disabled-停用",
-                    "type": "string"
+                    "description": "状态: enabled-启用 disabled-停用",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuStatus"
+                        }
+                    ]
                 },
                 "tenantID": {
-                    "description": "TenantID 所属租户ID",
+                    "description": "所属租户ID",
                     "type": "integer"
                 },
                 "visibility": {
-                    "description": "Visibility 可见性: visible-可见 hidden-隐藏",
-                    "type": "string"
+                    "description": "可见性: visible-可见 hidden-隐藏",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuVisibility"
+                        }
+                    ]
                 }
             }
         },
@@ -2168,7 +2265,7 @@ const docTemplateiam = `{
             "type": "object",
             "properties": {
                 "id": {
-                    "description": "ID 数据自增 ID",
+                    "description": "数据自增 ID",
                     "type": "integer"
                 }
             }
@@ -2180,7 +2277,7 @@ const docTemplateiam = `{
             ],
             "properties": {
                 "id": {
-                    "description": "ID 数据自增 ID",
+                    "description": "数据自增 ID",
                     "type": "integer"
                 }
             }
@@ -2192,11 +2289,15 @@ const docTemplateiam = `{
             ],
             "properties": {
                 "cacheType": {
-                    "description": "CacheType 缓存类型: enabled-启用 disabled-禁用",
-                    "type": "string"
+                    "description": "缓存类型: enabled-启用 disabled-禁用",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuCacheType"
+                        }
+                    ]
                 },
                 "componentPath": {
-                    "description": "ComponentPath 组件路径",
+                    "description": "组件路径",
                     "type": "string"
                 },
                 "createdAt": {
@@ -2208,51 +2309,63 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "icon": {
-                    "description": "Icon 菜单图标",
+                    "description": "菜单图标",
                     "type": "string"
                 },
                 "id": {
-                    "description": "ID 数据自增 ID",
+                    "description": "数据自增 ID",
                     "type": "integer"
                 },
                 "linkType": {
-                    "description": "LinkType 链接类型: internal-内部链接 external-外部链接",
-                    "type": "string"
+                    "description": "链接类型: internal-内部链接 external-外部链接",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuLinkType"
+                        }
+                    ]
                 },
                 "menuCode": {
-                    "description": "MenuCode 菜单编码",
+                    "description": "菜单编码",
                     "type": "string"
                 },
                 "menuName": {
-                    "description": "MenuName 菜单名称",
+                    "description": "菜单名称",
                     "type": "string"
                 },
                 "menuType": {
-                    "description": "MenuType 菜单类型: directory-目录 menu-菜单 button-按钮",
-                    "type": "string"
+                    "description": "菜单类型: directory-目录 menu-菜单 button-按钮",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuType"
+                        }
+                    ]
                 },
                 "parentID": {
-                    "description": "ParentID 父菜单ID",
+                    "description": "父菜单ID",
                     "type": "integer"
                 },
                 "permission": {
-                    "description": "Permission 权限标识: sys:user:add",
+                    "description": "权限标识: sys:user:add",
                     "type": "string"
                 },
                 "routePath": {
-                    "description": "RoutePath 路由地址",
+                    "description": "路由地址",
                     "type": "string"
                 },
                 "sortOrder": {
-                    "description": "SortOrder 排序",
+                    "description": "排序",
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: enabled-启用 disabled-停用",
-                    "type": "string"
+                    "description": "状态: enabled-启用 disabled-停用",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuStatus"
+                        }
+                    ]
                 },
                 "tenantID": {
-                    "description": "TenantID 所属租户ID",
+                    "description": "所属租户ID",
                     "type": "integer"
                 },
                 "updatedAt": {
@@ -2264,8 +2377,12 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "visibility": {
-                    "description": "Visibility 可见性: visible-可见 hidden-隐藏",
-                    "type": "string"
+                    "description": "可见性: visible-可见 hidden-隐藏",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuVisibility"
+                        }
+                    ]
                 }
             }
         },
@@ -2276,11 +2393,15 @@ const docTemplateiam = `{
             ],
             "properties": {
                 "cacheType": {
-                    "description": "CacheType 缓存类型: enabled-启用 disabled-禁用",
-                    "type": "string"
+                    "description": "缓存类型: enabled-启用 disabled-禁用",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuCacheType"
+                        }
+                    ]
                 },
                 "componentPath": {
-                    "description": "ComponentPath 组件路径",
+                    "description": "组件路径",
                     "type": "string"
                 },
                 "createdAt": {
@@ -2292,51 +2413,63 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "icon": {
-                    "description": "Icon 菜单图标",
+                    "description": "菜单图标",
                     "type": "string"
                 },
                 "id": {
-                    "description": "ID 数据自增 ID",
+                    "description": "数据自增 ID",
                     "type": "integer"
                 },
                 "linkType": {
-                    "description": "LinkType 链接类型: internal-内部链接 external-外部链接",
-                    "type": "string"
+                    "description": "链接类型: internal-内部链接 external-外部链接",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuLinkType"
+                        }
+                    ]
                 },
                 "menuCode": {
-                    "description": "MenuCode 菜单编码",
+                    "description": "菜单编码",
                     "type": "string"
                 },
                 "menuName": {
-                    "description": "MenuName 菜单名称",
+                    "description": "菜单名称",
                     "type": "string"
                 },
                 "menuType": {
-                    "description": "MenuType 菜单类型: directory-目录 menu-菜单 button-按钮",
-                    "type": "string"
+                    "description": "菜单类型: directory-目录 menu-菜单 button-按钮",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuType"
+                        }
+                    ]
                 },
                 "parentID": {
-                    "description": "ParentID 父菜单ID",
+                    "description": "父菜单ID",
                     "type": "integer"
                 },
                 "permission": {
-                    "description": "Permission 权限标识: sys:user:add",
+                    "description": "权限标识: sys:user:add",
                     "type": "string"
                 },
                 "routePath": {
-                    "description": "RoutePath 路由地址",
+                    "description": "路由地址",
                     "type": "string"
                 },
                 "sortOrder": {
-                    "description": "SortOrder 排序",
+                    "description": "排序",
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: enabled-启用 disabled-停用",
-                    "type": "string"
+                    "description": "状态: enabled-启用 disabled-停用",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuStatus"
+                        }
+                    ]
                 },
                 "tenantID": {
-                    "description": "TenantID 所属租户ID",
+                    "description": "所属租户ID",
                     "type": "integer"
                 },
                 "updatedAt": {
@@ -2348,8 +2481,12 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "visibility": {
-                    "description": "Visibility 可见性: visible-可见 hidden-隐藏",
-                    "type": "string"
+                    "description": "可见性: visible-可见 hidden-隐藏",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuVisibility"
+                        }
+                    ]
                 }
             }
         },
@@ -2371,14 +2508,14 @@ const docTemplateiam = `{
             "type": "object",
             "properties": {
                 "list": {
-                    "description": "List 数据列表",
+                    "description": "数据列表",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dtopermission.MenuPageListItem"
                     }
                 },
                 "total": {
-                    "description": "Total 数据总条数",
+                    "description": "数据总条数",
                     "type": "integer"
                 }
             }
@@ -2387,18 +2524,22 @@ const docTemplateiam = `{
             "type": "object",
             "properties": {
                 "cacheType": {
-                    "description": "CacheType 缓存类型: enabled-启用 disabled-禁用",
-                    "type": "string"
+                    "description": "缓存类型: enabled-启用 disabled-禁用",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuCacheType"
+                        }
+                    ]
                 },
                 "children": {
-                    "description": "Children 子菜单列表",
+                    "description": "子菜单列表（JSON 输出）",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dtopermission.MenuTreeNode"
                     }
                 },
                 "componentPath": {
-                    "description": "ComponentPath 组件路径",
+                    "description": "组件路径",
                     "type": "string"
                 },
                 "createdAt": {
@@ -2410,51 +2551,63 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "icon": {
-                    "description": "Icon 菜单图标",
+                    "description": "菜单图标",
                     "type": "string"
                 },
                 "id": {
-                    "description": "ID 菜单ID",
+                    "description": "菜单ID",
                     "type": "integer"
                 },
                 "linkType": {
-                    "description": "LinkType 链接类型: internal-内部链接 external-外部链接",
-                    "type": "string"
+                    "description": "链接类型: internal-内部链接 external-外部链接",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuLinkType"
+                        }
+                    ]
                 },
                 "menuCode": {
-                    "description": "MenuCode 菜单编码",
+                    "description": "菜单编码",
                     "type": "string"
                 },
                 "menuName": {
-                    "description": "MenuName 菜单名称",
+                    "description": "菜单名称",
                     "type": "string"
                 },
                 "menuType": {
-                    "description": "MenuType 菜单类型: directory-目录 menu-菜单 button-按钮",
-                    "type": "string"
+                    "description": "菜单类型: directory-目录 menu-菜单 button-按钮",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuType"
+                        }
+                    ]
                 },
                 "parentID": {
-                    "description": "ParentID 父菜单ID",
+                    "description": "父菜单ID",
                     "type": "integer"
                 },
                 "permission": {
-                    "description": "Permission 权限标识: sys:user:add",
+                    "description": "权限标识: sys:user:add",
                     "type": "string"
                 },
                 "routePath": {
-                    "description": "RoutePath 路由地址",
+                    "description": "路由地址",
                     "type": "string"
                 },
                 "sortOrder": {
-                    "description": "SortOrder 排序",
+                    "description": "排序",
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: enabled-启用 disabled-停用",
-                    "type": "string"
+                    "description": "状态: enabled-启用 disabled-停用",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuStatus"
+                        }
+                    ]
                 },
                 "tenantID": {
-                    "description": "TenantID 所属租户ID",
+                    "description": "所属租户ID",
                     "type": "integer"
                 },
                 "updatedAt": {
@@ -2466,8 +2619,12 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "visibility": {
-                    "description": "Visibility 可见性: visible-可见 hidden-隐藏",
-                    "type": "string"
+                    "description": "可见性: visible-可见 hidden-隐藏",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuVisibility"
+                        }
+                    ]
                 }
             }
         },
@@ -2475,7 +2632,7 @@ const docTemplateiam = `{
             "type": "object",
             "properties": {
                 "list": {
-                    "description": "List 菜单树列表",
+                    "description": "菜单树列表",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dtopermission.MenuTreeNode"
@@ -2490,64 +2647,84 @@ const docTemplateiam = `{
             ],
             "properties": {
                 "cacheType": {
-                    "description": "CacheType 缓存类型: enabled-启用 disabled-禁用",
-                    "type": "string"
+                    "description": "缓存类型: enabled-启用 disabled-禁用",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuCacheType"
+                        }
+                    ]
                 },
                 "componentPath": {
-                    "description": "ComponentPath 组件路径",
+                    "description": "组件路径",
                     "type": "string"
                 },
                 "icon": {
-                    "description": "Icon 菜单图标",
+                    "description": "菜单图标",
                     "type": "string"
                 },
                 "id": {
-                    "description": "ID 数据自增 ID",
+                    "description": "数据自增 ID",
                     "type": "integer"
                 },
                 "linkType": {
-                    "description": "LinkType 链接类型: internal-内部链接 external-外部链接",
-                    "type": "string"
+                    "description": "链接类型: internal-内部链接 external-外部链接",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuLinkType"
+                        }
+                    ]
                 },
                 "menuCode": {
-                    "description": "MenuCode 菜单编码",
+                    "description": "菜单编码",
                     "type": "string"
                 },
                 "menuName": {
-                    "description": "MenuName 菜单名称",
+                    "description": "菜单名称",
                     "type": "string"
                 },
                 "menuType": {
-                    "description": "MenuType 菜单类型: directory-目录 menu-菜单 button-按钮",
-                    "type": "string"
+                    "description": "菜单类型: directory-目录 menu-菜单 button-按钮",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuType"
+                        }
+                    ]
                 },
                 "parentID": {
-                    "description": "ParentID 父菜单ID",
+                    "description": "父菜单ID",
                     "type": "integer"
                 },
                 "permission": {
-                    "description": "Permission 权限标识: sys:user:add",
+                    "description": "权限标识: sys:user:add",
                     "type": "string"
                 },
                 "routePath": {
-                    "description": "RoutePath 路由地址",
+                    "description": "路由地址",
                     "type": "string"
                 },
                 "sortOrder": {
-                    "description": "SortOrder 排序",
+                    "description": "排序",
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: enabled-启用 disabled-停用",
-                    "type": "string"
+                    "description": "状态: enabled-启用 disabled-停用",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuStatus"
+                        }
+                    ]
                 },
                 "tenantID": {
-                    "description": "TenantID 所属租户ID",
+                    "description": "所属租户ID",
                     "type": "integer"
                 },
                 "visibility": {
-                    "description": "Visibility 可见性: visible-可见 hidden-隐藏",
-                    "type": "string"
+                    "description": "可见性: visible-可见 hidden-隐藏",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuVisibility"
+                        }
+                    ]
                 }
             }
         },
@@ -2559,14 +2736,14 @@ const docTemplateiam = `{
             ],
             "properties": {
                 "menuIds": {
-                    "description": "MenuIDs 菜单ID列表",
+                    "description": "菜单ID列表",
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
                 },
                 "roleId": {
-                    "description": "RoleID 角色ID",
+                    "description": "角色ID",
                     "type": "integer"
                 }
             }
@@ -2575,35 +2752,47 @@ const docTemplateiam = `{
             "type": "object",
             "properties": {
                 "dataScope": {
-                    "description": "DataScope 数据权限范围: all-全部 dept_and_sub-本部门及以下 dept-本部门 self-仅本人 custom-自定义",
-                    "type": "string"
+                    "description": "数据权限范围: all-全部 dept_and_sub-本部门及以下 dept-本部门 self-仅本人 custom-自定义",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.RoleDataScope"
+                        }
+                    ]
                 },
                 "description": {
-                    "description": "Description 角色描述",
+                    "description": "角色描述",
                     "type": "string"
                 },
                 "roleCode": {
-                    "description": "RoleCode 角色编码",
+                    "description": "角色编码",
                     "type": "string"
                 },
                 "roleName": {
-                    "description": "RoleName 角色名称",
+                    "description": "角色名称",
                     "type": "string"
                 },
                 "roleType": {
-                    "description": "RoleType 角色类型: custom-自定义 system-系统内置",
-                    "type": "string"
+                    "description": "角色类型: custom-自定义 system-系统内置",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.RoleType"
+                        }
+                    ]
                 },
                 "sortOrder": {
-                    "description": "SortOrder 排序",
+                    "description": "排序",
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: enabled-启用 disabled-停用",
-                    "type": "string"
+                    "description": "状态: enabled-启用 disabled-停用",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.RoleStatus"
+                        }
+                    ]
                 },
                 "tenantID": {
-                    "description": "TenantID 所属租户ID",
+                    "description": "所属租户ID",
                     "type": "integer"
                 }
             }
@@ -2612,7 +2801,7 @@ const docTemplateiam = `{
             "type": "object",
             "properties": {
                 "id": {
-                    "description": "ID 数据自增 ID",
+                    "description": "数据自增 ID",
                     "type": "integer"
                 }
             }
@@ -2624,7 +2813,7 @@ const docTemplateiam = `{
             ],
             "properties": {
                 "id": {
-                    "description": "ID 数据自增 ID",
+                    "description": "数据自增 ID",
                     "type": "integer"
                 }
             }
@@ -2644,39 +2833,51 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "dataScope": {
-                    "description": "DataScope 数据权限范围: all-全部 dept_and_sub-本部门及以下 dept-本部门 self-仅本人 custom-自定义",
-                    "type": "string"
+                    "description": "数据权限范围: all-全部 dept_and_sub-本部门及以下 dept-本部门 self-仅本人 custom-自定义",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.RoleDataScope"
+                        }
+                    ]
                 },
                 "description": {
-                    "description": "Description 角色描述",
+                    "description": "角色描述",
                     "type": "string"
                 },
                 "id": {
-                    "description": "ID 数据自增 ID",
+                    "description": "数据自增 ID",
                     "type": "integer"
                 },
                 "roleCode": {
-                    "description": "RoleCode 角色编码",
+                    "description": "角色编码",
                     "type": "string"
                 },
                 "roleName": {
-                    "description": "RoleName 角色名称",
+                    "description": "角色名称",
                     "type": "string"
                 },
                 "roleType": {
-                    "description": "RoleType 角色类型: custom-自定义 system-系统内置",
-                    "type": "string"
+                    "description": "角色类型: custom-自定义 system-系统内置",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.RoleType"
+                        }
+                    ]
                 },
                 "sortOrder": {
-                    "description": "SortOrder 排序",
+                    "description": "排序",
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: enabled-启用 disabled-停用",
-                    "type": "string"
+                    "description": "状态: enabled-启用 disabled-停用",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.RoleStatus"
+                        }
+                    ]
                 },
                 "tenantID": {
-                    "description": "TenantID 所属租户ID",
+                    "description": "所属租户ID",
                     "type": "integer"
                 },
                 "updatedAt": {
@@ -2693,11 +2894,15 @@ const docTemplateiam = `{
             "type": "object",
             "properties": {
                 "cacheType": {
-                    "description": "CacheType 缓存类型: enabled-启用 disabled-禁用",
-                    "type": "string"
+                    "description": "缓存类型: enabled-启用 disabled-禁用",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuCacheType"
+                        }
+                    ]
                 },
                 "componentPath": {
-                    "description": "ComponentPath 组件路径",
+                    "description": "组件路径",
                     "type": "string"
                 },
                 "createdAt": {
@@ -2709,51 +2914,63 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "icon": {
-                    "description": "Icon 菜单图标",
+                    "description": "菜单图标",
                     "type": "string"
                 },
                 "id": {
-                    "description": "ID 菜单ID",
+                    "description": "菜单ID",
                     "type": "integer"
                 },
                 "linkType": {
-                    "description": "LinkType 链接类型: internal-内部链接 external-外部链接",
-                    "type": "string"
+                    "description": "链接类型: internal-内部链接 external-外部链接",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuLinkType"
+                        }
+                    ]
                 },
                 "menuCode": {
-                    "description": "MenuCode 菜单编码",
+                    "description": "菜单编码",
                     "type": "string"
                 },
                 "menuName": {
-                    "description": "MenuName 菜单名称",
+                    "description": "菜单名称",
                     "type": "string"
                 },
                 "menuType": {
-                    "description": "MenuType 菜单类型: directory-目录 menu-菜单 button-按钮",
-                    "type": "string"
+                    "description": "菜单类型: directory-目录 menu-菜单 button-按钮",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuType"
+                        }
+                    ]
                 },
                 "parentID": {
-                    "description": "ParentID 父菜单ID",
+                    "description": "父菜单ID",
                     "type": "integer"
                 },
                 "permission": {
-                    "description": "Permission 权限标识: sys:user:add",
+                    "description": "权限标识: sys:user:add",
                     "type": "string"
                 },
                 "routePath": {
-                    "description": "RoutePath 路由地址",
+                    "description": "路由地址",
                     "type": "string"
                 },
                 "sortOrder": {
-                    "description": "SortOrder 排序",
+                    "description": "排序",
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: enabled-启用 disabled-停用",
-                    "type": "string"
+                    "description": "状态: enabled-启用 disabled-停用",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuStatus"
+                        }
+                    ]
                 },
                 "tenantID": {
-                    "description": "TenantID 所属租户ID",
+                    "description": "所属租户ID",
                     "type": "integer"
                 },
                 "updatedAt": {
@@ -2765,8 +2982,12 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "visibility": {
-                    "description": "Visibility 可见性: visible-可见 hidden-隐藏",
-                    "type": "string"
+                    "description": "可见性: visible-可见 hidden-隐藏",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.MenuVisibility"
+                        }
+                    ]
                 }
             }
         },
@@ -2774,7 +2995,7 @@ const docTemplateiam = `{
             "type": "object",
             "properties": {
                 "list": {
-                    "description": "List 菜单列表",
+                    "description": "菜单列表",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dtopermission.RoleMenuListItem"
@@ -2797,39 +3018,51 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "dataScope": {
-                    "description": "DataScope 数据权限范围: all-全部 dept_and_sub-本部门及以下 dept-本部门 self-仅本人 custom-自定义",
-                    "type": "string"
+                    "description": "数据权限范围: all-全部 dept_and_sub-本部门及以下 dept-本部门 self-仅本人 custom-自定义",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.RoleDataScope"
+                        }
+                    ]
                 },
                 "description": {
-                    "description": "Description 角色描述",
+                    "description": "角色描述",
                     "type": "string"
                 },
                 "id": {
-                    "description": "ID 数据自增 ID",
+                    "description": "数据自增 ID",
                     "type": "integer"
                 },
                 "roleCode": {
-                    "description": "RoleCode 角色编码",
+                    "description": "角色编码",
                     "type": "string"
                 },
                 "roleName": {
-                    "description": "RoleName 角色名称",
+                    "description": "角色名称",
                     "type": "string"
                 },
                 "roleType": {
-                    "description": "RoleType 角色类型: custom-自定义 system-系统内置",
-                    "type": "string"
+                    "description": "角色类型: custom-自定义 system-系统内置",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.RoleType"
+                        }
+                    ]
                 },
                 "sortOrder": {
-                    "description": "SortOrder 排序",
+                    "description": "排序",
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: enabled-启用 disabled-停用",
-                    "type": "string"
+                    "description": "状态: enabled-启用 disabled-停用",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.RoleStatus"
+                        }
+                    ]
                 },
                 "tenantID": {
-                    "description": "TenantID 所属租户ID",
+                    "description": "所属租户ID",
                     "type": "integer"
                 },
                 "updatedAt": {
@@ -2860,14 +3093,14 @@ const docTemplateiam = `{
             "type": "object",
             "properties": {
                 "list": {
-                    "description": "List 数据列表",
+                    "description": "数据列表",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dtopermission.RolePageListItem"
                     }
                 },
                 "total": {
-                    "description": "Total 数据总条数",
+                    "description": "数据总条数",
                     "type": "integer"
                 }
             }
@@ -2879,39 +3112,51 @@ const docTemplateiam = `{
             ],
             "properties": {
                 "dataScope": {
-                    "description": "DataScope 数据权限范围: all-全部 dept_and_sub-本部门及以下 dept-本部门 self-仅本人 custom-自定义",
-                    "type": "string"
+                    "description": "数据权限范围: all-全部 dept_and_sub-本部门及以下 dept-本部门 self-仅本人 custom-自定义",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.RoleDataScope"
+                        }
+                    ]
                 },
                 "description": {
-                    "description": "Description 角色描述",
+                    "description": "角色描述",
                     "type": "string"
                 },
                 "id": {
-                    "description": "ID 数据自增 ID",
+                    "description": "数据自增 ID",
                     "type": "integer"
                 },
                 "roleCode": {
-                    "description": "RoleCode 角色编码",
+                    "description": "角色编码",
                     "type": "string"
                 },
                 "roleName": {
-                    "description": "RoleName 角色名称",
+                    "description": "角色名称",
                     "type": "string"
                 },
                 "roleType": {
-                    "description": "RoleType 角色类型: custom-自定义 system-系统内置",
-                    "type": "string"
+                    "description": "角色类型: custom-自定义 system-系统内置",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.RoleType"
+                        }
+                    ]
                 },
                 "sortOrder": {
-                    "description": "SortOrder 排序",
+                    "description": "排序",
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Status 状态: enabled-启用 disabled-停用",
-                    "type": "string"
+                    "description": "状态: enabled-启用 disabled-停用",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/iammodel.RoleStatus"
+                        }
+                    ]
                 },
                 "tenantID": {
-                    "description": "TenantID 所属租户ID",
+                    "description": "所属租户ID",
                     "type": "integer"
                 }
             }
@@ -2924,14 +3169,14 @@ const docTemplateiam = `{
             ],
             "properties": {
                 "roleIds": {
-                    "description": "RoleIDs 角色ID列表",
+                    "description": "角色ID列表",
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
                 },
                 "userId": {
-                    "description": "UserID 用户ID",
+                    "description": "用户ID",
                     "type": "integer"
                 }
             }
@@ -2940,78 +3185,78 @@ const docTemplateiam = `{
             "type": "object",
             "properties": {
                 "deptID": {
-                    "description": "DeptID 主部门ID(冗余字段,方便查询,实际关联关系在iam_user_department表)",
+                    "description": "主部门ID(冗余字段,方便查询,实际关联关系在iam_user_department表)",
                     "type": "integer"
                 },
                 "email": {
-                    "description": "Email 邮箱",
+                    "description": "邮箱",
                     "type": "string"
                 },
                 "employeeNo": {
-                    "description": "EmployeeNo 工号",
+                    "description": "工号",
                     "type": "string"
                 },
                 "entryDate": {
-                    "description": "EntryDate 入职日期",
+                    "description": "入职日期",
                     "type": "integer"
                 },
                 "jobLevel": {
-                    "description": "JobLevel 职级",
+                    "description": "职级",
                     "type": "string"
                 },
                 "lastLoginAt": {
-                    "description": "LastLoginAt 最后登录时间",
+                    "description": "最后登录时间",
                     "type": "integer"
                 },
                 "lastLoginIp": {
-                    "description": "LastLoginIp 最后登录IP(支持IPv6)",
+                    "description": "最后登录IP(支持IPv6)",
                     "type": "string"
                 },
                 "loginCount": {
-                    "description": "LoginCount 登录次数",
+                    "description": "登录次数",
                     "type": "integer"
                 },
                 "mobile": {
-                    "description": "Mobile 手机号",
+                    "description": "手机号",
                     "type": "string"
                 },
                 "personID": {
-                    "description": "PersonID 自然人ID",
+                    "description": "自然人ID",
                     "type": "integer"
                 },
                 "position": {
-                    "description": "Position 职位",
+                    "description": "职位",
                     "type": "string"
                 },
                 "primaryDeptID": {
-                    "description": "PrimaryDeptID 主部门ID，未传入时自动使用租户顶级部门",
+                    "description": "主部门ID，未传入时自动使用租户顶级部门",
                     "type": "integer"
                 },
                 "realName": {
-                    "description": "RealName 真实姓名",
+                    "description": "真实姓名",
                     "type": "string"
                 },
                 "secondaryDeptIDs": {
-                    "description": "SecondaryDeptIDs 其他关联部门ID列表（第二部门）",
+                    "description": "其他关联部门ID列表（第二部门）",
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
                 },
                 "status": {
-                    "description": "Status 状态: enabled-正常 locked-锁定 disabled-禁用",
+                    "description": "状态: enabled-正常 locked-锁定 disabled-禁用",
                     "type": "string"
                 },
                 "tenantID": {
-                    "description": "TenantID 所属租户ID, 0表示平台管理员账号",
+                    "description": "所属租户ID, 0表示平台管理员账号",
                     "type": "integer"
                 },
                 "userType": {
-                    "description": "UserType 用户类型: normal-普通用户 tenant_admin-租户管理员 platform_admin-平台管理员(可管理所有租户)",
+                    "description": "用户类型: normal-普通用户 tenant_admin-租户管理员 platform_admin-平台管理员(可管理所有租户)",
                     "type": "string"
                 },
                 "username": {
-                    "description": "Username 用户名(租户用户:租户内唯一,平台管理员:全局唯一,需应用层保证)",
+                    "description": "用户名(租户用户:租户内唯一,平台管理员:全局唯一,需应用层保证)",
                     "type": "string"
                 }
             }
@@ -3020,11 +3265,11 @@ const docTemplateiam = `{
             "type": "object",
             "properties": {
                 "personID": {
-                    "description": "PersonID 自然人ID",
+                    "description": "自然人ID",
                     "type": "integer"
                 },
                 "userID": {
-                    "description": "UserID 用户UserID",
+                    "description": "用户UserID",
                     "type": "integer"
                 }
             }
@@ -3036,26 +3281,7 @@ const docTemplateiam = `{
             ],
             "properties": {
                 "id": {
-                    "description": "ID 数据自增 ID",
-                    "type": "integer"
-                }
-            }
-        },
-        "dtouser.UserDepartmentAssignReq": {
-            "type": "object",
-            "required": [
-                "departmentID",
-                "deptType",
-                "userID"
-            ],
-            "properties": {
-                "departmentID": {
-                    "type": "integer"
-                },
-                "deptType": {
-                    "$ref": "#/definitions/iammodel.UserDeptType"
-                },
-                "userID": {
+                    "description": "数据自增 ID",
                     "type": "integer"
                 }
             }
@@ -3064,27 +3290,39 @@ const docTemplateiam = `{
             "type": "object",
             "properties": {
                 "departmentID": {
+                    "description": "部门ID",
                     "type": "integer"
                 },
                 "departmentName": {
+                    "description": "部门名称",
                     "type": "string"
                 },
                 "deptType": {
+                    "description": "部门类型",
                     "type": "string"
                 }
             }
         },
-        "dtouser.UserDepartmentRemoveReq": {
+        "dtouser.UserDepartmentsAssignReq": {
             "type": "object",
             "required": [
-                "departmentID",
+                "primaryDeptID",
                 "userID"
             ],
             "properties": {
-                "departmentID": {
+                "primaryDeptID": {
+                    "description": "主部门ID",
                     "type": "integer"
                 },
+                "secondaryDeptIDs": {
+                    "description": "其他部门ID列表",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
                 "userID": {
+                    "description": "用户ID",
                     "type": "integer"
                 }
             }
@@ -3093,6 +3331,7 @@ const docTemplateiam = `{
             "type": "object",
             "properties": {
                 "list": {
+                    "description": "用户部门列表",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dtouser.UserDepartmentItem"
@@ -3115,51 +3354,51 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "deptID": {
-                    "description": "DeptID 主部门ID(冗余字段,方便查询,实际关联关系在iam_user_department表)",
+                    "description": "主部门ID(冗余字段,方便查询,实际关联关系在iam_user_department表)",
                     "type": "integer"
                 },
                 "employeeNo": {
-                    "description": "EmployeeNo 工号",
+                    "description": "工号",
                     "type": "string"
                 },
                 "entryDate": {
-                    "description": "EntryDate 入职日期",
+                    "description": "入职日期",
                     "type": "integer"
                 },
                 "id": {
-                    "description": "ID 数据自增 ID",
+                    "description": "数据自增 ID",
                     "type": "integer"
                 },
                 "jobLevel": {
-                    "description": "JobLevel 职级",
+                    "description": "职级",
                     "type": "string"
                 },
                 "lastLoginAt": {
-                    "description": "LastLoginAt 最后登录时间",
+                    "description": "最后登录时间",
                     "type": "integer"
                 },
                 "lastLoginIp": {
-                    "description": "LastLoginIp 最后登录IP(支持IPv6)",
+                    "description": "最后登录IP(支持IPv6)",
                     "type": "string"
                 },
                 "loginCount": {
-                    "description": "LoginCount 登录次数",
+                    "description": "登录次数",
                     "type": "integer"
                 },
                 "personID": {
-                    "description": "PersonID 自然人ID",
+                    "description": "自然人ID",
                     "type": "integer"
                 },
                 "position": {
-                    "description": "Position 职位",
+                    "description": "职位",
                     "type": "string"
                 },
                 "status": {
-                    "description": "Status 状态: enabled-正常 locked-锁定 disabled-禁用",
+                    "description": "状态: enabled-正常 locked-锁定 disabled-禁用",
                     "type": "string"
                 },
                 "tenantID": {
-                    "description": "TenantID 所属租户ID, 0表示平台管理员账号",
+                    "description": "所属租户ID, 0表示平台管理员账号",
                     "type": "integer"
                 },
                 "updatedAt": {
@@ -3171,11 +3410,11 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "userType": {
-                    "description": "UserType 用户类型: normal-普通用户 tenant_admin-租户管理员 platform_admin-平台管理员(可管理所有租户)",
+                    "description": "用户类型: normal-普通用户 tenant_admin-租户管理员 platform_admin-平台管理员(可管理所有租户)",
                     "type": "string"
                 },
                 "username": {
-                    "description": "Username 用户名(租户用户:租户内唯一,平台管理员:全局唯一,需应用层保证)",
+                    "description": "用户名(租户用户:租户内唯一,平台管理员:全局唯一,需应用层保证)",
                     "type": "string"
                 }
             }
@@ -3195,51 +3434,51 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "deptID": {
-                    "description": "DeptID 主部门ID(冗余字段,方便查询,实际关联关系在iam_user_department表)",
+                    "description": "主部门ID(冗余字段,方便查询,实际关联关系在iam_user_department表)",
                     "type": "integer"
                 },
                 "employeeNo": {
-                    "description": "EmployeeNo 工号",
+                    "description": "工号",
                     "type": "string"
                 },
                 "entryDate": {
-                    "description": "EntryDate 入职日期",
+                    "description": "入职日期",
                     "type": "integer"
                 },
                 "id": {
-                    "description": "ID 数据自增 ID",
+                    "description": "数据自增 ID",
                     "type": "integer"
                 },
                 "jobLevel": {
-                    "description": "JobLevel 职级",
+                    "description": "职级",
                     "type": "string"
                 },
                 "lastLoginAt": {
-                    "description": "LastLoginAt 最后登录时间",
+                    "description": "最后登录时间",
                     "type": "integer"
                 },
                 "lastLoginIp": {
-                    "description": "LastLoginIp 最后登录IP(支持IPv6)",
+                    "description": "最后登录IP(支持IPv6)",
                     "type": "string"
                 },
                 "loginCount": {
-                    "description": "LoginCount 登录次数",
+                    "description": "登录次数",
                     "type": "integer"
                 },
                 "personID": {
-                    "description": "PersonID 自然人ID",
+                    "description": "自然人ID",
                     "type": "integer"
                 },
                 "position": {
-                    "description": "Position 职位",
+                    "description": "职位",
                     "type": "string"
                 },
                 "status": {
-                    "description": "Status 状态: enabled-正常 locked-锁定 disabled-禁用",
+                    "description": "状态: enabled-正常 locked-锁定 disabled-禁用",
                     "type": "string"
                 },
                 "tenantID": {
-                    "description": "TenantID 所属租户ID, 0表示平台管理员账号",
+                    "description": "所属租户ID, 0表示平台管理员账号",
                     "type": "integer"
                 },
                 "updatedAt": {
@@ -3251,11 +3490,11 @@ const docTemplateiam = `{
                     "type": "integer"
                 },
                 "userType": {
-                    "description": "UserType 用户类型: normal-普通用户 tenant_admin-租户管理员 platform_admin-平台管理员(可管理所有租户)",
+                    "description": "用户类型: normal-普通用户 tenant_admin-租户管理员 platform_admin-平台管理员(可管理所有租户)",
                     "type": "string"
                 },
                 "username": {
-                    "description": "Username 用户名(租户用户:租户内唯一,平台管理员:全局唯一,需应用层保证)",
+                    "description": "用户名(租户用户:租户内唯一,平台管理员:全局唯一,需应用层保证)",
                     "type": "string"
                 }
             }
@@ -3278,34 +3517,14 @@ const docTemplateiam = `{
             "type": "object",
             "properties": {
                 "list": {
-                    "description": "List 数据列表",
+                    "description": "数据列表",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dtouser.UserPageListItem"
                     }
                 },
                 "total": {
-                    "description": "Total 数据总条数",
-                    "type": "integer"
-                }
-            }
-        },
-        "dtouser.UserRemoveRolesReq": {
-            "type": "object",
-            "required": [
-                "roleIds",
-                "userId"
-            ],
-            "properties": {
-                "roleIds": {
-                    "description": "RoleIDs 角色ID列表",
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "userId": {
-                    "description": "UserID 用户ID",
+                    "description": "数据总条数",
                     "type": "integer"
                 }
             }
@@ -3314,19 +3533,19 @@ const docTemplateiam = `{
             "type": "object",
             "properties": {
                 "roleCode": {
-                    "description": "RoleCode 角色编码",
+                    "description": "角色编码",
                     "type": "string"
                 },
                 "roleId": {
-                    "description": "RoleID 角色ID",
+                    "description": "角色ID",
                     "type": "integer"
                 },
                 "roleName": {
-                    "description": "RoleName 角色名称",
+                    "description": "角色名称",
                     "type": "string"
                 },
                 "roleType": {
-                    "description": "RoleType 角色类型",
+                    "description": "角色类型",
                     "type": "string"
                 }
             }
@@ -3335,7 +3554,7 @@ const docTemplateiam = `{
             "type": "object",
             "properties": {
                 "list": {
-                    "description": "List 角色列表",
+                    "description": "角色列表",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dtouser.UserRoleItem"
@@ -3350,59 +3569,59 @@ const docTemplateiam = `{
             ],
             "properties": {
                 "deptID": {
-                    "description": "DeptID 主部门ID(冗余字段,方便查询,实际关联关系在iam_user_department表)",
+                    "description": "主部门ID(冗余字段,方便查询,实际关联关系在iam_user_department表)",
                     "type": "integer"
                 },
                 "employeeNo": {
-                    "description": "EmployeeNo 工号",
+                    "description": "工号",
                     "type": "string"
                 },
                 "entryDate": {
-                    "description": "EntryDate 入职日期",
+                    "description": "入职日期",
                     "type": "integer"
                 },
                 "id": {
-                    "description": "ID 数据自增 ID",
+                    "description": "数据自增 ID",
                     "type": "integer"
                 },
                 "jobLevel": {
-                    "description": "JobLevel 职级",
+                    "description": "职级",
                     "type": "string"
                 },
                 "lastLoginAt": {
-                    "description": "LastLoginAt 最后登录时间",
+                    "description": "最后登录时间",
                     "type": "integer"
                 },
                 "lastLoginIp": {
-                    "description": "LastLoginIp 最后登录IP(支持IPv6)",
+                    "description": "最后登录IP(支持IPv6)",
                     "type": "string"
                 },
                 "loginCount": {
-                    "description": "LoginCount 登录次数",
+                    "description": "登录次数",
                     "type": "integer"
                 },
                 "personID": {
-                    "description": "PersonID 自然人ID",
+                    "description": "自然人ID",
                     "type": "integer"
                 },
                 "position": {
-                    "description": "Position 职位",
+                    "description": "职位",
                     "type": "string"
                 },
                 "status": {
-                    "description": "Status 状态: enabled-正常 locked-锁定 disabled-禁用",
+                    "description": "状态: enabled-正常 locked-锁定 disabled-禁用",
                     "type": "string"
                 },
                 "tenantID": {
-                    "description": "TenantID 所属租户ID, 0表示平台管理员账号",
+                    "description": "所属租户ID, 0表示平台管理员账号",
                     "type": "integer"
                 },
                 "userType": {
-                    "description": "UserType 用户类型: normal-普通用户 tenant_admin-租户管理员 platform_admin-平台管理员(可管理所有租户)",
+                    "description": "用户类型: normal-普通用户 tenant_admin-租户管理员 platform_admin-平台管理员(可管理所有租户)",
                     "type": "string"
                 },
                 "username": {
-                    "description": "Username 用户名(租户用户:租户内唯一,平台管理员:全局唯一,需应用层保证)",
+                    "description": "用户名(租户用户:租户内唯一,平台管理员:全局唯一,需应用层保证)",
                     "type": "string"
                 }
             }
@@ -3416,18 +3635,117 @@ const docTemplateiam = `{
                 "data": {},
                 "msg": {
                     "type": "string"
+                },
+                "requestID": {
+                    "type": "string"
                 }
             }
         },
-        "iammodel.UserDeptType": {
+        "iammodel.MenuCacheType": {
             "type": "string",
             "enum": [
-                "primary",
-                "secondary"
+                "enabled",
+                "disabled"
             ],
             "x-enum-varnames": [
-                "UserDeptTypePrimary",
-                "UserDeptTypeSecondary"
+                "MenuCacheTypeEnabled",
+                "MenuCacheTypeDisabled"
+            ]
+        },
+        "iammodel.MenuLinkType": {
+            "type": "string",
+            "enum": [
+                "internal",
+                "external"
+            ],
+            "x-enum-varnames": [
+                "MenuLinkTypeInternal",
+                "MenuLinkTypeExternal"
+            ]
+        },
+        "iammodel.MenuStatus": {
+            "type": "string",
+            "enum": [
+                "enabled",
+                "disabled"
+            ],
+            "x-enum-varnames": [
+                "MenuStatusEnabled",
+                "MenuStatusDisabled"
+            ]
+        },
+        "iammodel.MenuType": {
+            "type": "string",
+            "enum": [
+                "directory",
+                "menu",
+                "button"
+            ],
+            "x-enum-varnames": [
+                "MenuTypeDirectory",
+                "MenuTypeMenu",
+                "MenuTypeButton"
+            ]
+        },
+        "iammodel.MenuVisibility": {
+            "type": "string",
+            "enum": [
+                "visible",
+                "hidden"
+            ],
+            "x-enum-varnames": [
+                "MenuVisibilityVisible",
+                "MenuVisibilityHidden"
+            ]
+        },
+        "iammodel.OrgStatus": {
+            "type": "string",
+            "enum": [
+                "enabled",
+                "disabled"
+            ],
+            "x-enum-varnames": [
+                "OrgStatusEnabled",
+                "OrgStatusDisabled"
+            ]
+        },
+        "iammodel.RoleDataScope": {
+            "type": "string",
+            "enum": [
+                "all",
+                "dept_and_sub",
+                "dept",
+                "self",
+                "custom"
+            ],
+            "x-enum-varnames": [
+                "RoleDataScopeAll",
+                "RoleDataScopeDeptAndSub",
+                "RoleDataScopeDept",
+                "RoleDataScopeSelf",
+                "RoleDataScopeCustom"
+            ]
+        },
+        "iammodel.RoleStatus": {
+            "type": "string",
+            "enum": [
+                "enabled",
+                "disabled"
+            ],
+            "x-enum-varnames": [
+                "RoleStatusEnabled",
+                "RoleStatusDisabled"
+            ]
+        },
+        "iammodel.RoleType": {
+            "type": "string",
+            "enum": [
+                "custom",
+                "system"
+            ],
+            "x-enum-varnames": [
+                "RoleTypeCustom",
+                "RoleTypeSystem"
             ]
         },
         "iammodel.UserType": {

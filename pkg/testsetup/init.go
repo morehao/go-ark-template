@@ -84,8 +84,8 @@ func WithAuthByUserID(userID uint) testkit.Option {
 			if err != nil {
 				panic(fmt.Sprintf("WithAuthByUserID: get tenant failed, tenantID=%d, err=%v", userEntity.TenantID, err))
 			}
-			if tenantEntity != nil && tenantEntity.OrganizationID > 0 {
-				ctx.Set(gcontext.KeyOrgID, tenantEntity.OrganizationID)
+			if tenantEntity != nil && tenantEntity.OrgID > 0 {
+				ctx.Set(gcontext.KeyOrgID, tenantEntity.OrgID)
 			}
 		}
 	}

@@ -7,7 +7,7 @@ import (
 	"github.com/morehao/golib/biz/gcontext/gincontext"
 )
 
-type OrganizationCtr interface {
+type OrgCtr interface {
 	Create(ctx *gin.Context)
 	Delete(ctx *gin.Context)
 	Update(ctx *gin.Context)
@@ -17,25 +17,25 @@ type OrganizationCtr interface {
 	ListConfig(ctx *gin.Context)
 }
 
-type organizationCtr struct {
-	organizationSvc svcorg.OrganizationSvc
+type orgCtr struct {
+	orgSvc svcorg.OrgSvc
 }
 
-var _ OrganizationCtr = (*organizationCtr)(nil)
+var _ OrgCtr = (*orgCtr)(nil)
 
-func NewOrganizationCtr() OrganizationCtr {
-	return &organizationCtr{
-		organizationSvc: svcorg.NewOrganizationSvc(),
+func NewOrgCtr() OrgCtr {
+	return &orgCtr{
+		orgSvc: svcorg.NewOrgSvc(),
 	}
 }
 
-func (ctr *organizationCtr) Create(ctx *gin.Context) {
-	var req dtoorg.OrganizationCreateReq
+func (ctr *orgCtr) Create(ctx *gin.Context) {
+	var req dtoorg.OrgCreateReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		gincontext.Fail(ctx, err)
 		return
 	}
-	res, err := ctr.organizationSvc.Create(ctx, &req)
+	res, err := ctr.orgSvc.Create(ctx, &req)
 	if err != nil {
 		gincontext.Fail(ctx, err)
 		return
@@ -43,27 +43,27 @@ func (ctr *organizationCtr) Create(ctx *gin.Context) {
 	gincontext.Success(ctx, res)
 }
 
-func (ctr *organizationCtr) Delete(ctx *gin.Context) {
-	var req dtoorg.OrganizationDeleteReq
+func (ctr *orgCtr) Delete(ctx *gin.Context) {
+	var req dtoorg.OrgDeleteReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		gincontext.Fail(ctx, err)
 		return
 	}
 
-	if err := ctr.organizationSvc.Delete(ctx, &req); err != nil {
+	if err := ctr.orgSvc.Delete(ctx, &req); err != nil {
 		gincontext.Fail(ctx, err)
 		return
 	}
 	gincontext.Success(ctx, "删除成功")
 }
 
-func (ctr *organizationCtr) Update(ctx *gin.Context) {
-	var req dtoorg.OrganizationUpdateReq
+func (ctr *orgCtr) Update(ctx *gin.Context) {
+	var req dtoorg.OrgUpdateReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		gincontext.Fail(ctx, err)
 		return
 	}
-	if err := ctr.organizationSvc.Update(ctx, &req); err != nil {
+	if err := ctr.orgSvc.Update(ctx, &req); err != nil {
 		gincontext.Fail(ctx, err)
 		return
 	}
@@ -76,15 +76,15 @@ func (ctr *organizationCtr) Update(ctx *gin.Context) {
 // @accept application/json
 // @Produce application/json
 // @Param domain query string false "组织域名(可选)"
-// @Success 200 {object} gincontext.DtoRender{data=dtoorg.OrganizationConfigsResp} "{"code": 0,"data": "ok","msg": "success"}"
-// @Router /v1/iam/organization/getConfigsByDomain [get]
-func (ctr *organizationCtr) GetConfigsByDomain(ctx *gin.Context) {
-	var req dtoorg.OrganizationGetConfigsByDomainReq
+// @Success 200 {object} gincontext.DtoRender{data=dtoorg.OrgConfigsResp} "{"code": 0,"data": "ok","msg": "success"}"
+// @Router /v1/iam/org/getConfigsByDomain [get]
+func (ctr *orgCtr) GetConfigsByDomain(ctx *gin.Context) {
+	var req dtoorg.OrgGetConfigsByDomainReq
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		gincontext.Fail(ctx, err)
 		return
 	}
-	res, err := ctr.organizationSvc.GetConfigsByDomain(ctx, &req)
+	res, err := ctr.orgSvc.GetConfigsByDomain(ctx, &req)
 	if err != nil {
 		gincontext.Fail(ctx, err)
 		return
@@ -92,13 +92,13 @@ func (ctr *organizationCtr) GetConfigsByDomain(ctx *gin.Context) {
 	gincontext.Success(ctx, res)
 }
 
-func (ctr *organizationCtr) Detail(ctx *gin.Context) {
-	var req dtoorg.OrganizationDetailReq
+func (ctr *orgCtr) Detail(ctx *gin.Context) {
+	var req dtoorg.OrgDetailReq
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		gincontext.Fail(ctx, err)
 		return
 	}
-	res, err := ctr.organizationSvc.Detail(ctx, &req)
+	res, err := ctr.orgSvc.Detail(ctx, &req)
 	if err != nil {
 		gincontext.Fail(ctx, err)
 		return
@@ -106,13 +106,13 @@ func (ctr *organizationCtr) Detail(ctx *gin.Context) {
 	gincontext.Success(ctx, res)
 }
 
-func (ctr *organizationCtr) PageList(ctx *gin.Context) {
-	var req dtoorg.OrganizationPageListReq
+func (ctr *orgCtr) PageList(ctx *gin.Context) {
+	var req dtoorg.OrgPageListReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		gincontext.Fail(ctx, err)
 		return
 	}
-	res, err := ctr.organizationSvc.PageList(ctx, &req)
+	res, err := ctr.orgSvc.PageList(ctx, &req)
 	if err != nil {
 		gincontext.Fail(ctx, err)
 		return
@@ -120,8 +120,8 @@ func (ctr *organizationCtr) PageList(ctx *gin.Context) {
 	gincontext.Success(ctx, res)
 }
 
-func (ctr *organizationCtr) ListConfig(ctx *gin.Context) {
-	res, err := ctr.organizationSvc.ListConfig(ctx)
+func (ctr *orgCtr) ListConfig(ctx *gin.Context) {
+	res, err := ctr.orgSvc.ListConfig(ctx)
 	if err != nil {
 		gincontext.Fail(ctx, err)
 		return
