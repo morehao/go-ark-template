@@ -2,10 +2,12 @@ package testsetup
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"runtime"
 
 	"github.com/morehao/goark/pkg/dbclient"
+	"github.com/morehao/golib/conf"
 	"github.com/morehao/golib/dbaccess/dbes"
 	"github.com/morehao/golib/dbaccess/dbgorm"
 	"github.com/morehao/golib/dbaccess/dbredis"
@@ -20,6 +22,13 @@ type baseAppInitializer struct {
 	DBConfigs   []dbgorm.GormConfig
 	RedisConfig dbredis.RedisConfig
 	ESConfigs   []dbes.ESConfig
+}
+
+type AppConfig struct {
+	Log         map[string]glog.LogConfig `yaml:"log"`
+	DBConfigs   []dbgorm.GormConfig       `yaml:"db_configs"`
+	RedisConfig dbredis.RedisConfig       `yaml:"redis_config"`
+	ESConfigs   []dbes.ESConfig           `yaml:"es_configs"`
 }
 
 func newBaseAppInitializer(appName string) (*baseAppInitializer, error) {
@@ -44,6 +53,30 @@ func findConfigPath(appName string) string {
 	projectRoot := filepath.Dir(filepath.Dir(pkgDir))
 
 	return filepath.Join(projectRoot, "apps", appName, "config", "config.yaml")
+}
+
+func (i *baseAppInitializer) Init() error {
+	if _, err := os.Stat(i.ConfigPath); err != nil {
+		return fmt.Errorf("config file not found: %s, error: %w", i.ConfigPath, err)
+	}
+
+	var cfg AppConfig
+	conf.LoadConfig(i.ConfigPath, &cfg)
+
+	i.Log = cfg.Log
+	i.DBConfigs = cfg.DBConfigs
+	i.RedisConfig = cfg.RedisConfig
+	i.ESConfigs = cfg.ESConfigs
+
+	if err := i.initLog(); err != nil {
+		return fmt.Errorf("init log: %w", err)
+	}
+
+	if err := i.initResources(); err != nil {
+		return fmt.Errorf("init resources: %w", err)
+	}
+
+	return nil
 }
 
 func (i *baseAppInitializer) initLog() error {

@@ -47,6 +47,7 @@ build:
 	$(call validate_app)
 	@echo "正在构建应用程序 $(APP)..."
 	@mkdir -p $(BUILD_DIR)
+	@go work sync
 	@go build -ldflags="-X 'main.BuildVersion=$(VERSION)'" -o $(BUILD_DIR)/$(BINARY) $(MAIN_DIR)
 	@echo "✅ 构建完成: $(BUILD_DIR)/$(BINARY)"
 
@@ -55,6 +56,7 @@ build-env:
 	$(call validate_app)
 	@echo "正在为 $(GO_ENV) 构建 $(APP)..."
 	@mkdir -p $(BUILD_DIR)
+	@go work sync
 	@$(GO_ENV) go build -ldflags="-X 'main.BuildVersion=$(VERSION)'" -o $(BUILD_DIR)/$(BINARY) $(MAIN_DIR)
 	@echo "✅ 构建完成: $(BUILD_DIR)/$(BINARY)"
 
@@ -68,17 +70,20 @@ clean:
 run:
 	$(call validate_app)
 	@echo "🚀 正在运行应用程序 $(APP)..."
+	@go work sync
 	@go run $(MAIN_DIR)
 
 # 运行测试
 test:
 	$(call validate_app)
 	@echo "🧪 正在运行测试..."
+	@go work sync
 	@go test ./apps/$(APP)/internal/... -v
 
 # 下载依赖项
 deps:
 	@echo "📦 正在下载依赖项..."
+	@go work sync
 	@$(GO_ENV) go mod download
 	@$(GO_ENV) go mod tidy
 	@echo "✅ 依赖项已更新"
@@ -99,7 +104,7 @@ swag:
 	@echo "✅ Swagger 文档已生成：apps/$(APP)/docs"
 
 
-CLI_VERSION := v0.1.0
+CLI_VERSION := v0.1.1
 CLI_PKG     := github.com/morehao/gocli
 
 codegen:

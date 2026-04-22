@@ -8,9 +8,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/morehao/goark/apps/iam/config"
-	"github.com/morehao/goark/apps/iam/iamdao"
-	"github.com/morehao/goark/apps/iam/iammodel"
+	"github.com/morehao/goark/apps/iam/dao"
 	"github.com/morehao/goark/apps/iam/internal/dto/dtoauth"
+	"github.com/morehao/goark/apps/iam/model"
 	"github.com/morehao/goark/pkg/code"
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
@@ -69,9 +69,9 @@ func (svc *authSvc) LoginByPassword(ctx *gin.Context, req *dtoauth.LoginByPasswo
 	}
 
 	// 查询该自然人关联的所有用户账号
-	userList, err := iamdao.NewUserDao().GetListByCond(ctx, &iamdao.UserCond{
+	userList, err := dao.NewUserDao().GetListByCond(ctx, &dao.UserCond{
 		PersonID: personEntity.ID,
-		Status:   iammodel.UserStatusEnabled,
+		Status:   model.UserStatusEnabled,
 	})
 	if err != nil {
 		glog.Errorf(ctx, "[svcauth.LoginByPassword] GetListByCond fail, err:%v, personID:%d", err, personEntity.ID)
@@ -118,7 +118,7 @@ func (svc *authSvc) SelectTenant(ctx *gin.Context, req *dtoauth.SelectTenantReq)
 		return nil, code.GetError(code.AuthTenantSelectError)
 	}
 
-	tenantEntity, err := iamdao.NewTenantDao().GetByID(ctx, req.TenantID)
+	tenantEntity, err := dao.NewTenantDao().GetByID(ctx, req.TenantID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcauth.SelectTenant] GetByID tenant fail, err:%v, tenantID:%d", err, req.TenantID)
 		return nil, code.GetError(code.AuthTenantSelectError)
@@ -127,10 +127,10 @@ func (svc *authSvc) SelectTenant(ctx *gin.Context, req *dtoauth.SelectTenantReq)
 		return nil, code.GetError(code.AuthTenantNotInOrgError)
 	}
 
-	userEntity, err := iamdao.NewUserDao().GetByCond(ctx, &iamdao.UserCond{
+	userEntity, err := dao.NewUserDao().GetByCond(ctx, &dao.UserCond{
 		PersonID: personID,
 		TenantID: req.TenantID,
-		Status:   iammodel.UserStatusEnabled,
+		Status:   model.UserStatusEnabled,
 	})
 	if err != nil {
 		glog.Errorf(ctx, "[svcauth.SelectTenant] GetByCond fail, err:%v, personID:%d, tenantID:%d", err, personID, req.TenantID)
@@ -140,7 +140,7 @@ func (svc *authSvc) SelectTenant(ctx *gin.Context, req *dtoauth.SelectTenantReq)
 		return nil, code.GetError(code.AuthTenantSelectError)
 	}
 
-	personEntity, err := iamdao.NewPersonDao().GetByID(ctx, userEntity.PersonID)
+	personEntity, err := dao.NewPersonDao().GetByID(ctx, userEntity.PersonID)
 	if err != nil || personEntity == nil || personEntity.ID == 0 {
 		glog.Errorf(ctx, "[svcauth.SelectTenant] GetByID person fail, err:%v, personID:%d", err, userEntity.PersonID)
 		return nil, code.GetError(code.AuthTenantSelectError)
@@ -151,7 +151,7 @@ func (svc *authSvc) SelectTenant(ctx *gin.Context, req *dtoauth.SelectTenantReq)
 		return nil, err
 	}
 
-	tenantEntity, _ = iamdao.NewTenantDao().GetByID(ctx, userEntity.TenantID)
+	tenantEntity, _ = dao.NewTenantDao().GetByID(ctx, userEntity.TenantID)
 	tenantName := ""
 	if tenantEntity != nil {
 		tenantName = tenantEntity.TenantName
@@ -220,9 +220,9 @@ func IsTokenBlacklisted(ctx *gin.Context, token string) bool {
 	return exists > 0
 }
 
-func (svc *authSvc) findPersonByAccount(ctx *gin.Context, account string) (*iammodel.PersonEntity, error) {
+func (svc *authSvc) findPersonByAccount(ctx *gin.Context, account string) (*model.PersonEntity, error) {
 	// 先按手机号查询
-	personEntity, err := iamdao.NewPersonDao().GetByCond(ctx, &iamdao.PersonCond{
+	personEntity, err := dao.NewPersonDao().GetByCond(ctx, &dao.PersonCond{
 		Mobile: account,
 	})
 	if err != nil {
@@ -234,7 +234,7 @@ func (svc *authSvc) findPersonByAccount(ctx *gin.Context, account string) (*iamm
 	}
 
 	// 再按邮箱查询
-	personEntity, err = iamdao.NewPersonDao().GetByCond(ctx, &iamdao.PersonCond{
+	personEntity, err = dao.NewPersonDao().GetByCond(ctx, &dao.PersonCond{
 		Email: account,
 	})
 	if err != nil {
@@ -248,7 +248,7 @@ func (svc *authSvc) findPersonByAccount(ctx *gin.Context, account string) (*iamm
 	return nil, code.GetError(code.AuthPersonNotFoundError)
 }
 
-func (svc *authSvc) generateToken(ctx *gin.Context, userEntity iammodel.UserEntity, personID uint) (string, error) {
+func (svc *authSvc) generateToken(ctx *gin.Context, userEntity model.UserEntity, personID uint) (string, error) {
 	jwtAuth, err := jwtauth.New[gobject.UserClaims](config.Conf.JWT.SignKey)
 	if err != nil {
 		return "", code.GetError(code.AuthTokenGenerateError)
@@ -256,7 +256,7 @@ func (svc *authSvc) generateToken(ctx *gin.Context, userEntity iammodel.UserEnti
 
 	var orgID uint
 	if userEntity.TenantID > 0 {
-		tenantEntity, _ := iamdao.NewTenantDao().GetByID(ctx, userEntity.TenantID)
+		tenantEntity, _ := dao.NewTenantDao().GetByID(ctx, userEntity.TenantID)
 		if tenantEntity != nil {
 			orgID = tenantEntity.OrgID
 		}
@@ -316,10 +316,10 @@ func (svc *authSvc) generateTempToken(personID uint, orgID uint) (string, error)
 	return token, nil
 }
 
-func (svc *authSvc) generateTokenPair(ctx *gin.Context, userEntity iammodel.UserEntity, personID uint) (token string, refreshToken string, err error) {
+func (svc *authSvc) generateTokenPair(ctx *gin.Context, userEntity model.UserEntity, personID uint) (token string, refreshToken string, err error) {
 	var orgID uint
 	if userEntity.TenantID > 0 {
-		tenantEntity, _ := iamdao.NewTenantDao().GetByID(ctx, userEntity.TenantID)
+		tenantEntity, _ := dao.NewTenantDao().GetByID(ctx, userEntity.TenantID)
 		if tenantEntity != nil {
 			orgID = tenantEntity.OrgID
 		}
@@ -340,7 +340,7 @@ func (svc *authSvc) generateTokenPair(ctx *gin.Context, userEntity iammodel.User
 	return token, refreshToken, nil
 }
 
-func (svc *authSvc) generateTokenWithOrgID(ctx *gin.Context, userEntity iammodel.UserEntity, personID uint, orgID uint, deptID uint, roleIDs []uint) (string, error) {
+func (svc *authSvc) generateTokenWithOrgID(ctx *gin.Context, userEntity model.UserEntity, personID uint, orgID uint, deptID uint, roleIDs []uint) (string, error) {
 	jwtAuth, err := jwtauth.New[gobject.UserClaims](config.Conf.JWT.SignKey)
 	if err != nil {
 		return "", code.GetError(code.AuthTokenGenerateError)
@@ -369,7 +369,7 @@ func (svc *authSvc) generateTokenWithOrgID(ctx *gin.Context, userEntity iammodel
 	return token, nil
 }
 
-func (svc *authSvc) generateRefreshToken(ctx *gin.Context, userID uint, personID uint, userType iammodel.UserType, tenantID uint, orgID uint) (string, error) {
+func (svc *authSvc) generateRefreshToken(ctx *gin.Context, userID uint, personID uint, userType model.UserType, tenantID uint, orgID uint) (string, error) {
 	jwtAuth, err := jwtauth.New[gobject.UserClaims](config.Conf.JWT.SignKey)
 	if err != nil {
 		return "", code.GetError(code.AuthTokenGenerateError)
@@ -421,13 +421,13 @@ func (svc *authSvc) RefreshToken(ctx *gin.Context, req *dtoauth.RefreshTokenReq)
 	}
 
 	userID := claims.CustomData.UserID
-	userEntity, err := iamdao.NewUserDao().GetByID(ctx, userID)
+	userEntity, err := dao.NewUserDao().GetByID(ctx, userID)
 	if err != nil || userEntity == nil || userEntity.ID == 0 {
 		glog.Errorf(ctx, "[svcauth.RefreshToken] GetByID user fail, err:%v, userID:%d", err, userID)
 		return nil, code.GetError(code.AuthRefreshTokenInvalidError)
 	}
 
-	if userEntity.Status != iammodel.UserStatusEnabled {
+	if userEntity.Status != model.UserStatusEnabled {
 		return nil, code.GetError(code.AuthAccountDisabledError)
 	}
 
@@ -475,15 +475,15 @@ func addRefreshTokenToBlacklist(ctx *gin.Context, token string) error {
 	return dbclient.RedisCli.Set(ctx.Request.Context(), key, "1", refreshTokenExpireDuration).Err()
 }
 
-func (svc *authSvc) buildTenantList(ctx *gin.Context, userList iammodel.UserEntityList) ([]dtoauth.TenantListItem, error) {
+func (svc *authSvc) buildTenantList(ctx *gin.Context, userList model.UserEntityList) ([]dtoauth.TenantListItem, error) {
 	tenants := make([]dtoauth.TenantListItem, 0, len(userList))
 	for _, u := range userList {
-		tenantEntity, err := iamdao.NewTenantDao().GetByID(ctx, u.TenantID)
+		tenantEntity, err := dao.NewTenantDao().GetByID(ctx, u.TenantID)
 		if err != nil || tenantEntity == nil || tenantEntity.ID == 0 {
 			continue
 		}
 		orgName := ""
-		orgEntity, _ := iamdao.NewOrgDao().GetByID(ctx, tenantEntity.OrgID)
+		orgEntity, _ := dao.NewOrgDao().GetByID(ctx, tenantEntity.OrgID)
 		if orgEntity != nil {
 			orgName = orgEntity.OrgName
 		}
@@ -497,15 +497,15 @@ func (svc *authSvc) buildTenantList(ctx *gin.Context, userList iammodel.UserEnti
 	return tenants, nil
 }
 
-func (svc *authSvc) getCurrentOrg(ctx *gin.Context) (*iammodel.OrgEntity, error) {
+func (svc *authSvc) getCurrentOrg(ctx *gin.Context) (*model.OrgEntity, error) {
 	domain := resolveDomain(ctx)
 	if domain == "" {
 		return nil, code.GetError(code.AuthOrgNotFoundError)
 	}
 
-	orgEntity, err := iamdao.NewOrgDao().GetByCond(ctx, &iamdao.OrgCond{
+	orgEntity, err := dao.NewOrgDao().GetByCond(ctx, &dao.OrgCond{
 		Domain: domain,
-		Status: iammodel.OrgStatusEnabled,
+		Status: model.OrgStatusEnabled,
 	})
 	if err != nil {
 		glog.Errorf(ctx, "[svcauth.getCurrentOrg] daoOrg GetByCond fail, err:%v, domain:%s", err, domain)
@@ -517,15 +517,15 @@ func (svc *authSvc) getCurrentOrg(ctx *gin.Context) (*iammodel.OrgEntity, error)
 	return orgEntity, nil
 }
 
-func (svc *authSvc) filterUsersByOrg(ctx *gin.Context, userList iammodel.UserEntityList, orgID uint) (iammodel.UserEntityList, error) {
-	filtered := make(iammodel.UserEntityList, 0, len(userList))
+func (svc *authSvc) filterUsersByOrg(ctx *gin.Context, userList model.UserEntityList, orgID uint) (model.UserEntityList, error) {
+	filtered := make(model.UserEntityList, 0, len(userList))
 	for _, userEntity := range userList {
-		tenantEntity, err := iamdao.NewTenantDao().GetByID(ctx, userEntity.TenantID)
+		tenantEntity, err := dao.NewTenantDao().GetByID(ctx, userEntity.TenantID)
 		if err != nil {
 			glog.Errorf(ctx, "[svcauth.filterUsersByOrg] daoTenant GetByID fail, err:%v, tenantID:%d", err, userEntity.TenantID)
 			return nil, code.GetError(code.AuthLoginError)
 		}
-		if tenantEntity == nil || tenantEntity.ID == 0 || tenantEntity.Status != iammodel.TenantStatusEnabled {
+		if tenantEntity == nil || tenantEntity.ID == 0 || tenantEntity.Status != model.TenantStatusEnabled {
 			continue
 		}
 		if tenantEntity.OrgID != orgID {
@@ -552,14 +552,14 @@ func resolveDomain(ctx *gin.Context) string {
 	return host
 }
 
-func (svc *authSvc) updateLoginInfo(ctx *gin.Context, userEntity *iammodel.UserEntity) {
+func (svc *authSvc) updateLoginInfo(ctx *gin.Context, userEntity *model.UserEntity) {
 	now := time.Now()
 	updateMap := map[string]any{
 		"last_login_at": now,
 		"last_login_ip": gincontext.GetClientIP(ctx),
 		"login_count":   userEntity.LoginCount + 1,
 	}
-	if err := iamdao.NewUserDao().UpdateMap(ctx, userEntity.ID, updateMap); err != nil {
+	if err := dao.NewUserDao().UpdateMap(ctx, userEntity.ID, updateMap); err != nil {
 		glog.Errorf(ctx, "[svcauth.updateLoginInfo] UpdateMap fail, err:%v, userID:%d", err, userEntity.ID)
 	}
 }
@@ -568,10 +568,10 @@ func (svc *authSvc) getUserDeptAndRoles(ctx *gin.Context, userID uint, tenantID 
 	deptID = 0
 	roleIDs = []uint{}
 
-	userDeptList, err := iamdao.NewUserDepartmentDao().GetListByCond(ctx, &iamdao.UserDepartmentCond{
+	userDeptList, err := dao.NewUserDepartmentDao().GetListByCond(ctx, &dao.UserDepartmentCond{
 		UserID:   userID,
 		TenantID: tenantID,
-		DeptType: iammodel.UserDeptTypePrimary,
+		DeptType: model.UserDeptTypePrimary,
 	})
 	if err != nil {
 		glog.Errorf(ctx, "[svcauth.getUserDeptAndRoles] GetListByCond user department fail, err:%v, userID:%d", err, userID)
@@ -579,7 +579,7 @@ func (svc *authSvc) getUserDeptAndRoles(ctx *gin.Context, userID uint, tenantID 
 		deptID = userDeptList[0].DeptID
 	}
 
-	userRoleList, err := iamdao.NewUserRoleDao().GetListByCond(ctx, &iamdao.UserRoleCond{
+	userRoleList, err := dao.NewUserRoleDao().GetListByCond(ctx, &dao.UserRoleCond{
 		UserID:   userID,
 		TenantID: tenantID,
 	})
@@ -605,24 +605,24 @@ func (svc *authSvc) Register(ctx *gin.Context, req *dtoauth.RegisterReq) (*dtoau
 		return nil, err
 	}
 
-	registerEnabled, err := svc.getOrgConfigBool(ctx, orgEntity.ID, iammodel.OrgConfigKeyRegisterEnabled)
+	registerEnabled, err := svc.getOrgConfigBool(ctx, orgEntity.ID, model.OrgConfigKeyRegisterEnabled)
 	if err != nil || !registerEnabled {
 		return nil, code.GetError(code.AuthRegisterDisabled)
 	}
 
-	identityType, _ := svc.getOrgConfigString(ctx, orgEntity.ID, iammodel.OrgConfigKeyRegisterIdentityType)
+	identityType, _ := svc.getOrgConfigString(ctx, orgEntity.ID, model.OrgConfigKeyRegisterIdentityType)
 	if identityType == "" {
-		identityType = string(iammodel.RegisterIdentityTypeEmail)
+		identityType = string(model.RegisterIdentityTypeEmail)
 	}
-	if err := svc.validateRegisterIdentity(ctx, req, iammodel.RegisterIdentityType(identityType)); err != nil {
+	if err := svc.validateRegisterIdentity(ctx, req, model.RegisterIdentityType(identityType)); err != nil {
 		return nil, err
 	}
 
-	requireApproval, _ := svc.getOrgConfigBool(ctx, orgEntity.ID, iammodel.OrgConfigKeyRegisterRequireApproval)
-	userStatus := iammodel.UserStatusEnabled
+	requireApproval, _ := svc.getOrgConfigBool(ctx, orgEntity.ID, model.OrgConfigKeyRegisterRequireApproval)
+	userStatus := model.UserStatusEnabled
 	message := "注册成功"
 	if requireApproval {
-		userStatus = iammodel.UserStatusDisabled
+		userStatus = model.UserStatusDisabled
 		message = "注册成功，等待管理员审核"
 	}
 
@@ -633,44 +633,44 @@ func (svc *authSvc) Register(ctx *gin.Context, req *dtoauth.RegisterReq) (*dtoau
 	}
 
 	email := strings.TrimSpace(req.Email)
-	personEntity, _ := iamdao.NewPersonDao().GetByCond(ctx, &iamdao.PersonCond{Email: email})
+	personEntity, _ := dao.NewPersonDao().GetByCond(ctx, &dao.PersonCond{Email: email})
 	personExists := personEntity != nil && personEntity.ID > 0
 
 	var tenantID, userID, personID uint
 	var deptID uint
 	txErr := dbclient.IamDB(ctx).Transaction(func(tx *gorm.DB) error {
-		tenantEntity := &iammodel.TenantEntity{
+		tenantEntity := &model.TenantEntity{
 			OrgID: orgEntity.ID,
 			TenantName:     req.TenantName,
 			TenantCode:     req.TenantCode,
-			Status:         iammodel.TenantStatusEnabled,
+			Status:         model.TenantStatusEnabled,
 			CreatedBy:      0,
 			UpdatedBy:      0,
 		}
-		if err := iamdao.NewTenantDao().WithTx(tx).Insert(ctx, tenantEntity); err != nil {
+		if err := dao.NewTenantDao().WithTx(tx).Insert(ctx, tenantEntity); err != nil {
 			glog.Errorf(ctx, "[svcauth.Register] Insert tenant fail, err:%v", err)
 			return err
 		}
 		tenantID = tenantEntity.ID
 
-		deptEntity := &iammodel.DepartmentEntity{
+		deptEntity := &model.DepartmentEntity{
 			TenantID:  tenantID,
 			DeptCode:  req.TenantCode,
 			DeptName:  req.TenantName,
 			DeptLevel: 1,
 			ParentID:  0,
-			Status:    iammodel.DeptStatusEnabled,
+			Status:    model.DeptStatusEnabled,
 			CreatedBy: 0,
 			UpdatedBy: 0,
 		}
-		if err := iamdao.NewDepartmentDao().WithTx(tx).Insert(ctx, deptEntity); err != nil {
+		if err := dao.NewDepartmentDao().WithTx(tx).Insert(ctx, deptEntity); err != nil {
 			glog.Errorf(ctx, "[svcauth.Register] Insert department fail, err:%v", err)
 			return err
 		}
 		deptID = deptEntity.ID
 
 		deptPathMap := map[string]any{"dept_path": fmt.Sprintf("/%d/", deptEntity.ID)}
-		if err := iamdao.NewDepartmentDao().WithTx(tx).UpdateMap(ctx, deptEntity.ID, deptPathMap); err != nil {
+		if err := dao.NewDepartmentDao().WithTx(tx).UpdateMap(ctx, deptEntity.ID, deptPathMap); err != nil {
 			glog.Errorf(ctx, "[svcauth.Register] Update department path fail, err:%v", err)
 			return err
 		}
@@ -678,7 +678,7 @@ func (svc *authSvc) Register(ctx *gin.Context, req *dtoauth.RegisterReq) (*dtoau
 		if personExists {
 			personID = personEntity.ID
 		} else {
-			newPerson := &iammodel.PersonEntity{
+			newPerson := &model.PersonEntity{
 				Mobile:       strings.TrimSpace(req.Mobile),
 				Email:        email,
 				RealName:     req.RealName,
@@ -686,38 +686,38 @@ func (svc *authSvc) Register(ctx *gin.Context, req *dtoauth.RegisterReq) (*dtoau
 				CreatedBy:    0,
 				UpdatedBy:    0,
 			}
-			if err := iamdao.NewPersonDao().WithTx(tx).Insert(ctx, newPerson); err != nil {
+			if err := dao.NewPersonDao().WithTx(tx).Insert(ctx, newPerson); err != nil {
 				glog.Errorf(ctx, "[svcauth.Register] Insert person fail, err:%v", err)
 				return err
 			}
 			personID = newPerson.ID
 		}
 
-		userEntity := &iammodel.UserEntity{
+		userEntity := &model.UserEntity{
 			TenantID:  tenantID,
 			DeptID:    deptID,
 			PersonID:  personID,
 			Username:  req.Username,
-			UserType:  iammodel.UserTypeTenantAdmin,
+			UserType:  model.UserTypeTenantAdmin,
 			Status:    userStatus,
 			CreatedBy: 0,
 			UpdatedBy: 0,
 		}
-		if err := iamdao.NewUserDao().WithTx(tx).Insert(ctx, userEntity); err != nil {
+		if err := dao.NewUserDao().WithTx(tx).Insert(ctx, userEntity); err != nil {
 			glog.Errorf(ctx, "[svcauth.Register] Insert user fail, err:%v", err)
 			return err
 		}
 		userID = userEntity.ID
 
-		userDeptEntity := &iammodel.UserDepartmentEntity{
+		userDeptEntity := &model.UserDepartmentEntity{
 			TenantID:  tenantID,
 			UserID:    userID,
 			DeptID:    deptID,
-			DeptType:  iammodel.UserDeptTypePrimary,
+			DeptType:  model.UserDeptTypePrimary,
 			CreatedBy: 0,
 			UpdatedBy: 0,
 		}
-		if err := iamdao.NewUserDepartmentDao().WithTx(tx).Insert(ctx, userDeptEntity); err != nil {
+		if err := dao.NewUserDepartmentDao().WithTx(tx).Insert(ctx, userDeptEntity); err != nil {
 			glog.Errorf(ctx, "[svcauth.Register] Insert user department fail, err:%v", err)
 			return err
 		}
@@ -740,7 +740,7 @@ func (svc *authSvc) Register(ctx *gin.Context, req *dtoauth.RegisterReq) (*dtoau
 }
 
 func (svc *authSvc) getOrgConfigBool(ctx *gin.Context, orgID uint, configKey string) (bool, error) {
-	configEntity, err := iamdao.NewOrgConfigDao().GetByCond(ctx, &iamdao.OrgConfigCond{
+	configEntity, err := dao.NewOrgConfigDao().GetByCond(ctx, &dao.OrgConfigCond{
 		OrgID:     orgID,
 		ConfigKey: configKey,
 	})
@@ -755,7 +755,7 @@ func (svc *authSvc) getOrgConfigBool(ctx *gin.Context, orgID uint, configKey str
 }
 
 func (svc *authSvc) getOrgConfigString(ctx *gin.Context, orgID uint, configKey string) (string, error) {
-	configEntity, err := iamdao.NewOrgConfigDao().GetByCond(ctx, &iamdao.OrgConfigCond{
+	configEntity, err := dao.NewOrgConfigDao().GetByCond(ctx, &dao.OrgConfigCond{
 		OrgID:     orgID,
 		ConfigKey: configKey,
 	})
@@ -769,20 +769,20 @@ func (svc *authSvc) getOrgConfigString(ctx *gin.Context, orgID uint, configKey s
 	return configEntity.ConfigValue, nil
 }
 
-func (svc *authSvc) validateRegisterIdentity(ctx *gin.Context, req *dtoauth.RegisterReq, identityType iammodel.RegisterIdentityType) error {
+func (svc *authSvc) validateRegisterIdentity(ctx *gin.Context, req *dtoauth.RegisterReq, identityType model.RegisterIdentityType) error {
 	mobile := strings.TrimSpace(req.Mobile)
 	email := strings.TrimSpace(req.Email)
 
 	switch identityType {
-	case iammodel.RegisterIdentityTypeMobile:
+	case model.RegisterIdentityTypeMobile:
 		if mobile == "" {
 			return code.GetError(code.AuthRegisterIdentityRequired)
 		}
-	case iammodel.RegisterIdentityTypeEmail:
+	case model.RegisterIdentityTypeEmail:
 		if email == "" {
 			return code.GetError(code.AuthRegisterIdentityRequired)
 		}
-	case iammodel.RegisterIdentityTypeBoth:
+	case model.RegisterIdentityTypeBoth:
 		if mobile == "" && email == "" {
 			return code.GetError(code.AuthRegisterIdentityRequired)
 		}

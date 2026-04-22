@@ -1,7 +1,7 @@
 package dtoorg
 
 import (
-	"github.com/morehao/goark/apps/iam/iammodel"
+	"github.com/morehao/goark/apps/iam/model"
 	"github.com/morehao/goark/apps/iam/object/objorg"
 	"github.com/morehao/golib/biz/gobject"
 )
@@ -71,7 +71,7 @@ type OrgConfigsResp struct {
 	OrgName  string                       `json:"orgName"`           // 组织名称
 	Domain   string                       `json:"domain"`            // 域名
 	Logo     string                       `json:"logo"`              // Logo
-	Status   iammodel.OrgStatus           `json:"status"`            // 状态
+	Status   model.OrgStatus           `json:"status"`            // 状态
 	Configs  map[string]map[string]string `json:"configs"`           // 配置信息
 }
 

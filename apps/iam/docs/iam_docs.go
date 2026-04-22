@@ -1596,7 +1596,7 @@ const docTemplateiam = `{
                     "description": "用户类型",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.UserType"
+                            "$ref": "#/definitions/model.UserType"
                         }
                     ]
                 },
@@ -2145,38 +2145,9 @@ const docTemplateiam = `{
                     "description": "状态",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.OrgStatus"
+                            "$ref": "#/definitions/model.OrgStatus"
                         }
                     ]
-                }
-            }
-        },
-        "dtoorg.OrganizationLoginConfigResp": {
-            "type": "object",
-            "properties": {
-                "configs": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "domain": {
-                    "type": "string"
-                },
-                "logo": {
-                    "type": "string"
-                },
-                "organizationId": {
-                    "type": "integer"
-                },
-                "organizationName": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
                 }
             }
         },
@@ -2187,7 +2158,7 @@ const docTemplateiam = `{
                     "description": "缓存类型: enabled-启用 disabled-禁用",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuCacheType"
+                            "$ref": "#/definitions/model.MenuCacheType"
                         }
                     ]
                 },
@@ -2203,7 +2174,7 @@ const docTemplateiam = `{
                     "description": "链接类型: internal-内部链接 external-外部链接",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuLinkType"
+                            "$ref": "#/definitions/model.MenuLinkType"
                         }
                     ]
                 },
@@ -2219,7 +2190,7 @@ const docTemplateiam = `{
                     "description": "菜单类型: directory-目录 menu-菜单 button-按钮",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuType"
+                            "$ref": "#/definitions/model.MenuType"
                         }
                     ]
                 },
@@ -2243,7 +2214,7 @@ const docTemplateiam = `{
                     "description": "状态: enabled-启用 disabled-停用",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuStatus"
+                            "$ref": "#/definitions/model.MenuStatus"
                         }
                     ]
                 },
@@ -2255,7 +2226,7 @@ const docTemplateiam = `{
                     "description": "可见性: visible-可见 hidden-隐藏",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuVisibility"
+                            "$ref": "#/definitions/model.MenuVisibility"
                         }
                     ]
                 }
@@ -2292,7 +2263,7 @@ const docTemplateiam = `{
                     "description": "缓存类型: enabled-启用 disabled-禁用",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuCacheType"
+                            "$ref": "#/definitions/model.MenuCacheType"
                         }
                     ]
                 },
@@ -2320,7 +2291,7 @@ const docTemplateiam = `{
                     "description": "链接类型: internal-内部链接 external-外部链接",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuLinkType"
+                            "$ref": "#/definitions/model.MenuLinkType"
                         }
                     ]
                 },
@@ -2336,7 +2307,7 @@ const docTemplateiam = `{
                     "description": "菜单类型: directory-目录 menu-菜单 button-按钮",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuType"
+                            "$ref": "#/definitions/model.MenuType"
                         }
                     ]
                 },
@@ -2360,7 +2331,7 @@ const docTemplateiam = `{
                     "description": "状态: enabled-启用 disabled-停用",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuStatus"
+                            "$ref": "#/definitions/model.MenuStatus"
                         }
                     ]
                 },
@@ -2380,7 +2351,7 @@ const docTemplateiam = `{
                     "description": "可见性: visible-可见 hidden-隐藏",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuVisibility"
+                            "$ref": "#/definitions/model.MenuVisibility"
                         }
                     ]
                 }
@@ -2396,7 +2367,7 @@ const docTemplateiam = `{
                     "description": "缓存类型: enabled-启用 disabled-禁用",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuCacheType"
+                            "$ref": "#/definitions/model.MenuCacheType"
                         }
                     ]
                 },
@@ -2424,7 +2395,7 @@ const docTemplateiam = `{
                     "description": "链接类型: internal-内部链接 external-外部链接",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuLinkType"
+                            "$ref": "#/definitions/model.MenuLinkType"
                         }
                     ]
                 },
@@ -2440,7 +2411,7 @@ const docTemplateiam = `{
                     "description": "菜单类型: directory-目录 menu-菜单 button-按钮",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuType"
+                            "$ref": "#/definitions/model.MenuType"
                         }
                     ]
                 },
@@ -2464,7 +2435,7 @@ const docTemplateiam = `{
                     "description": "状态: enabled-启用 disabled-停用",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuStatus"
+                            "$ref": "#/definitions/model.MenuStatus"
                         }
                     ]
                 },
@@ -2484,7 +2455,7 @@ const docTemplateiam = `{
                     "description": "可见性: visible-可见 hidden-隐藏",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuVisibility"
+                            "$ref": "#/definitions/model.MenuVisibility"
                         }
                     ]
                 }
@@ -2527,7 +2498,7 @@ const docTemplateiam = `{
                     "description": "缓存类型: enabled-启用 disabled-禁用",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuCacheType"
+                            "$ref": "#/definitions/model.MenuCacheType"
                         }
                     ]
                 },
@@ -2562,7 +2533,7 @@ const docTemplateiam = `{
                     "description": "链接类型: internal-内部链接 external-外部链接",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuLinkType"
+                            "$ref": "#/definitions/model.MenuLinkType"
                         }
                     ]
                 },
@@ -2578,7 +2549,7 @@ const docTemplateiam = `{
                     "description": "菜单类型: directory-目录 menu-菜单 button-按钮",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuType"
+                            "$ref": "#/definitions/model.MenuType"
                         }
                     ]
                 },
@@ -2602,7 +2573,7 @@ const docTemplateiam = `{
                     "description": "状态: enabled-启用 disabled-停用",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuStatus"
+                            "$ref": "#/definitions/model.MenuStatus"
                         }
                     ]
                 },
@@ -2622,7 +2593,7 @@ const docTemplateiam = `{
                     "description": "可见性: visible-可见 hidden-隐藏",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuVisibility"
+                            "$ref": "#/definitions/model.MenuVisibility"
                         }
                     ]
                 }
@@ -2650,7 +2621,7 @@ const docTemplateiam = `{
                     "description": "缓存类型: enabled-启用 disabled-禁用",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuCacheType"
+                            "$ref": "#/definitions/model.MenuCacheType"
                         }
                     ]
                 },
@@ -2670,7 +2641,7 @@ const docTemplateiam = `{
                     "description": "链接类型: internal-内部链接 external-外部链接",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuLinkType"
+                            "$ref": "#/definitions/model.MenuLinkType"
                         }
                     ]
                 },
@@ -2686,7 +2657,7 @@ const docTemplateiam = `{
                     "description": "菜单类型: directory-目录 menu-菜单 button-按钮",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuType"
+                            "$ref": "#/definitions/model.MenuType"
                         }
                     ]
                 },
@@ -2710,7 +2681,7 @@ const docTemplateiam = `{
                     "description": "状态: enabled-启用 disabled-停用",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuStatus"
+                            "$ref": "#/definitions/model.MenuStatus"
                         }
                     ]
                 },
@@ -2722,7 +2693,7 @@ const docTemplateiam = `{
                     "description": "可见性: visible-可见 hidden-隐藏",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuVisibility"
+                            "$ref": "#/definitions/model.MenuVisibility"
                         }
                     ]
                 }
@@ -2755,7 +2726,7 @@ const docTemplateiam = `{
                     "description": "数据权限范围: all-全部 dept_and_sub-本部门及以下 dept-本部门 self-仅本人 custom-自定义",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.RoleDataScope"
+                            "$ref": "#/definitions/model.RoleDataScope"
                         }
                     ]
                 },
@@ -2775,7 +2746,7 @@ const docTemplateiam = `{
                     "description": "角色类型: custom-自定义 system-系统内置",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.RoleType"
+                            "$ref": "#/definitions/model.RoleType"
                         }
                     ]
                 },
@@ -2787,7 +2758,7 @@ const docTemplateiam = `{
                     "description": "状态: enabled-启用 disabled-停用",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.RoleStatus"
+                            "$ref": "#/definitions/model.RoleStatus"
                         }
                     ]
                 },
@@ -2836,7 +2807,7 @@ const docTemplateiam = `{
                     "description": "数据权限范围: all-全部 dept_and_sub-本部门及以下 dept-本部门 self-仅本人 custom-自定义",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.RoleDataScope"
+                            "$ref": "#/definitions/model.RoleDataScope"
                         }
                     ]
                 },
@@ -2860,7 +2831,7 @@ const docTemplateiam = `{
                     "description": "角色类型: custom-自定义 system-系统内置",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.RoleType"
+                            "$ref": "#/definitions/model.RoleType"
                         }
                     ]
                 },
@@ -2872,7 +2843,7 @@ const docTemplateiam = `{
                     "description": "状态: enabled-启用 disabled-停用",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.RoleStatus"
+                            "$ref": "#/definitions/model.RoleStatus"
                         }
                     ]
                 },
@@ -2897,7 +2868,7 @@ const docTemplateiam = `{
                     "description": "缓存类型: enabled-启用 disabled-禁用",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuCacheType"
+                            "$ref": "#/definitions/model.MenuCacheType"
                         }
                     ]
                 },
@@ -2925,7 +2896,7 @@ const docTemplateiam = `{
                     "description": "链接类型: internal-内部链接 external-外部链接",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuLinkType"
+                            "$ref": "#/definitions/model.MenuLinkType"
                         }
                     ]
                 },
@@ -2941,7 +2912,7 @@ const docTemplateiam = `{
                     "description": "菜单类型: directory-目录 menu-菜单 button-按钮",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuType"
+                            "$ref": "#/definitions/model.MenuType"
                         }
                     ]
                 },
@@ -2965,7 +2936,7 @@ const docTemplateiam = `{
                     "description": "状态: enabled-启用 disabled-停用",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuStatus"
+                            "$ref": "#/definitions/model.MenuStatus"
                         }
                     ]
                 },
@@ -2985,7 +2956,7 @@ const docTemplateiam = `{
                     "description": "可见性: visible-可见 hidden-隐藏",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.MenuVisibility"
+                            "$ref": "#/definitions/model.MenuVisibility"
                         }
                     ]
                 }
@@ -3021,7 +2992,7 @@ const docTemplateiam = `{
                     "description": "数据权限范围: all-全部 dept_and_sub-本部门及以下 dept-本部门 self-仅本人 custom-自定义",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.RoleDataScope"
+                            "$ref": "#/definitions/model.RoleDataScope"
                         }
                     ]
                 },
@@ -3045,7 +3016,7 @@ const docTemplateiam = `{
                     "description": "角色类型: custom-自定义 system-系统内置",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.RoleType"
+                            "$ref": "#/definitions/model.RoleType"
                         }
                     ]
                 },
@@ -3057,7 +3028,7 @@ const docTemplateiam = `{
                     "description": "状态: enabled-启用 disabled-停用",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.RoleStatus"
+                            "$ref": "#/definitions/model.RoleStatus"
                         }
                     ]
                 },
@@ -3115,7 +3086,7 @@ const docTemplateiam = `{
                     "description": "数据权限范围: all-全部 dept_and_sub-本部门及以下 dept-本部门 self-仅本人 custom-自定义",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.RoleDataScope"
+                            "$ref": "#/definitions/model.RoleDataScope"
                         }
                     ]
                 },
@@ -3139,7 +3110,7 @@ const docTemplateiam = `{
                     "description": "角色类型: custom-自定义 system-系统内置",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.RoleType"
+                            "$ref": "#/definitions/model.RoleType"
                         }
                     ]
                 },
@@ -3151,7 +3122,7 @@ const docTemplateiam = `{
                     "description": "状态: enabled-启用 disabled-停用",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/iammodel.RoleStatus"
+                            "$ref": "#/definitions/model.RoleStatus"
                         }
                     ]
                 },
@@ -3641,7 +3612,7 @@ const docTemplateiam = `{
                 }
             }
         },
-        "iammodel.MenuCacheType": {
+        "model.MenuCacheType": {
             "type": "string",
             "enum": [
                 "enabled",
@@ -3652,7 +3623,7 @@ const docTemplateiam = `{
                 "MenuCacheTypeDisabled"
             ]
         },
-        "iammodel.MenuLinkType": {
+        "model.MenuLinkType": {
             "type": "string",
             "enum": [
                 "internal",
@@ -3663,7 +3634,7 @@ const docTemplateiam = `{
                 "MenuLinkTypeExternal"
             ]
         },
-        "iammodel.MenuStatus": {
+        "model.MenuStatus": {
             "type": "string",
             "enum": [
                 "enabled",
@@ -3674,7 +3645,7 @@ const docTemplateiam = `{
                 "MenuStatusDisabled"
             ]
         },
-        "iammodel.MenuType": {
+        "model.MenuType": {
             "type": "string",
             "enum": [
                 "directory",
@@ -3687,7 +3658,7 @@ const docTemplateiam = `{
                 "MenuTypeButton"
             ]
         },
-        "iammodel.MenuVisibility": {
+        "model.MenuVisibility": {
             "type": "string",
             "enum": [
                 "visible",
@@ -3698,7 +3669,7 @@ const docTemplateiam = `{
                 "MenuVisibilityHidden"
             ]
         },
-        "iammodel.OrgStatus": {
+        "model.OrgStatus": {
             "type": "string",
             "enum": [
                 "enabled",
@@ -3709,7 +3680,7 @@ const docTemplateiam = `{
                 "OrgStatusDisabled"
             ]
         },
-        "iammodel.RoleDataScope": {
+        "model.RoleDataScope": {
             "type": "string",
             "enum": [
                 "all",
@@ -3726,7 +3697,7 @@ const docTemplateiam = `{
                 "RoleDataScopeCustom"
             ]
         },
-        "iammodel.RoleStatus": {
+        "model.RoleStatus": {
             "type": "string",
             "enum": [
                 "enabled",
@@ -3737,7 +3708,7 @@ const docTemplateiam = `{
                 "RoleStatusDisabled"
             ]
         },
-        "iammodel.RoleType": {
+        "model.RoleType": {
             "type": "string",
             "enum": [
                 "custom",
@@ -3748,7 +3719,7 @@ const docTemplateiam = `{
                 "RoleTypeSystem"
             ]
         },
-        "iammodel.UserType": {
+        "model.UserType": {
             "type": "string",
             "enum": [
                 "normal",

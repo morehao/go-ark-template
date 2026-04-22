@@ -23,8 +23,8 @@
 │   │   ├── cmd
 │   │   ├── client
 │   │   ├── config
-│   │   ├── demodao
-│   │   ├── demomodel
+│   │   ├── dao
+│   │   ├── model
 │   │   ├── docs
 │   │   ├── internal
 │   │   │   ├── controller
@@ -38,8 +38,8 @@
 │       ├── cmd
 │       ├── config
 │       ├── docs
-│       ├── iamdao
-│       ├── iammodel
+│       ├── dao
+│       ├── model
 │       ├── internal
 │       │   ├── controller
 │       │   ├── dto

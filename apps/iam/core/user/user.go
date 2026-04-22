@@ -3,8 +3,8 @@ package user
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/morehao/goark/apps/iam/config"
-	"github.com/morehao/goark/apps/iam/iamdao"
-	"github.com/morehao/goark/apps/iam/iammodel"
+	"github.com/morehao/goark/apps/iam/dao"
+	"github.com/morehao/goark/apps/iam/model"
 	"github.com/morehao/goark/pkg/code"
 	"github.com/morehao/golib/gcrypto"
 	"github.com/morehao/golib/glog"
@@ -21,7 +21,7 @@ func CreatePersonWithUser(ctx *gin.Context, tx *gorm.DB, params *CreatePersonPar
 		return nil, code.GetError(code.PersonCreateError)
 	}
 
-	personCreateEntity := &iammodel.PersonEntity{
+	personCreateEntity := &model.PersonEntity{
 		Mobile:       mobile,
 		Email:        email,
 		RealName:     params.RealName,
@@ -30,7 +30,7 @@ func CreatePersonWithUser(ctx *gin.Context, tx *gorm.DB, params *CreatePersonPar
 		UpdatedBy:    params.OperatorID,
 	}
 
-	personEntity, err := iamdao.NewPersonDao().GetByCond(ctx, &iamdao.PersonCond{
+	personEntity, err := dao.NewPersonDao().GetByCond(ctx, &dao.PersonCond{
 		Mobile: mobile,
 		Email:  email,
 	})
@@ -43,14 +43,14 @@ func CreatePersonWithUser(ctx *gin.Context, tx *gorm.DB, params *CreatePersonPar
 	if personEntity != nil && personEntity.ID != 0 {
 		personID = personEntity.ID
 	} else {
-		if err := iamdao.NewPersonDao().WithTx(tx).Insert(ctx, personCreateEntity); err != nil {
+		if err := dao.NewPersonDao().WithTx(tx).Insert(ctx, personCreateEntity); err != nil {
 			glog.Errorf(ctx, "[user.CreatePersonWithUser] Insert person fail, err:%v, mobile:%s, email:%s", err, mobile, email)
 			return nil, code.GetError(code.PersonCreateError)
 		}
 		personID = personCreateEntity.ID
 	}
 
-	userEntity := &iammodel.UserEntity{
+	userEntity := &model.UserEntity{
 		TenantID:    params.TenantID,
 		DeptID:      params.DeptID,
 		PersonID:    personID,
@@ -65,7 +65,7 @@ func CreatePersonWithUser(ctx *gin.Context, tx *gorm.DB, params *CreatePersonPar
 		CreatedBy:   params.OperatorID,
 		UpdatedBy:   params.OperatorID,
 	}
-	if err := iamdao.NewUserDao().WithTx(tx).Insert(ctx, userEntity); err != nil {
+	if err := dao.NewUserDao().WithTx(tx).Insert(ctx, userEntity); err != nil {
 		glog.Errorf(ctx, "[user.CreatePersonWithUser] Insert user fail, err:%v, mobile:%s, email:%s", err, mobile, email)
 		return nil, code.GetError(code.PersonCreateError)
 	}

@@ -2,8 +2,8 @@ package org
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam/iamdao"
-	"github.com/morehao/goark/apps/iam/iammodel"
+	"github.com/morehao/goark/apps/iam/dao"
+	"github.com/morehao/goark/apps/iam/model"
 	"github.com/morehao/golib/glog"
 )
 
@@ -12,8 +12,8 @@ const (
 	PlatformDeptCode   = "PLATFORM"
 )
 
-func GetPlatformTenant(ctx *gin.Context) (*iammodel.TenantEntity, error) {
-	tenantEntity, err := iamdao.NewTenantDao().GetByCond(ctx, &iamdao.TenantCond{
+func GetPlatformTenant(ctx *gin.Context) (*model.TenantEntity, error) {
+	tenantEntity, err := dao.NewTenantDao().GetByCond(ctx, &dao.TenantCond{
 		TenantCode: PlatformTenantCode,
 	})
 	if err != nil {
@@ -23,8 +23,8 @@ func GetPlatformTenant(ctx *gin.Context) (*iammodel.TenantEntity, error) {
 	return tenantEntity, nil
 }
 
-func GetPlatformDept(ctx *gin.Context, tenantID uint) (*iammodel.DepartmentEntity, error) {
-	deptEntity, err := iamdao.NewDepartmentDao().GetByCond(ctx, &iamdao.DepartmentCond{
+func GetPlatformDept(ctx *gin.Context, tenantID uint) (*model.DepartmentEntity, error) {
+	deptEntity, err := dao.NewDepartmentDao().GetByCond(ctx, &dao.DepartmentCond{
 		TenantID: tenantID,
 		DeptCode: PlatformDeptCode,
 	})
