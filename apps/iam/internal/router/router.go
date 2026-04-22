@@ -11,4 +11,5 @@ func RegisterRouter(groups *ginserver.RouterGroups, appName string) {
 	userRouter(groups)
 	menuRouter(groups)
 	roleRouter(groups)
+	applicationRouter(groups)
 }

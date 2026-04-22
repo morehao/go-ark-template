@@ -11,11 +11,62 @@ USE ark_iam;
 -- 第一部分：建表语句
 -- ============================================================
 
--- 1. 租户核心表
+-- 1. 应用表
+-- ============================================
+CREATE TABLE IF NOT EXISTS iam_application (
+    id BIGINT AUTO_INCREMENT COMMENT '应用ID',
+    app_code VARCHAR(32) UNIQUE NOT NULL COMMENT '应用编码',
+    app_name VARCHAR(64) NOT NULL COMMENT '应用名称',
+    app_type VARCHAR(16) DEFAULT 'web' COMMENT '应用类型: web-网页 app-移动端 mini-小程序',
+    description VARCHAR(255) COMMENT '应用描述',
+    homepage_url VARCHAR(255) COMMENT '应用首页URL',
+    callback_url VARCHAR(255) COMMENT '回调URL',
+    logo VARCHAR(255) COMMENT '应用Logo',
+    sort_order INT DEFAULT 0 COMMENT '排序',
+    status VARCHAR(16) DEFAULT 'enabled' COMMENT '状态: enabled-启用 disabled-停用',
+    created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+    updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    deleted_at DATETIME(3) NULL COMMENT '删除时间',
+    created_by BIGINT NOT NULL DEFAULT 0 COMMENT '创建人ID',
+    updated_by BIGINT NOT NULL DEFAULT 0 COMMENT '更新人ID',
+    deleted_by BIGINT NOT NULL DEFAULT 0 COMMENT '删除人ID',
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_app_code (app_code),
+    INDEX idx_status (status),
+    INDEX idx_deleted_at (deleted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='应用表';
+
+-- 组织应用关联表
+CREATE TABLE IF NOT EXISTS iam_organization_application (
+    id BIGINT AUTO_INCREMENT COMMENT '关联ID',
+    org_id BIGINT NOT NULL COMMENT '组织ID',
+    app_id BIGINT NOT NULL COMMENT '应用ID',
+    created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+    created_by BIGINT NOT NULL DEFAULT 0 COMMENT '创建人ID',
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_org_app (org_id, app_id),
+    INDEX idx_org_id (org_id),
+    INDEX idx_app_id (app_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='组织应用关联表';
+
+-- 租户应用关联表
+CREATE TABLE IF NOT EXISTS iam_tenant_application (
+    id BIGINT AUTO_INCREMENT COMMENT '关联ID',
+    tenant_id BIGINT NOT NULL COMMENT '租户ID',
+    app_id BIGINT NOT NULL COMMENT '应用ID',
+    created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+    created_by BIGINT NOT NULL DEFAULT 0 COMMENT '创建人ID',
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_tenant_app (tenant_id, app_id),
+    INDEX idx_tenant_id (tenant_id),
+    INDEX idx_app_id (app_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='租户应用关联表';
+
+-- 2. 租户核心表
 -- ============================================
 
 -- 组织表(最高层级)
-CREATE TABLE IF NOT EXISTS iam_org (
+CREATE TABLE IF NOT EXISTS iam_organization (
     id BIGINT AUTO_INCREMENT COMMENT '组织ID',
     org_code VARCHAR(32) UNIQUE NOT NULL COMMENT '组织编码',
     org_name VARCHAR(64) NOT NULL COMMENT '组织名称',
@@ -37,7 +88,7 @@ CREATE TABLE IF NOT EXISTS iam_org (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='组织表';
 
 -- 组织配置表(统一配置表)
-CREATE TABLE IF NOT EXISTS iam_org_config (
+CREATE TABLE IF NOT EXISTS iam_organization_config (
     id BIGINT AUTO_INCREMENT COMMENT '配置ID',
     org_id BIGINT NOT NULL COMMENT '组织ID',
     config_key VARCHAR(100) NOT NULL COMMENT '配置键',
@@ -59,8 +110,11 @@ CREATE TABLE IF NOT EXISTS iam_org_config (
 CREATE TABLE IF NOT EXISTS iam_tenant (
     id BIGINT AUTO_INCREMENT COMMENT '租户ID',
     org_id BIGINT NOT NULL COMMENT '所属组织ID',
+    parent_id BIGINT DEFAULT 0 COMMENT '父租户ID',
     tenant_code VARCHAR(32) NOT NULL COMMENT '租户编码',
     tenant_name VARCHAR(128) NOT NULL COMMENT '租户名称',
+    tenant_level INT DEFAULT 1 COMMENT '租户层级',
+    tenant_path VARCHAR(512) COMMENT '租户路径: /1/2/3/',
     short_name VARCHAR(64) COMMENT '租户简称',
     legal_person VARCHAR(32) COMMENT '法人代表',
     contact_phone VARCHAR(16) COMMENT '联系电话',
@@ -78,6 +132,8 @@ CREATE TABLE IF NOT EXISTS iam_tenant (
     UNIQUE KEY uk_org_tenant_code (org_id, tenant_code),
     INDEX idx_org_id (org_id),
     INDEX idx_org_tenant_status (org_id, status),
+    INDEX idx_parent_id (parent_id),
+    INDEX idx_tenant_path (tenant_path(100)),
     INDEX idx_deleted_at (deleted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='租户表';
 
@@ -232,6 +288,7 @@ CREATE TABLE IF NOT EXISTS iam_user_role (
 CREATE TABLE IF NOT EXISTS iam_menu (
     id BIGINT AUTO_INCREMENT COMMENT '菜单ID',
     tenant_id BIGINT NOT NULL COMMENT '所属租户ID',
+    app_id BIGINT NOT NULL DEFAULT 0 COMMENT '所属应用ID',
     parent_id BIGINT DEFAULT 0 COMMENT '父菜单ID',
     menu_code VARCHAR(32) NOT NULL COMMENT '菜单编码',
     menu_name VARCHAR(64) NOT NULL COMMENT '菜单名称',
@@ -251,9 +308,10 @@ CREATE TABLE IF NOT EXISTS iam_menu (
     created_by BIGINT NOT NULL DEFAULT 0 COMMENT '创建人ID',
     updated_by BIGINT NOT NULL DEFAULT 0 COMMENT '更新人ID',
     deleted_by BIGINT NOT NULL DEFAULT 0 COMMENT '删除人ID',
-    PRIMARY KEY (`id`),
-    UNIQUE KEY uk_tenant_code (tenant_id, menu_code),
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_tenant_app_code (tenant_id, app_id, menu_code),
     INDEX idx_tenant_parent (tenant_id, parent_id),
+    INDEX idx_tenant_app (tenant_id, app_id),
     INDEX idx_tenant_status (tenant_id, status),
     INDEX idx_deleted_at (deleted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='菜单表';

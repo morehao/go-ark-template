@@ -23,10 +23,13 @@ type TenantEntity struct {
 	LegalPerson             string       `gorm:"column:legal_person;type:varchar(32);;default '';comment: 法人代表"`
 	Logo                    string       `gorm:"column:logo;type:varchar(255);;default '';comment: 租户Logo"`
 	OrgID                   uint         `gorm:"column:org_id;type:bigint;not null;default 0;comment: 所属组织ID"`
+	ParentID                uint         `gorm:"column:parent_id;type:bigint;not null;default 0;comment: 父租户ID"`
 	ShortName               string       `gorm:"column:short_name;type:varchar(64);;default '';comment: 租户简称"`
 	Status                  TenantStatus `gorm:"column:status;type:varchar(16);;default enabled;comment: 状态: enabled-启用 trial-试用 expired-已过期 disabled-停用"`
 	TenantCode              string       `gorm:"column:tenant_code;type:varchar(32);not null;default '';comment: 租户编码"`
+	TenantLevel             int32        `gorm:"column:tenant_level;type:int;;default 1;comment: 租户层级"`
 	TenantName              string       `gorm:"column:tenant_name;type:varchar(128);not null;default '';comment: 租户名称"`
+	TenantPath              string       `gorm:"column:tenant_path;type:varchar(512);;default '';comment: 租户路径: /1/2/3/"`
 	UnifiedSocialCreditCode string       `gorm:"column:unified_social_credit_code;type:varchar(18);;default '';comment: 统一社会信用代码(18位)"`
 	UpdatedBy               uint         `gorm:"column:updated_by;type:bigint;not null;default 0;comment: 更新人ID"`
 }

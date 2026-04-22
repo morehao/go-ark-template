@@ -10,6 +10,7 @@ import (
 type TenantCond struct {
 	*genericdao.BaseCond
 	OrgID      uint
+	ParentID   uint
 	TenantName string
 	TenantCode string
 	Status     model.TenantStatus
@@ -21,6 +22,9 @@ func (c *TenantCond) BuildCondition(db *gorm.DB, tableName string) {
 	}
 	if c.OrgID > 0 {
 		db.Where("org_id = ?", c.OrgID)
+	}
+	if c.ParentID > 0 {
+		db.Where("parent_id = ?", c.ParentID)
 	}
 	if c.TenantName != "" {
 		db.Where("tenant_name = ?", c.TenantName)
