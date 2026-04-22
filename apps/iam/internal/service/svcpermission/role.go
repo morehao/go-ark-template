@@ -43,7 +43,7 @@ func (svc *roleSvc) Create(ctx *gin.Context, req *dtopermission.RoleCreateReq) (
 		RoleCode:    req.RoleCode,
 		RoleName:    req.RoleName,
 		RoleType:    model.RoleType(req.RoleType),
-		SortOrder:   req.SortOrder,
+		Sequence:   req.Sequence,
 		Status:      model.RoleStatus(req.Status),
 	}
 
@@ -91,7 +91,7 @@ func (svc *roleSvc) Update(ctx *gin.Context, req *dtopermission.RoleUpdateReq) e
 		"role_code":   req.RoleCode,
 		"role_name":   req.RoleName,
 		"role_type":   req.RoleType,
-		"sort_order":  req.SortOrder,
+		"sequence":  req.Sequence,
 		"status":      req.Status,
 	}
 	if err = dao.NewRoleDao().UpdateMap(ctx, req.RoleID, updateMap); err != nil {
@@ -121,7 +121,7 @@ func (svc *roleSvc) Detail(ctx *gin.Context, req *dtopermission.RoleDetailReq) (
 			RoleCode:    roleEntity.RoleCode,
 			RoleName:    roleEntity.RoleName,
 			RoleType:    roleEntity.RoleType,
-			SortOrder:   roleEntity.SortOrder,
+			Sequence:   roleEntity.Sequence,
 			Status:      roleEntity.Status,
 		},
 		OperatorBaseInfo: gobject.OperatorBaseInfo{
@@ -156,7 +156,7 @@ func (svc *roleSvc) PageList(ctx *gin.Context, req *dtopermission.RolePageListRe
 				RoleCode:    v.RoleCode,
 				RoleName:    v.RoleName,
 				RoleType:    v.RoleType,
-				SortOrder:   v.SortOrder,
+				Sequence:   v.Sequence,
 				Status:      v.Status,
 			},
 			OperatorBaseInfo: gobject.OperatorBaseInfo{
@@ -268,7 +268,7 @@ func (svc *roleSvc) ListMenus(ctx *gin.Context, req *dtopermission.RoleListMenus
 				ParentID:      menuEntity.ParentID,
 				Permission:    menuEntity.Permission,
 				RoutePath:     menuEntity.RoutePath,
-				SortOrder:     menuEntity.SortOrder,
+				Sequence:     menuEntity.Sequence,
 				Status:        menuEntity.Status,
 				Visibility:    menuEntity.Visibility,
 			},

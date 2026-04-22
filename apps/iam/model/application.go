@@ -16,7 +16,7 @@ type ApplicationEntity struct {
 	Description string `gorm:"column:description;type:varchar(255);;default '';comment: 应用描述"`
 	HomepageUrl string `gorm:"column:homepage_url;type:varchar(255);;default '';comment: 应用首页URL"`
 	Logo        string `gorm:"column:logo;type:varchar(255);;default '';comment: 应用Logo"`
-	SortOrder   int32  `gorm:"column:sort_order;type:int;;default 0;comment: 排序"`
+	Sequence   int32  `gorm:"column:sequence;type:int;;default 0;comment: 排序"`
 	Status      string `gorm:"column:status;type:varchar(16);;default enabled;comment: 状态: enabled-启用 disabled-停用"`
 	UpdatedBy   uint   `gorm:"column:updated_by;type:bigint;not null;default 0;comment: 更新人ID"`
 }
@@ -24,6 +24,13 @@ type ApplicationEntity struct {
 type ApplicationEntityList []ApplicationEntity
 
 const TableNameApplication = "iam_application"
+
+type AppStatus string
+
+const (
+	AppStatusEnabled  AppStatus = "enabled"
+	AppStatusDisabled AppStatus = "disabled"
+)
 
 func (ApplicationEntity) TableName() string {
 	return TableNameApplication

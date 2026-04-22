@@ -25,10 +25,10 @@ type OrganizationSvc interface {
 	Create(ctx *gin.Context, req *dtoorg.OrgCreateReq) (*dtoorg.OrgCreateResp, error)
 	Delete(ctx *gin.Context, req *dtoorg.OrgDeleteReq) error
 	Update(ctx *gin.Context, req *dtoorg.OrgUpdateReq) error
-	GetConfigs(ctx *gin.Context, req *dtoorg.GetOrganizationConfigsReq) (*dtoorg.GetOrganizationConfigsResp, error)
+	GetOrgConfig(ctx *gin.Context, req *dtoorg.GetOrganizationConfigsReq) (*dtoorg.GetOrgConfigResp, error)
 	Detail(ctx *gin.Context, req *dtoorg.OrgDetailReq) (*dtoorg.OrgDetailResp, error)
 	PageList(ctx *gin.Context, req *dtoorg.OrgPageListReq) (*dtoorg.OrgPageListResp, error)
-	ListConfig(ctx *gin.Context) (*dtoorg.OrgConfigListResp, error)
+	ListConfigDefinitions(ctx *gin.Context) (*dtoorg.ListConfigDefinitionsResp, error)
 }
 
 type organizationSvc struct {
@@ -43,11 +43,32 @@ func NewOrganizationSvc() OrganizationSvc {
 func (svc *organizationSvc) Create(ctx *gin.Context, req *dtoorg.OrgCreateReq) (*dtoorg.OrgCreateResp, error) {
 	operatorID := gincontext.GetUserID(ctx)
 
+	if len(req.AppIDs) > 0 {
+		apps, err := dao.NewApplicationDao().GetListByCond(ctx, &dao.ApplicationCond{
+			BaseCond: &genericdao.BaseCond{IDs: req.AppIDs},
+		})
+		if err != nil {
+			glog.Errorf(ctx, "[svcorg.OrgCreate] GetListByCond apps fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+			return nil, code.GetError(code.ApplicationGetDetailError)
+		}
+		appMap := apps.ToMap()
+		if len(appMap) != len(req.AppIDs) {
+			glog.Errorf(ctx, "[svcorg.OrgCreate] apps not all exist, appIDs:%v, req:%s", req.AppIDs, gutil.ToJsonString(req))
+			return nil, code.GetError(code.ApplicationNotExistError)
+		}
+		for _, appID := range req.AppIDs {
+			if app, ok := appMap[appID]; !ok || app.Status != string(model.AppStatusEnabled) {
+				glog.Errorf(ctx, "[svcorg.OrgCreate] app invalid, appID:%d, req:%s", appID, gutil.ToJsonString(req))
+				return nil, code.GetError(code.ApplicationInvalidError)
+			}
+		}
+	}
+
 	insertEntity := &model.OrganizationEntity{
 		Domain:      req.Domain,
 		Logo:        req.Logo,
 		Description: req.Description,
-		SortOrder:   req.SortOrder,
+		Sequence:   req.Sequence,
 		Status:      model.OrgStatus(req.Status),
 		OrgCode:     req.OrgCode,
 		OrgName:     req.OrgName,
@@ -60,6 +81,20 @@ func (svc *organizationSvc) Create(ctx *gin.Context, req *dtoorg.OrgCreateReq) (
 		if err := dao.NewOrganizationDao().WithTx(tx).Insert(ctx, insertEntity); err != nil {
 			glog.Errorf(ctx, "[svcorg.OrgCreate] Insert org fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 			return code.GetError(code.TenantCreateError)
+		}
+
+		if len(req.AppIDs) > 0 {
+			for _, appID := range req.AppIDs {
+				orgAppEntity := &model.OrganizationApplicationEntity{
+					OrgID:     insertEntity.ID,
+					AppID:     appID,
+					CreatedBy: operatorID,
+				}
+				if err := dao.NewOrganizationApplicationDao().WithTx(tx).Insert(ctx, orgAppEntity); err != nil {
+					glog.Errorf(ctx, "[svcorg.OrgCreate] Insert orgApp fail, err:%v, appID:%d", err, appID)
+					return code.GetError(code.CompanyCreateError)
+				}
+			}
 		}
 
 		if req.Admin != nil && req.Admin.Username != "" {
@@ -110,7 +145,7 @@ func (svc *organizationSvc) Create(ctx *gin.Context, req *dtoorg.OrgCreateReq) (
 				configEntity := &model.OrganizationConfigEntity{
 					ConfigGroup: meta.Group,
 					ConfigKey:   meta.Key,
-					ConfigType:  meta.Type,
+					ValueType:  meta.Type,
 					ConfigValue: configValue,
 					Description: meta.Description,
 					OrgID:       insertEntity.ID,
@@ -152,11 +187,32 @@ func (svc *organizationSvc) Delete(ctx *gin.Context, req *dtoorg.OrgDeleteReq) e
 }
 
 func (svc *organizationSvc) Update(ctx *gin.Context, req *dtoorg.OrgUpdateReq) error {
+	if len(req.AppIDs) > 0 {
+		apps, err := dao.NewApplicationDao().GetListByCond(ctx, &dao.ApplicationCond{
+			BaseCond: &genericdao.BaseCond{IDs: req.AppIDs},
+		})
+		if err != nil {
+			glog.Errorf(ctx, "[svcorg.OrgUpdate] GetListByCond apps fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+			return code.GetError(code.ApplicationGetDetailError)
+		}
+		appMap := apps.ToMap()
+		if len(appMap) != len(req.AppIDs) {
+			glog.Errorf(ctx, "[svcorg.OrgUpdate] apps not all exist, appIDs:%v, req:%s", req.AppIDs, gutil.ToJsonString(req))
+			return code.GetError(code.ApplicationNotExistError)
+		}
+		for _, appID := range req.AppIDs {
+			if app, ok := appMap[appID]; !ok || app.Status != string(model.AppStatusEnabled) {
+				glog.Errorf(ctx, "[svcorg.OrgUpdate] app invalid, appID:%d, req:%s", appID, gutil.ToJsonString(req))
+				return code.GetError(code.ApplicationInvalidError)
+			}
+		}
+	}
+
 	updateMap := map[string]any{
 		"domain":      req.Domain,
 		"logo":        req.Logo,
 		"description": req.Description,
-		"sort_order":  req.SortOrder,
+		"sequence":  req.Sequence,
 		"status":      req.Status,
 		"org_code":    req.OrgCode,
 		"org_name":    req.OrgName,
@@ -166,6 +222,43 @@ func (svc *organizationSvc) Update(ctx *gin.Context, req *dtoorg.OrgUpdateReq) e
 		if err := dao.NewOrganizationDao().WithTx(tx).UpdateMap(ctx, req.OrgID, updateMap); err != nil {
 			glog.Errorf(ctx, "[svcorg.OrgUpdate] daoOrg UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 			return code.GetError(code.TenantUpdateError)
+		}
+
+		if len(req.AppIDs) > 0 {
+			if err := tx.Where("org_id = ?", req.OrgID).Delete(&model.OrganizationApplicationEntity{}).Error; err != nil {
+				glog.Errorf(ctx, "[svcorg.OrgUpdate] Delete orgApps fail, err:%v, orgID:%d", err, req.OrgID)
+				return code.GetError(code.TenantUpdateError)
+			}
+			operatorID := gincontext.GetUserID(ctx)
+			for _, appID := range req.AppIDs {
+				orgAppEntity := &model.OrganizationApplicationEntity{
+					OrgID:     req.OrgID,
+					AppID:     appID,
+					CreatedBy: operatorID,
+				}
+				if err := dao.NewOrganizationApplicationDao().WithTx(tx).Insert(ctx, orgAppEntity); err != nil {
+					glog.Errorf(ctx, "[svcorg.OrgUpdate] Insert orgApp fail, err:%v, appID:%d", err, appID)
+					return code.GetError(code.TenantUpdateError)
+				}
+			}
+
+			tenants, _, err := dao.NewTenantDao().WithTx(tx).GetPageListByCond(ctx, &dao.TenantCond{
+				OrgID: req.OrgID,
+			})
+			if err != nil {
+				glog.Errorf(ctx, "[svcorg.OrgUpdate] GetPageListByCond tenants fail, err:%v, orgID:%d", err, req.OrgID)
+				return code.GetError(code.TenantUpdateError)
+			}
+			if len(tenants) > 0 {
+				tenantIDs := make([]uint, 0, len(tenants))
+				for _, tenant := range tenants {
+					tenantIDs = append(tenantIDs, tenant.ID)
+				}
+				if err := tx.Where("tenant_id IN ? AND app_id NOT IN ?", tenantIDs, req.AppIDs).Delete(&model.TenantApplicationEntity{}).Error; err != nil {
+					glog.Errorf(ctx, "[svcorg.OrgUpdate] Delete tenantApps fail, err:%v, orgID:%d", err, req.OrgID)
+					return code.GetError(code.TenantUpdateError)
+				}
+			}
 		}
 
 		if len(req.Configs) > 0 {
@@ -189,7 +282,7 @@ func (svc *organizationSvc) Update(ctx *gin.Context, req *dtoorg.OrgUpdateReq) e
 				configEntity := &model.OrganizationConfigEntity{
 					ConfigGroup: meta.Group,
 					ConfigKey:   meta.Key,
-					ConfigType:  meta.Type,
+					ValueType:  meta.Type,
 					ConfigValue: configValue,
 					Description: meta.Description,
 					OrgID:       req.OrgID,
@@ -209,7 +302,7 @@ func (svc *organizationSvc) Update(ctx *gin.Context, req *dtoorg.OrgUpdateReq) e
 	return nil
 }
 
-func (svc *organizationSvc) GetConfigs(ctx *gin.Context, req *dtoorg.GetOrganizationConfigsReq) (*dtoorg.GetOrganizationConfigsResp, error) {
+func (svc *organizationSvc) GetOrgConfig(ctx *gin.Context, req *dtoorg.GetOrganizationConfigsReq) (*dtoorg.GetOrgConfigResp, error) {
 	domain := resolveDomain(ctx, req.Domain)
 	if domain == "" {
 		return nil, code.GetError(code.AuthOrgNotFoundError)
@@ -220,7 +313,7 @@ func (svc *organizationSvc) GetConfigs(ctx *gin.Context, req *dtoorg.GetOrganiza
 		Status: model.OrgStatusEnabled,
 	})
 	if err != nil {
-		glog.Errorf(ctx, "[svcorg.GetConfigsByDomain] daoOrg GetByCond fail, err:%v, domain:%s", err, domain)
+		glog.Errorf(ctx, "[svcorg.GetOrgConfig] daoOrg GetByCond fail, err:%v, domain:%s", err, domain)
 		return nil, code.GetError(code.AuthLoginError)
 	}
 	if orgEntity == nil || orgEntity.ID == 0 {
@@ -231,25 +324,33 @@ func (svc *organizationSvc) GetConfigs(ctx *gin.Context, req *dtoorg.GetOrganiza
 		OrgID: orgEntity.ID,
 	})
 	if err != nil {
-		glog.Errorf(ctx, "[svcorg.GetConfigsByDomain] daoOrgConfig GetListByCond fail, err:%v, orgID:%d", err, orgEntity.ID)
+		glog.Errorf(ctx, "[svcorg.GetOrgConfig] daoOrgConfig GetListByCond fail, err:%v, orgID:%d", err, orgEntity.ID)
 		return nil, code.GetError(code.AuthLoginError)
 	}
 
-	configs := make(map[string]map[string]string)
+	groupMap := make(map[string][]dtoorg.ConfigItemResp)
 	for _, v := range configEntityList {
-		if _, ok := configs[v.ConfigGroup]; !ok {
-			configs[v.ConfigGroup] = make(map[string]string)
-		}
-		configs[v.ConfigGroup][v.ConfigKey] = v.ConfigValue
+		groupMap[v.ConfigGroup] = append(groupMap[v.ConfigGroup], dtoorg.ConfigItemResp{
+			Key:   v.ConfigKey,
+			Value: v.ConfigValue,
+		})
 	}
 
-	return &dtoorg.GetOrganizationConfigsResp{
+	configGroups := make([]dtoorg.ConfigGroupResp, 0, len(groupMap))
+	for group, items := range groupMap {
+		configGroups = append(configGroups, dtoorg.ConfigGroupResp{
+			Group: group,
+			Items: items,
+		})
+	}
+
+	return &dtoorg.GetOrgConfigResp{
 		OrgID:   orgEntity.ID,
 		OrgName: orgEntity.OrgName,
 		Domain:  orgEntity.Domain,
 		Logo:    orgEntity.Logo,
 		Status:  orgEntity.Status,
-		Configs: configs,
+		Configs: configGroups,
 	}, nil
 }
 
@@ -279,14 +380,47 @@ func (svc *organizationSvc) Detail(ctx *gin.Context, req *dtoorg.OrgDetailReq) (
 		configs[v.ConfigGroup][v.ConfigKey] = v.ConfigValue
 	}
 
+	orgAppList, err := dao.NewOrganizationApplicationDao().GetListByCond(ctx, &dao.OrganizationApplicationCond{
+		OrgID: orgEntity.ID,
+	})
+	if err != nil {
+		glog.Errorf(ctx, "[svcorg.OrgDetail] daoOrgApp GetListByCond fail, err:%v, orgID:%d", err, orgEntity.ID)
+		return nil, code.GetError(code.TenantGetDetailError)
+	}
+
+	var apps []dtoorg.AppInfo
+	if len(orgAppList) > 0 {
+		appIDs := make([]uint, 0, len(orgAppList))
+		for _, orgApp := range orgAppList {
+			appIDs = append(appIDs, orgApp.AppID)
+		}
+		appEntities, err := dao.NewApplicationDao().GetListByCond(ctx, &dao.ApplicationCond{
+			BaseCond: &genericdao.BaseCond{IDs: appIDs},
+		})
+		if err != nil {
+			glog.Errorf(ctx, "[svcorg.OrgDetail] GetListByCond apps fail, err:%v, orgID:%d", err, orgEntity.ID)
+			return nil, code.GetError(code.TenantGetDetailError)
+		}
+		appMap := appEntities.ToMap()
+		for _, orgApp := range orgAppList {
+			if app, ok := appMap[orgApp.AppID]; ok {
+				apps = append(apps, dtoorg.AppInfo{
+					AppID:   app.ID,
+					AppName: app.AppName,
+				})
+			}
+		}
+	}
+
 	resp := &dtoorg.OrgDetailResp{
 		OrgID:   orgEntity.ID,
 		Configs: configs,
+		Apps:    apps,
 		OrgBaseInfo: objorg.OrgBaseInfo{
 			Domain:      orgEntity.Domain,
 			Logo:        orgEntity.Logo,
 			Description: orgEntity.Description,
-			SortOrder:   orgEntity.SortOrder,
+			Sequence:   orgEntity.Sequence,
 			Status:      string(orgEntity.Status),
 			OrgCode:     orgEntity.OrgCode,
 			OrgName:     orgEntity.OrgName,
@@ -320,7 +454,7 @@ func (svc *organizationSvc) PageList(ctx *gin.Context, req *dtoorg.OrgPageListRe
 				Domain:      v.Domain,
 				Logo:        v.Logo,
 				Description: v.Description,
-				SortOrder:   v.SortOrder,
+				Sequence:   v.Sequence,
 				Status:      string(v.Status),
 				OrgCode:     v.OrgCode,
 				OrgName:     v.OrgName,
@@ -359,12 +493,12 @@ func resolveDomain(ctx *gin.Context, reqDomain string) string {
 	return host
 }
 
-func (svc *organizationSvc) ListConfig(ctx *gin.Context) (*dtoorg.OrgConfigListResp, error) {
+func (svc *organizationSvc) ListConfigDefinitions(ctx *gin.Context) (*dtoorg.ListConfigDefinitionsResp, error) {
 	configs := make([]dtoorg.OrgConfigMetaResp, 0, len(model.OrgConfigMetaList))
 	for _, meta := range model.OrgConfigMetaList {
-		options := make([]dtoorg.OrgConfigOptionResp, 0, len(meta.Options))
+		options := make([]dtoorg.OrgConfigOptionsItem, 0, len(meta.Options))
 		for _, opt := range meta.Options {
-			options = append(options, dtoorg.OrgConfigOptionResp{
+			options = append(options, dtoorg.OrgConfigOptionsItem{
 				Value:       opt.Value,
 				Description: opt.Description,
 			})
@@ -378,5 +512,5 @@ func (svc *organizationSvc) ListConfig(ctx *gin.Context) (*dtoorg.OrgConfigListR
 			Options:      options,
 		})
 	}
-	return &dtoorg.OrgConfigListResp{Configs: configs}, nil
+	return &dtoorg.ListConfigDefinitionsResp{Configs: configs}, nil
 }

@@ -8,6 +8,6 @@ type DepartmentBaseInfo struct {
 	DeptPath  string `json:"deptPath" form:"deptPath"`   // 部门路径: /1/2/3/
 	LeaderID  uint   `json:"leaderID" form:"leaderID"`   // 部门负责人ID
 	ParentID  uint   `json:"parentID" form:"parentID"`   // 父部门ID,0表示根部门
-	SortOrder int32  `json:"sortOrder" form:"sortOrder"` // 排序
+	Sequence int32  `json:"sequence" form:"sequence"` // 排序
 	Status    string `json:"status" form:"status"`       // 状态: enabled-启用 disabled-停用
 }

@@ -66,7 +66,7 @@ func (svc *departmentSvc) Create(ctx *gin.Context, req *dtoorg.DepartmentCreateR
 		DeptPath:  deptPath,
 		LeaderID:  req.LeaderID,
 		ParentID:  req.ParentID,
-		SortOrder: req.SortOrder,
+		Sequence: req.Sequence,
 		Status:    model.DeptStatus(req.Status),
 		CreatedBy: operatorID,
 		UpdatedBy: operatorID,
@@ -125,7 +125,7 @@ func (svc *departmentSvc) Update(ctx *gin.Context, req *dtoorg.DepartmentUpdateR
 		"dept_path":  req.DeptPath,
 		"leader_id":  req.LeaderID,
 		"parent_id":  req.ParentID,
-		"sort_order": req.SortOrder,
+		"sequence": req.Sequence,
 		"status":     req.Status,
 	}
 	if err = dao.NewDepartmentDao().UpdateMap(ctx, req.DeptID, updateMap); err != nil {
@@ -156,7 +156,7 @@ func (svc *departmentSvc) Detail(ctx *gin.Context, req *dtoorg.DepartmentDetailR
 			DeptPath:  departmentEntity.DeptPath,
 			LeaderID:  departmentEntity.LeaderID,
 			ParentID:  departmentEntity.ParentID,
-			SortOrder: departmentEntity.SortOrder,
+			Sequence: departmentEntity.Sequence,
 			Status:    string(departmentEntity.Status),
 		},
 		OperatorBaseInfo: gobject.OperatorBaseInfo{
@@ -195,7 +195,7 @@ func (svc *departmentSvc) PageList(ctx *gin.Context, req *dtoorg.DepartmentPageL
 				DeptPath:  v.DeptPath,
 				LeaderID:  v.LeaderID,
 				ParentID:  v.ParentID,
-				SortOrder: v.SortOrder,
+				Sequence: v.Sequence,
 				Status:    string(v.Status),
 			},
 			OperatorBaseInfo: gobject.OperatorBaseInfo{
@@ -249,7 +249,7 @@ func (svc *departmentSvc) Tree(ctx *gin.Context, req *dtoorg.DepartmentTreeReq) 
 					DeptPath:  dept.DeptPath,
 					LeaderID:  dept.LeaderID,
 					ParentID:  dept.ParentID,
-					SortOrder: dept.SortOrder,
+					Sequence: dept.Sequence,
 					Status:    string(dept.Status),
 				},
 				OperatorBaseInfo: gobject.OperatorBaseInfo{

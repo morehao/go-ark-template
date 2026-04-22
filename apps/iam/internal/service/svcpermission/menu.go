@@ -33,12 +33,12 @@ func NewMenuSvc() MenuSvc {
 	return &menuSvc{}
 }
 
-type menuSortOrderComparator struct{}
+type menuSequenceComparator struct{}
 
-func (c menuSortOrderComparator) Compare(a, b *dtopermission.MenuTreeNode) int {
-	if a.SortOrder < b.SortOrder {
+func (c menuSequenceComparator) Compare(a, b *dtopermission.MenuTreeNode) int {
+	if a.Sequence < b.Sequence {
 		return -1
-	} else if a.SortOrder > b.SortOrder {
+	} else if a.Sequence > b.Sequence {
 		return 1
 	}
 	return 0
@@ -57,7 +57,7 @@ func (svc *menuSvc) Create(ctx *gin.Context, req *dtopermission.MenuCreateReq) (
 		ParentID:      req.ParentID,
 		Permission:    req.Permission,
 		RoutePath:     req.RoutePath,
-		SortOrder:     req.SortOrder,
+		Sequence:     req.Sequence,
 		Status:        req.Status,
 		Visibility:    req.Visibility,
 		AccessPolicy:  model.AccessPoliciesToMask(req.AccessPolicies),
@@ -112,7 +112,7 @@ func (svc *menuSvc) Update(ctx *gin.Context, req *dtopermission.MenuUpdateReq) e
 		"parent_id":      req.ParentID,
 		"permission":     req.Permission,
 		"route_path":     req.RoutePath,
-		"sort_order":     req.SortOrder,
+		"sequence":     req.Sequence,
 		"status":         req.Status,
 		"visibility":     req.Visibility,
 		"access_policy":  model.AccessPoliciesToMask(req.AccessPolicies),
@@ -149,7 +149,7 @@ func (svc *menuSvc) Detail(ctx *gin.Context, req *dtopermission.MenuDetailReq) (
 			ParentID:       menuEntity.ParentID,
 			Permission:     menuEntity.Permission,
 			RoutePath:      menuEntity.RoutePath,
-			SortOrder:      menuEntity.SortOrder,
+			Sequence:      menuEntity.Sequence,
 			Status:         menuEntity.Status,
 			Visibility:     menuEntity.Visibility,
 			AccessPolicies: menuEntity.AccessPolicy.ToStrings(),
@@ -191,7 +191,7 @@ func (svc *menuSvc) PageList(ctx *gin.Context, req *dtopermission.MenuPageListRe
 				ParentID:       v.ParentID,
 				Permission:     v.Permission,
 				RoutePath:      v.RoutePath,
-				SortOrder:      v.SortOrder,
+				Sequence:      v.Sequence,
 				Status:         v.Status,
 				Visibility:     v.Visibility,
 				AccessPolicies: v.AccessPolicy.ToStrings(),
@@ -232,7 +232,7 @@ func (svc *menuSvc) Tree(ctx *gin.Context, req *dtopermission.MenuTreeReq) (*dto
 				ParentID:       menu.ParentID,
 				Permission:     menu.Permission,
 				RoutePath:      menu.RoutePath,
-				SortOrder:      menu.SortOrder,
+				Sequence:      menu.Sequence,
 				Status:         menu.Status,
 				Visibility:     menu.Visibility,
 				AccessPolicies: menu.AccessPolicy.ToStrings(),
@@ -244,7 +244,7 @@ func (svc *menuSvc) Tree(ctx *gin.Context, req *dtopermission.MenuTreeReq) (*dto
 	}
 
 	builder := gtree.NewTreeBuilder[uint, *dtopermission.MenuTreeNode](
-		gtree.WithComparator(menuSortOrderComparator{}),
+		gtree.WithComparator(menuSequenceComparator{}),
 	)
 	tree := builder.Build(nodes)
 

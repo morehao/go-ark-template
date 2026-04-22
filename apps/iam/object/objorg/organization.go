@@ -4,7 +4,7 @@ type OrgBaseInfo struct {
 	Domain      string `json:"domain" form:"domain"`                     // 域名
 	Logo        string `json:"logo" form:"logo"`                         // Logo
 	Description string `json:"description" form:"description"`           // 描述
-	SortOrder   int32  `json:"sortOrder" form:"sortOrder"`               // 排序
+	Sequence   int32  `json:"sequence" form:"sequence"`               // 排序
 	Status      string `json:"status" form:"status"`                     // 状态
 	OrgCode     string `json:"orgCode" form:"orgCode"`                   // 组织编码
 	OrgName     string `json:"orgName" form:"orgName"`                   // 组织名称

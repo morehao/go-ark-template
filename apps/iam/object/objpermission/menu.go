@@ -14,7 +14,7 @@ type MenuBaseInfo struct {
 	ParentID       uint                           `json:"parentID" form:"parentID"`             // 父菜单ID
 	Permission     string                         `json:"permission" form:"permission"`         // 权限标识: sys:user:add
 	RoutePath      string                         `json:"routePath" form:"routePath"`           // 路由地址
-	SortOrder      int32                          `json:"sortOrder" form:"sortOrder"`           // 排序
+	Sequence      int32                          `json:"sequence" form:"sequence"`           // 排序
 	Status         model.MenuStatus               `json:"status" form:"status"`                 // 状态: enabled-启用 disabled-停用
 	Visibility     model.MenuVisibility           `json:"visibility" form:"visibility"`         // 可见性: visible-可见 hidden-隐藏
 	AccessPolicies []model.MenuAccessPolicyString `json:"accessPolicies" form:"accessPolicies"` // 访问策略: public-全部人可见 authorized-需授权 org_admin-组织管理员 tenant_admin-租户管理员

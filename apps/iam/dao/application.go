@@ -18,7 +18,7 @@ type ApplicationCond struct {
 	Description string
 	HomepageUrl string
 	Logo        string
-	SortOrder   int32
+	Sequence   int32
 	Status      string
 	UpdatedBy   uint
 }
@@ -54,8 +54,8 @@ func (c *ApplicationCond) BuildCondition(db *gorm.DB, tableName string) {
 	if c.Logo != "" {
 		db.Where(tableName+".logo = ?", c.Logo)
 	}
-	if c.SortOrder != 0 {
-		db.Where(tableName+".sort_order = ?", c.SortOrder)
+	if c.Sequence != 0 {
+		db.Where(tableName+".sequence = ?", c.Sequence)
 	}
 	if c.Status != "" {
 		db.Where(tableName+".status = ?", c.Status)

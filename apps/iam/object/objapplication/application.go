@@ -8,6 +8,6 @@ type ApplicationBaseInfo struct {
 	Description string `json:"description" form:"description"` // 应用描述
 	HomepageUrl string `json:"homepageUrl" form:"homepageUrl"` // 应用首页URL
 	Logo        string `json:"logo" form:"logo"`               // 应用Logo
-	SortOrder   int32  `json:"sortOrder" form:"sortOrder"`     // 排序
+	Sequence   int32  `json:"sequence" form:"sequence"`     // 排序
 	Status      string `json:"status" form:"status"`           // 状态: enabled-启用 disabled-停用
 }

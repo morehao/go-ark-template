@@ -8,11 +8,13 @@ import (
 type TenantCreateReq struct {
 	objorg.TenantBaseInfo
 	AdminInfo *objorg.TenantAdminInfo `json:"adminInfo" validate:"required" label:"管理员信息"` // 管理员信息
+	AppIDs    []uint                 `json:"appIDs" label:"应用ID列表"`                    // 应用ID列表
 }
 
 type TenantUpdateReq struct {
 	TenantID uint `json:"tenantID" validate:"required" label:"数据自增id"` // 数据自增id
 	objorg.TenantBaseInfo
+	AppIDs []uint `json:"appIDs" label:"应用ID列表"` // 应用ID列表
 }
 
 type TenantDetailReq struct {
@@ -61,11 +63,13 @@ type OrgCreateReq struct {
 	objorg.OrgBaseInfo
 	Admin   *objorg.OrgAdminInfo `json:"admin" validate:"required" label:"管理员信息"` // 管理员信息
 	Configs []OrgConfigItem      `json:"configs" label:"初始化配置"`                   // 初始化配置
+	AppIDs  []uint               `json:"appIDs" label:"应用ID列表"`                    // 应用ID列表
 }
 
 type OrgUpdateReq struct {
 	OrgID   uint            `json:"orgID" validate:"required" label:"数据自增id"` // 数据自增id
 	Configs []OrgConfigItem `json:"configs" label:"配置信息"`                   // 配置信息
+	AppIDs  []uint          `json:"appIDs" label:"应用ID列表"`                   // 应用ID列表
 	objorg.OrgBaseInfo
 }
 

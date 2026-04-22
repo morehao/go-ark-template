@@ -39,7 +39,7 @@ type RoleEntity struct {
 	RoleCode    string        `gorm:"column:role_code;type:varchar(32);not null;default '';comment: 角色编码"`
 	RoleName    string        `gorm:"column:role_name;type:varchar(64);not null;default '';comment: 角色名称"`
 	RoleType    RoleType      `gorm:"column:role_type;type:varchar(16);;default custom;comment: 角色类型: custom-自定义 system-系统内置"`
-	SortOrder   int32         `gorm:"column:sort_order;type:int;;default 0;comment: 排序"`
+	Sequence   int32         `gorm:"column:sequence;type:int;;default 0;comment: 排序"`
 	Status      RoleStatus    `gorm:"column:status;type:varchar(16);;default enabled;comment: 状态: enabled-启用 disabled-停用"`
 	UpdatedBy   uint          `gorm:"column:updated_by;type:bigint;not null;default 0;comment: 更新人ID"`
 }

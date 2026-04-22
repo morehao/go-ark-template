@@ -19,7 +19,7 @@ type OrganizationEntity struct {
 	Domain      string    `gorm:"column:domain;type:varchar(255);;default '';comment: 组织域名"`
 	Logo        string    `gorm:"column:logo;type:varchar(255);;default '';comment: 组织Logo"`
 	Description string    `gorm:"column:description;type:varchar(255);;default '';comment: 组织描述"`
-	SortOrder   int32     `gorm:"column:sort_order;type:int;;default 0;comment: 排序"`
+	Sequence   int32     `gorm:"column:sequence;type:int;;default 0;comment: 排序"`
 	Status      OrgStatus `gorm:"column:status;type:varchar(16);;default enabled;comment: 状态: enabled-启用 disabled-停用"`
 	OrgCode     string    `gorm:"column:org_code;type:varchar(32);not null;default '';comment: 组织编码"`
 	OrgName     string    `gorm:"column:org_name;type:varchar(64);not null;default '';comment: 组织名称"`

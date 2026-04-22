@@ -2,6 +2,7 @@ package svcapplication
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/morehao/goark/apps/iam/dao"
 	"github.com/morehao/goark/apps/iam/internal/dto/dtoapplication"
 	"github.com/morehao/goark/apps/iam/model"
@@ -34,14 +35,14 @@ func NewApplicationSvc() ApplicationSvc {
 // Create 创建应用管理
 func (svc *applicationSvc) Create(ctx *gin.Context, req *dtoapplication.ApplicationCreateReq) (*dtoapplication.ApplicationCreateResp, error) {
 	insertEntity := &model.ApplicationEntity{
-		AppCode:     req.AppCode,
+		AppCode:     uuid.New().String(),
 		AppName:     req.AppName,
 		AppType:     req.AppType,
 		CallbackUrl: req.CallbackUrl,
 		Description: req.Description,
 		HomepageUrl: req.HomepageUrl,
 		Logo:        req.Logo,
-		SortOrder:   req.SortOrder,
+		Sequence:   req.Sequence,
 		Status:      req.Status,
 	}
 
@@ -113,7 +114,7 @@ func (svc *applicationSvc) Detail(ctx *gin.Context, req *dtoapplication.Applicat
 			Description: applicationEntity.Description,
 			HomepageUrl: applicationEntity.HomepageUrl,
 			Logo:        applicationEntity.Logo,
-			SortOrder:   applicationEntity.SortOrder,
+			Sequence:   applicationEntity.Sequence,
 			Status:      applicationEntity.Status,
 		},
 		OperatorBaseInfo: gobject.OperatorBaseInfo{
@@ -149,7 +150,7 @@ func (svc *applicationSvc) PageList(ctx *gin.Context, req *dtoapplication.Applic
 				Description: v.Description,
 				HomepageUrl: v.HomepageUrl,
 				Logo:        v.Logo,
-				SortOrder:   v.SortOrder,
+				Sequence:   v.Sequence,
 				Status:      v.Status,
 			},
 			OperatorBaseInfo: gobject.OperatorBaseInfo{

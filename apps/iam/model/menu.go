@@ -150,7 +150,7 @@ type MenuEntity struct {
 	ParentID      uint             `gorm:"column:parent_id;type:bigint;;default 0;comment: 父菜单ID"`
 	Permission    string           `gorm:"column:permission;type:varchar(64);;default '';comment: 权限标识: sys:user:add"`
 	RoutePath     string           `gorm:"column:route_path;type:varchar(255);;default '';comment: 路由地址"`
-	SortOrder     int32            `gorm:"column:sort_order;type:int;;default 0;comment: 排序"`
+	Sequence     int32            `gorm:"column:sequence;type:int;;default 0;comment: 排序"`
 	Status        MenuStatus       `gorm:"column:status;type:varchar(16);;default enabled;comment: 状态: enabled-启用 disabled-停用"`
 	UpdatedBy     uint             `gorm:"column:updated_by;type:bigint;not null;default 0;comment: 更新人ID"`
 	Visibility    MenuVisibility   `gorm:"column:visibility;type:varchar(16);;default visible;comment: 是否显示: visible-显示 hidden-隐藏"`

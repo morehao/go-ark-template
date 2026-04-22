@@ -9,6 +9,7 @@ const (
 	ApplicationGetDetailError   = 100103
 	ApplicationGetPageListError = 100104
 	ApplicationNotExistError    = 100105
+	ApplicationInvalidError     = 100106
 )
 
 var applicationErrorMsgMap = gerror.CodeMsgMap{
@@ -18,4 +19,5 @@ var applicationErrorMsgMap = gerror.CodeMsgMap{
 	ApplicationGetDetailError:   "查看应用管理失败",
 	ApplicationGetPageListError: "查看应用管理列表失败",
 	ApplicationNotExistError:    "应用管理不存在",
+	ApplicationInvalidError:     "应用已停用",
 }

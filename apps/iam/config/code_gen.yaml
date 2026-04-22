@@ -6,9 +6,9 @@ module:
   table_name: iam_application
   table_prefix: iam_
 model:
-  package_name: user
-  description: 用户登录记录
-  table_name: user_login_log
+  package_name: org
+  description: 租户应用关系
+  table_name: iam_tenant_application
   table_prefix: iam_
 api:
   package_name: user
