@@ -770,7 +770,7 @@ const docTemplateiam = `{
                 }
             }
         },
-        "/v1/iam/org/getConfigsByDomain": {
+        "/v1/iam/organization/getConfigs": {
             "get": {
                 "consumes": [
                     "application/json"
@@ -785,14 +785,14 @@ const docTemplateiam = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "组织域名(可选)",
+                        "description": "组织域名",
                         "name": "domain",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "{\"code\": 0,\"data\": \"ok\",\"msg\": \"success\"}",
+                        "description": "{\"code\": 0, \"requestID\": \"xxx\", \"data\": \"ok\", \"msg\": \"success\"}",
                         "schema": {
                             "allOf": [
                                 {
@@ -802,7 +802,7 @@ const docTemplateiam = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/dtoorg.OrgConfigsResp"
+                                            "$ref": "#/definitions/dtoorg.GetOrganizationConfigsResp"
                                         }
                                     }
                                 }
@@ -2112,7 +2112,7 @@ const docTemplateiam = `{
                 }
             }
         },
-        "dtoorg.OrgConfigsResp": {
+        "dtoorg.GetOrganizationConfigsResp": {
             "type": "object",
             "properties": {
                 "configs": {

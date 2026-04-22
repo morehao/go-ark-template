@@ -4,8 +4,8 @@ import (
 	"gorm.io/gorm"
 )
 
-// OrgConfigEntity 组织配置表结构体
-type OrgConfigEntity struct {
+// OrganizationConfigEntity 组织配置表结构体
+type OrganizationConfigEntity struct {
 	gorm.Model
 	ConfigGroup string `gorm:"column:config_group;type:varchar(32);;default general;comment: 配置分组: general-通用/auth-认证/theme-主题等"`
 	ConfigKey   string `gorm:"column:config_key;type:varchar(100);not null;default '';comment: 配置键"`
@@ -16,16 +16,16 @@ type OrgConfigEntity struct {
 	OrgID       uint   `gorm:"column:org_id;type:bigint;not null;default 0;comment: 组织ID"`
 }
 
-type OrgConfigEntityList []OrgConfigEntity
+type OrganizationConfigEntityList []OrganizationConfigEntity
 
-const TableNameOrgConfig = "iam_org_config"
+const TableNameOrganizationConfig = "iam_organization_config"
 
-func (OrgConfigEntity) TableName() string {
-	return TableNameOrgConfig
+func (OrganizationConfigEntity) TableName() string {
+	return TableNameOrganizationConfig
 }
 
-func (l OrgConfigEntityList) ToMap() map[uint]OrgConfigEntity {
-	m := make(map[uint]OrgConfigEntity)
+func (l OrganizationConfigEntityList) ToMap() map[uint]OrganizationConfigEntity {
+	m := make(map[uint]OrganizationConfigEntity)
 	for _, v := range l {
 		m[v.ID] = v
 	}

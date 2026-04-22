@@ -7,16 +7,16 @@ import (
 )
 
 func orgRouter(groups *ginserver.RouterGroups) {
-	orgCtr := ctrorg.NewOrgCtr()
+	orgCtr := ctrorg.NewOrganizationCtr()
 	v1RouterGroup := groups.MustGetGroup(gconstant.ApiVersionV1)
 
-	v1RouterGroup.POST("/org/create", orgCtr.Create)
-	v1RouterGroup.POST("/org/delete", orgCtr.Delete)
-	v1RouterGroup.POST("/org/update", orgCtr.Update)
-	v1RouterGroup.GET("/org/detail", orgCtr.Detail)
-	v1RouterGroup.POST("/org/pageList", orgCtr.PageList)
-	v1RouterGroup.GET("/org/getConfigsByDomain", orgCtr.GetConfigsByDomain)
-	v1RouterGroup.GET("/org/listConfig", orgCtr.ListConfig)
+	v1RouterGroup.POST("/organization/create", orgCtr.Create)
+	v1RouterGroup.POST("/organization/delete", orgCtr.Delete)
+	v1RouterGroup.POST("/organization/update", orgCtr.Update)
+	v1RouterGroup.GET("/organization/detail", orgCtr.Detail)
+	v1RouterGroup.POST("/organization/pageList", orgCtr.PageList)
+	v1RouterGroup.GET("/organization/getConfigs", orgCtr.GetConfigs)
+	v1RouterGroup.GET("/organization/listConfig", orgCtr.ListConfig)
 }
 
 func tenantRouter(groups *ginserver.RouterGroups) {
