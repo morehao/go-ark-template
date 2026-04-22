@@ -19,13 +19,13 @@ func (c *RoleMenuCond) BuildCondition(db *gorm.DB, tableName string) {
 		c.BaseCond.BuildCondition(db, tableName)
 	}
 	if c.RoleID > 0 {
-		db.Where("role_id = ?", c.RoleID)
+		db.Where(tableName+".role_id = ?", c.RoleID)
 	}
 	if c.MenuID > 0 {
-		db.Where("menu_id = ?", c.MenuID)
+		db.Where(tableName+".menu_id = ?", c.MenuID)
 	}
 	if c.TenantID > 0 {
-		db.Where("tenant_id = ?", c.TenantID)
+		db.Where(tableName+".tenant_id = ?", c.TenantID)
 	}
 }
 

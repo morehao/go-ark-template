@@ -20,16 +20,16 @@ func (c *RoleCond) BuildCondition(db *gorm.DB, tableName string) {
 		c.BaseCond.BuildCondition(db, tableName)
 	}
 	if c.TenantID > 0 {
-		db.Where("tenant_id = ?", c.TenantID)
+		db.Where(tableName+".tenant_id = ?", c.TenantID)
 	}
 	if c.RoleName != "" {
-		db.Where("role_name = ?", c.RoleName)
+		db.Where(tableName+".role_name = ?", c.RoleName)
 	}
 	if c.RoleCode != "" {
-		db.Where("role_code = ?", c.RoleCode)
+		db.Where(tableName+".role_code = ?", c.RoleCode)
 	}
 	if c.Status != "" {
-		db.Where("status = ?", c.Status)
+		db.Where(tableName+".status = ?", c.Status)
 	}
 }
 

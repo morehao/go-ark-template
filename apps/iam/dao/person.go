@@ -19,13 +19,13 @@ func (c *PersonCond) BuildCondition(db *gorm.DB, tableName string) {
 		c.BaseCond.BuildCondition(db, tableName)
 	}
 	if c.Mobile != "" {
-		db.Where("mobile = ?", c.Mobile)
+		db.Where(tableName+".mobile = ?", c.Mobile)
 	}
 	if c.Email != "" {
-		db.Where("email = ?", c.Email)
+		db.Where(tableName+".email = ?", c.Email)
 	}
 	if c.RealName != "" {
-		db.Where("real_name = ?", c.RealName)
+		db.Where(tableName+".real_name = ?", c.RealName)
 	}
 }
 

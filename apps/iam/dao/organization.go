@@ -20,16 +20,16 @@ func (c *OrganizationCond) BuildCondition(db *gorm.DB, tableName string) {
 		c.BaseCond.BuildCondition(db, tableName)
 	}
 	if c.Name != "" {
-		db.Where("org_name = ?", c.Name)
+		db.Where(tableName+".org_name = ?", c.Name)
 	}
 	if c.ID > 0 {
-		db.Where("id = ?", c.ID)
+		db.Where(tableName+".id = ?", c.ID)
 	}
 	if c.Domain != "" {
-		db.Where("domain = ?", c.Domain)
+		db.Where(tableName+".domain = ?", c.Domain)
 	}
 	if c.Status != "" {
-		db.Where("status = ?", c.Status)
+		db.Where(tableName+".status = ?", c.Status)
 	}
 }
 

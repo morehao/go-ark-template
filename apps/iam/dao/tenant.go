@@ -21,19 +21,19 @@ func (c *TenantCond) BuildCondition(db *gorm.DB, tableName string) {
 		c.BaseCond.BuildCondition(db, tableName)
 	}
 	if c.OrgID > 0 {
-		db.Where("org_id = ?", c.OrgID)
+		db.Where(tableName+".org_id = ?", c.OrgID)
 	}
 	if c.ParentID > 0 {
-		db.Where("parent_id = ?", c.ParentID)
+		db.Where(tableName+".parent_id = ?", c.ParentID)
 	}
 	if c.TenantName != "" {
-		db.Where("tenant_name = ?", c.TenantName)
+		db.Where(tableName+".tenant_name = ?", c.TenantName)
 	}
 	if c.TenantCode != "" {
-		db.Where("tenant_code = ?", c.TenantCode)
+		db.Where(tableName+".tenant_code = ?", c.TenantCode)
 	}
 	if c.Status != "" {
-		db.Where("status = ?", c.Status)
+		db.Where(tableName+".status = ?", c.Status)
 	}
 }
 

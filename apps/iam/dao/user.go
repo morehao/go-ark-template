@@ -20,16 +20,16 @@ func (c *UserCond) BuildCondition(db *gorm.DB, tableName string) {
 		c.BaseCond.BuildCondition(db, tableName)
 	}
 	if c.Username != "" {
-		db.Where("username = ?", c.Username)
+		db.Where(tableName+".username = ?", c.Username)
 	}
 	if c.TenantID > 0 {
-		db.Where("tenant_id = ?", c.TenantID)
+		db.Where(tableName+".tenant_id = ?", c.TenantID)
 	}
 	if c.PersonID > 0 {
-		db.Where("person_id = ?", c.PersonID)
+		db.Where(tableName+".person_id = ?", c.PersonID)
 	}
 	if c.Status != "" {
-		db.Where("status = ?", c.Status)
+		db.Where(tableName+".status = ?", c.Status)
 	}
 }
 

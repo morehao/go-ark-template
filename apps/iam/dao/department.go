@@ -22,21 +22,21 @@ func (c *DepartmentCond) BuildCondition(db *gorm.DB, tableName string) {
 		c.BaseCond.BuildCondition(db, tableName)
 	}
 	if c.TenantID > 0 {
-		db.Where("tenant_id = ?", c.TenantID)
+		db.Where(tableName+".tenant_id = ?", c.TenantID)
 	}
 	if c.ParentIDNil {
-		db.Where("parent_id = ?", c.ParentID)
+		db.Where(tableName+".parent_id = ?", c.ParentID)
 	} else if c.ParentID > 0 {
-		db.Where("parent_id = ?", c.ParentID)
+		db.Where(tableName+".parent_id = ?", c.ParentID)
 	}
 	if c.DeptName != "" {
-		db.Where("dept_name = ?", c.DeptName)
+		db.Where(tableName+".dept_name = ?", c.DeptName)
 	}
 	if c.DeptCode != "" {
-		db.Where("dept_code = ?", c.DeptCode)
+		db.Where(tableName+".dept_code = ?", c.DeptCode)
 	}
 	if c.Status != "" {
-		db.Where("status = ?", c.Status)
+		db.Where(tableName+".status = ?", c.Status)
 	}
 }
 

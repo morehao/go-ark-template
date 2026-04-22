@@ -28,40 +28,40 @@ func (c *ApplicationCond) BuildCondition(db *gorm.DB, tableName string) {
 		c.BaseCond.BuildCondition(db, tableName)
 	}
 	if c.AppCode != "" {
-		db.Where("app_code = ?", c.AppCode)
+		db.Where(tableName+".app_code = ?", c.AppCode)
 	}
 	if c.AppName != "" {
-		db.Where("app_name = ?", c.AppName)
+		db.Where(tableName+".app_name = ?", c.AppName)
 	}
 	if c.AppType != "" {
-		db.Where("app_type = ?", c.AppType)
+		db.Where(tableName+".app_type = ?", c.AppType)
 	}
 	if c.CallbackUrl != "" {
-		db.Where("callback_url = ?", c.CallbackUrl)
+		db.Where(tableName+".callback_url = ?", c.CallbackUrl)
 	}
 	if c.CreatedBy != 0 {
-		db.Where("created_by = ?", c.CreatedBy)
+		db.Where(tableName+".created_by = ?", c.CreatedBy)
 	}
 	if c.DeletedBy != 0 {
-		db.Where("deleted_by = ?", c.DeletedBy)
+		db.Where(tableName+".deleted_by = ?", c.DeletedBy)
 	}
 	if c.Description != "" {
-		db.Where("description = ?", c.Description)
+		db.Where(tableName+".description = ?", c.Description)
 	}
 	if c.HomepageUrl != "" {
-		db.Where("homepage_url = ?", c.HomepageUrl)
+		db.Where(tableName+".homepage_url = ?", c.HomepageUrl)
 	}
 	if c.Logo != "" {
-		db.Where("logo = ?", c.Logo)
+		db.Where(tableName+".logo = ?", c.Logo)
 	}
 	if c.SortOrder != 0 {
-		db.Where("sort_order = ?", c.SortOrder)
+		db.Where(tableName+".sort_order = ?", c.SortOrder)
 	}
 	if c.Status != "" {
-		db.Where("status = ?", c.Status)
+		db.Where(tableName+".status = ?", c.Status)
 	}
 	if c.UpdatedBy != 0 {
-		db.Where("updated_by = ?", c.UpdatedBy)
+		db.Where(tableName+".updated_by = ?", c.UpdatedBy)
 	}
 }
 

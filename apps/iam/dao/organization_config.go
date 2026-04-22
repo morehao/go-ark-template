@@ -19,13 +19,13 @@ func (c *OrganizationConfigCond) BuildCondition(db *gorm.DB, tableName string) {
 		c.BaseCond.BuildCondition(db, tableName)
 	}
 	if c.OrgID > 0 {
-		db.Where("org_id = ?", c.OrgID)
+		db.Where(tableName+".org_id = ?", c.OrgID)
 	}
 	if c.ConfigGroup != "" {
-		db.Where("config_group = ?", c.ConfigGroup)
+		db.Where(tableName+".config_group = ?", c.ConfigGroup)
 	}
 	if c.ConfigKey != "" {
-		db.Where("config_key = ?", c.ConfigKey)
+		db.Where(tableName+".config_key = ?", c.ConfigKey)
 	}
 }
 

@@ -299,6 +299,7 @@ CREATE TABLE IF NOT EXISTS iam_menu (
     icon VARCHAR(64) COMMENT '菜单图标',
     sort_order INT DEFAULT 0 COMMENT '排序',
     visibility VARCHAR(16) DEFAULT 'visible' COMMENT '可见性: visible-可见 hidden-隐藏',
+    access_policy INT DEFAULT 1 COMMENT '访问策略位掩码: 1-全部人可见 2-需授权 4-组织管理员 8-租户管理员',
     cache_type VARCHAR(16) DEFAULT 'disabled' COMMENT '缓存类型: enabled-启用 disabled-禁用',
     link_type VARCHAR(16) DEFAULT 'internal' COMMENT '链接类型: internal-内部链接 external-外部链接',
     status VARCHAR(16) DEFAULT 'enabled' COMMENT '状态: enabled-启用 disabled-停用',
