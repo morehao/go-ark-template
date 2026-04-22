@@ -483,7 +483,7 @@ func (svc *authSvc) buildTenantList(ctx *gin.Context, userList model.UserEntityL
 			continue
 		}
 		orgName := ""
-		orgEntity, _ := dao.NewOrgDao().GetByID(ctx, tenantEntity.OrgID)
+		orgEntity, _ := dao.NewOrganizationDao().GetByID(ctx, tenantEntity.OrgID)
 		if orgEntity != nil {
 			orgName = orgEntity.OrgName
 		}
@@ -497,13 +497,13 @@ func (svc *authSvc) buildTenantList(ctx *gin.Context, userList model.UserEntityL
 	return tenants, nil
 }
 
-func (svc *authSvc) getCurrentOrg(ctx *gin.Context) (*model.OrgEntity, error) {
+func (svc *authSvc) getCurrentOrg(ctx *gin.Context) (*model.OrganizationEntity, error) {
 	domain := resolveDomain(ctx)
 	if domain == "" {
 		return nil, code.GetError(code.AuthOrgNotFoundError)
 	}
 
-	orgEntity, err := dao.NewOrgDao().GetByCond(ctx, &dao.OrgCond{
+	orgEntity, err := dao.NewOrganizationDao().GetByCond(ctx, &dao.OrganizationCond{
 		Domain: domain,
 		Status: model.OrgStatusEnabled,
 	})
@@ -740,7 +740,7 @@ func (svc *authSvc) Register(ctx *gin.Context, req *dtoauth.RegisterReq) (*dtoau
 }
 
 func (svc *authSvc) getOrgConfigBool(ctx *gin.Context, orgID uint, configKey string) (bool, error) {
-	configEntity, err := dao.NewOrgConfigDao().GetByCond(ctx, &dao.OrgConfigCond{
+	configEntity, err := dao.NewOrganizationConfigDao().GetByCond(ctx, &dao.OrganizationConfigCond{
 		OrgID:     orgID,
 		ConfigKey: configKey,
 	})
@@ -755,7 +755,7 @@ func (svc *authSvc) getOrgConfigBool(ctx *gin.Context, orgID uint, configKey str
 }
 
 func (svc *authSvc) getOrgConfigString(ctx *gin.Context, orgID uint, configKey string) (string, error) {
-	configEntity, err := dao.NewOrgConfigDao().GetByCond(ctx, &dao.OrgConfigCond{
+	configEntity, err := dao.NewOrganizationConfigDao().GetByCond(ctx, &dao.OrganizationConfigCond{
 		OrgID:     orgID,
 		ConfigKey: configKey,
 	})

@@ -59,13 +59,13 @@ type OrgConfigItem struct {
 
 type OrgCreateReq struct {
 	objorg.OrgBaseInfo
-	Admin   *objorg.OrgAdminInfo  `json:"admin" validate:"required" label:"管理员信息"` // 管理员信息
-	Configs []OrgConfigItem       `json:"configs" label:"初始化配置"`                   // 初始化配置
+	Admin   *objorg.OrgAdminInfo `json:"admin" validate:"required" label:"管理员信息"` // 管理员信息
+	Configs []OrgConfigItem      `json:"configs" label:"初始化配置"`                   // 初始化配置
 }
 
 type OrgUpdateReq struct {
-	ID      uint              `json:"id" validate:"required" label:"数据自增id"` // 数据自增id
-	Configs []OrgConfigItem   `json:"configs" label:"配置信息"`                  // 配置信息
+	ID      uint            `json:"id" validate:"required" label:"数据自增id"` // 数据自增id
+	Configs []OrgConfigItem `json:"configs" label:"配置信息"`                  // 配置信息
 	objorg.OrgBaseInfo
 }
 
@@ -73,7 +73,7 @@ type OrgDetailReq struct {
 	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增id
 }
 
-type OrgGetConfigsByDomainReq struct {
+type GetOrganizationConfigsReq struct {
 	Domain string `json:"domain" form:"domain" label:"组织域名"` // 组织域名
 }
 

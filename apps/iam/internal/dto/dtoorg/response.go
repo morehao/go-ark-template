@@ -66,13 +66,13 @@ type OrgCreateResp struct {
 	AdminID uint `json:"adminID"` // 管理员ID
 }
 
-type OrgConfigsResp struct {
-	OrgID    uint                         `json:"orgId"`             // 组织ID
-	OrgName  string                       `json:"orgName"`           // 组织名称
-	Domain   string                       `json:"domain"`            // 域名
-	Logo     string                       `json:"logo"`              // Logo
-	Status   model.OrgStatus           `json:"status"`            // 状态
-	Configs  map[string]map[string]string `json:"configs"`           // 配置信息
+type GetOrganizationConfigsResp struct {
+	OrgID   uint                         `json:"orgId"`   // 组织ID
+	OrgName string                       `json:"orgName"` // 组织名称
+	Domain  string                       `json:"domain"`  // 域名
+	Logo    string                       `json:"logo"`    // Logo
+	Status  model.OrgStatus              `json:"status"`  // 状态
+	Configs map[string]map[string]string `json:"configs"` // 配置信息
 }
 
 type OrgDetailResp struct {

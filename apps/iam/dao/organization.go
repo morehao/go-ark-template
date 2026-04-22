@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type OrgCond struct {
+type OrganizationCond struct {
 	*genericdao.BaseCond
 	ID     uint
 	Name   string
@@ -15,7 +15,7 @@ type OrgCond struct {
 	Status model.OrgStatus
 }
 
-func (c *OrgCond) BuildCondition(db *gorm.DB, tableName string) {
+func (c *OrganizationCond) BuildCondition(db *gorm.DB, tableName string) {
 	if c.BaseCond != nil {
 		c.BaseCond.BuildCondition(db, tableName)
 	}
@@ -33,14 +33,14 @@ func (c *OrgCond) BuildCondition(db *gorm.DB, tableName string) {
 	}
 }
 
-type OrgDao struct {
-	*genericdao.GenericDao[model.OrgEntity, model.OrgEntityList]
+type OrganizationDao struct {
+	*genericdao.GenericDao[model.OrganizationEntity, model.OrganizationEntityList]
 }
 
-func NewOrgDao() *OrgDao {
-	return &OrgDao{
-		GenericDao: genericdao.NewGenericDao[model.OrgEntity, model.OrgEntityList](
-			model.TableNameOrg, "OrgDao",
+func NewOrganizationDao() *OrganizationDao {
+	return &OrganizationDao{
+		GenericDao: genericdao.NewGenericDao[model.OrganizationEntity, model.OrganizationEntityList](
+			model.TableNameOrganization, "OrganizationDao",
 			dbclient.IamDB,
 		),
 	}
