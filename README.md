@@ -30,8 +30,8 @@ Follows [project-layout](https://github.com/golang-standards/project-layout). Cu
 │   │   ├── cmd
 │   │   ├── client
 │   │   ├── config
-│   │   ├── demodao
-│   │   ├── demomodel
+│   │   ├── dao
+│   │   ├── model
 │   │   ├── docs
 │   │   ├── internal
 │   │   │   ├── controller
@@ -45,8 +45,8 @@ Follows [project-layout](https://github.com/golang-standards/project-layout). Cu
 │       ├── cmd
 │       ├── config
 │       ├── docs
-│       ├── iamdao
-│       ├── iammodel
+│       ├── dao
+│       ├── model
 │       ├── internal
 │       │   ├── controller
 │       │   ├── dto

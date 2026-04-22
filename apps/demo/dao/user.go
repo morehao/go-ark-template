@@ -1,7 +1,7 @@
-package demodao
+package dao
 
 import (
-	"github.com/morehao/goark/apps/demo/demomodel"
+	"github.com/morehao/goark/apps/demo/model"
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/biz/genericdao"
 	"gorm.io/gorm"
@@ -42,13 +42,13 @@ func (c *UserCond) BuildCondition(db *gorm.DB, tableName string) {
 }
 
 type UserDao struct {
-	*genericdao.GenericDao[demomodel.UserEntity, demomodel.UserEntityList]
+	*genericdao.GenericDao[model.UserEntity, model.UserEntityList]
 }
 
 func NewUserDao() *UserDao {
 	return &UserDao{
-		GenericDao: genericdao.NewGenericDao[demomodel.UserEntity, demomodel.UserEntityList](
-			demomodel.TableNameUser, "UserDao",
+		GenericDao: genericdao.NewGenericDao[model.UserEntity, model.UserEntityList](
+			model.TableNameUser, "UserDao",
 			dbclient.DemoDB,
 		),
 	}

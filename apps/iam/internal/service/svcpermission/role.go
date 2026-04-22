@@ -2,9 +2,9 @@ package svcpermission
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam/iamdao"
-	"github.com/morehao/goark/apps/iam/iammodel"
+	"github.com/morehao/goark/apps/iam/dao"
 	"github.com/morehao/goark/apps/iam/internal/dto/dtopermission"
+	"github.com/morehao/goark/apps/iam/model"
 	"github.com/morehao/goark/apps/iam/object/objpermission"
 	"github.com/morehao/goark/pkg/code"
 	"github.com/morehao/goark/pkg/dbclient"
@@ -37,17 +37,17 @@ func NewRoleSvc() RoleSvc {
 
 // Create 创建角色管理
 func (svc *roleSvc) Create(ctx *gin.Context, req *dtopermission.RoleCreateReq) (*dtopermission.RoleCreateResp, error) {
-	insertEntity := &iammodel.RoleEntity{
-		DataScope:   iammodel.RoleDataScope(req.DataScope),
+	insertEntity := &model.RoleEntity{
+		DataScope:   model.RoleDataScope(req.DataScope),
 		Description: req.Description,
 		RoleCode:    req.RoleCode,
 		RoleName:    req.RoleName,
-		RoleType:    iammodel.RoleType(req.RoleType),
+		RoleType:    model.RoleType(req.RoleType),
 		SortOrder:   req.SortOrder,
-		Status:      iammodel.RoleStatus(req.Status),
+		Status:      model.RoleStatus(req.Status),
 	}
 
-	if err := iamdao.NewRoleDao().Insert(ctx, insertEntity); err != nil {
+	if err := dao.NewRoleDao().Insert(ctx, insertEntity); err != nil {
 		glog.Errorf(ctx, "[svcpermission.RoleCreate] daoRole Create fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.RoleCreateError)
 	}
@@ -59,7 +59,7 @@ func (svc *roleSvc) Create(ctx *gin.Context, req *dtopermission.RoleCreateReq) (
 // Delete 删除角色管理
 func (svc *roleSvc) Delete(ctx *gin.Context, req *dtopermission.RoleDeleteReq) error {
 	userID := gincontext.GetUserID(ctx)
-	roleEntity, err := iamdao.NewRoleDao().GetByID(ctx, req.ID)
+	roleEntity, err := dao.NewRoleDao().GetByID(ctx, req.ID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcpermission.Delete] daoRole GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.RoleDeleteError)
@@ -68,7 +68,7 @@ func (svc *roleSvc) Delete(ctx *gin.Context, req *dtopermission.RoleDeleteReq) e
 		return code.GetError(code.RoleNotExistError)
 	}
 
-	if err = iamdao.NewRoleDao().Delete(ctx, req.ID, userID); err != nil {
+	if err = dao.NewRoleDao().Delete(ctx, req.ID, userID); err != nil {
 		glog.Errorf(ctx, "[svcpermission.Delete] daoRole Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.RoleDeleteError)
 	}
@@ -77,7 +77,7 @@ func (svc *roleSvc) Delete(ctx *gin.Context, req *dtopermission.RoleDeleteReq) e
 
 // Update 更新角色管理
 func (svc *roleSvc) Update(ctx *gin.Context, req *dtopermission.RoleUpdateReq) error {
-	roleEntity, err := iamdao.NewRoleDao().GetByID(ctx, req.ID)
+	roleEntity, err := dao.NewRoleDao().GetByID(ctx, req.ID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcpermission.RoleUpdate] daoRole GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.RoleUpdateError)
@@ -94,7 +94,7 @@ func (svc *roleSvc) Update(ctx *gin.Context, req *dtopermission.RoleUpdateReq) e
 		"sort_order":  req.SortOrder,
 		"status":      req.Status,
 	}
-	if err = iamdao.NewRoleDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
+	if err = dao.NewRoleDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
 		glog.Errorf(ctx, "[svcpermission.RoleUpdate] daoRole UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.RoleUpdateError)
 	}
@@ -103,7 +103,7 @@ func (svc *roleSvc) Update(ctx *gin.Context, req *dtopermission.RoleUpdateReq) e
 
 // Detail 根据id获取角色管理
 func (svc *roleSvc) Detail(ctx *gin.Context, req *dtopermission.RoleDetailReq) (*dtopermission.RoleDetailResp, error) {
-	roleEntity, err := iamdao.NewRoleDao().GetByID(ctx, req.ID)
+	roleEntity, err := dao.NewRoleDao().GetByID(ctx, req.ID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcpermission.RoleDetail] daoRole GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.RoleGetDetailError)
@@ -134,13 +134,13 @@ func (svc *roleSvc) Detail(ctx *gin.Context, req *dtopermission.RoleDetailReq) (
 
 // PageList 分页获取角色管理列表
 func (svc *roleSvc) PageList(ctx *gin.Context, req *dtopermission.RolePageListReq) (*dtopermission.RolePageListResp, error) {
-	cond := &iamdao.RoleCond{
+	cond := &dao.RoleCond{
 		BaseCond: &genericdao.BaseCond{
 			Page:     req.Page,
 			PageSize: req.PageSize,
 		},
 	}
-	roleEntityList, total, err := iamdao.NewRoleDao().GetPageListByCond(ctx, cond)
+	roleEntityList, total, err := dao.NewRoleDao().GetPageListByCond(ctx, cond)
 	if err != nil {
 		glog.Errorf(ctx, "[svcpermission.RolePageList] daoRole GetPageListByCond fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.RoleGetPageListError)
@@ -176,7 +176,7 @@ func (svc *roleSvc) AssignMenus(ctx *gin.Context, req *dtopermission.RoleAssignM
 	tenantID := gincontext.GetTenantID(ctx)
 
 	// 检查角色是否存在
-	roleEntity, err := iamdao.NewRoleDao().GetByID(ctx, req.RoleID)
+	roleEntity, err := dao.NewRoleDao().GetByID(ctx, req.RoleID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcpermission.AssignMenus] daoRole GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.RoleUpdateError)
@@ -186,10 +186,10 @@ func (svc *roleSvc) AssignMenus(ctx *gin.Context, req *dtopermission.RoleAssignM
 	}
 
 	txErr := dbclient.IamDB(ctx).Transaction(func(tx *gorm.DB) error {
-		roleMenuDao := iamdao.NewRoleMenuDao().WithTx(tx)
+		roleMenuDao := dao.NewRoleMenuDao().WithTx(tx)
 
 		// 删除该角色的所有已有菜单关联
-		existingList, err := roleMenuDao.GetListByCond(ctx, &iamdao.RoleMenuCond{
+		existingList, err := roleMenuDao.GetListByCond(ctx, &dao.RoleMenuCond{
 			RoleID:   req.RoleID,
 			TenantID: tenantID,
 		})
@@ -206,7 +206,7 @@ func (svc *roleSvc) AssignMenus(ctx *gin.Context, req *dtopermission.RoleAssignM
 
 		// 批量插入新的菜单关联
 		for _, menuID := range req.MenuIDs {
-			entity := &iammodel.RoleMenuEntity{
+			entity := &model.RoleMenuEntity{
 				TenantID:  tenantID,
 				RoleID:    req.RoleID,
 				MenuID:    menuID,
@@ -230,7 +230,7 @@ func (svc *roleSvc) AssignMenus(ctx *gin.Context, req *dtopermission.RoleAssignM
 // ListMenus 查询角色已分配的菜单列表
 func (svc *roleSvc) ListMenus(ctx *gin.Context, req *dtopermission.RoleListMenusReq) (*dtopermission.RoleMenuListResp, error) {
 	// 查询角色是否存在
-	roleEntity, err := iamdao.NewRoleDao().GetByID(ctx, req.RoleID)
+	roleEntity, err := dao.NewRoleDao().GetByID(ctx, req.RoleID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcpermission.ListMenus] daoRole GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.RoleGetDetailError)
@@ -240,7 +240,7 @@ func (svc *roleSvc) ListMenus(ctx *gin.Context, req *dtopermission.RoleListMenus
 	}
 
 	// 查询角色菜单关联
-	roleMenuList, err := iamdao.NewRoleMenuDao().GetListByCond(ctx, &iamdao.RoleMenuCond{
+	roleMenuList, err := dao.NewRoleMenuDao().GetListByCond(ctx, &dao.RoleMenuCond{
 		RoleID: req.RoleID,
 	})
 	if err != nil {
@@ -250,7 +250,7 @@ func (svc *roleSvc) ListMenus(ctx *gin.Context, req *dtopermission.RoleListMenus
 
 	list := make([]dtopermission.RoleMenuListItem, 0, len(roleMenuList))
 	for _, rm := range roleMenuList {
-		menuEntity, err := iamdao.NewMenuDao().GetByID(ctx, rm.MenuID)
+		menuEntity, err := dao.NewMenuDao().GetByID(ctx, rm.MenuID)
 		if err != nil || menuEntity == nil || menuEntity.ID == 0 {
 			continue
 		}

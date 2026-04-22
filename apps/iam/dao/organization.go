@@ -1,7 +1,7 @@
-package iamdao
+package dao
 
 import (
-	"github.com/morehao/goark/apps/iam/iammodel"
+	"github.com/morehao/goark/apps/iam/model"
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/biz/genericdao"
 	"gorm.io/gorm"
@@ -12,7 +12,7 @@ type OrgCond struct {
 	ID     uint
 	Name   string
 	Domain string
-	Status iammodel.OrgStatus
+	Status model.OrgStatus
 }
 
 func (c *OrgCond) BuildCondition(db *gorm.DB, tableName string) {
@@ -34,13 +34,13 @@ func (c *OrgCond) BuildCondition(db *gorm.DB, tableName string) {
 }
 
 type OrgDao struct {
-	*genericdao.GenericDao[iammodel.OrgEntity, iammodel.OrgEntityList]
+	*genericdao.GenericDao[model.OrgEntity, model.OrgEntityList]
 }
 
 func NewOrgDao() *OrgDao {
 	return &OrgDao{
-		GenericDao: genericdao.NewGenericDao[iammodel.OrgEntity, iammodel.OrgEntityList](
-			iammodel.TableNameOrg, "OrgDao",
+		GenericDao: genericdao.NewGenericDao[model.OrgEntity, model.OrgEntityList](
+			model.TableNameOrg, "OrgDao",
 			dbclient.IamDB,
 		),
 	}

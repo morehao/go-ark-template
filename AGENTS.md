@@ -75,8 +75,8 @@ apps/
 │   │   ├── dto/dtoxxx/         # DTO 层
 │   │   ├── router/             # 路由注册
 │   │   └── middleware/         # 中间件
-│   ├── demomodel/              # 数据模型
-│   └── demodao/                # 数据访问层
+│   ├── model/              # 数据模型
+│   └── dao/                # 数据访问层
 ├── iam/                       # IAM 应用 (同上结构)
 │   └── internal/
 │       ├── constant/           # 应用层常量（前端专用）
@@ -97,15 +97,15 @@ pkg/                          # 公共包
 
 | 常量类型 | 存放位置 | 说明 |
 |---------|---------|------|
-| 数据表名常量 | `iammodel/*.go` | 定义在对应结构体文件 |
-| 数据库存储的枚举值 | `iammodel/*.go` | 定义在对应结构体文件 |
-| 字典值常量 | `iammodel/*.go` | 所有字典字符串定义成常量 |
+| 数据表名常量 | `model/*.go` | 定义在对应结构体文件 |
+| 数据库存储的枚举值 | `model/*.go` | 定义在对应结构体文件 |
+| 字典值常量 | `model/*.go` | 所有字典字符串定义成常量 |
 | 应用层常量（前端专用） | `internal/constant/` | 状态映射等前端专用常量 |
 
 #### 数据表常量（model 层）
 
 ```go
-// iammodel/department.go
+// model/department.go
 
 // 数据表名
 const TableNameDepartment = "iam_department"

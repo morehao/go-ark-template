@@ -1,7 +1,7 @@
-package iamdao
+package dao
 
 import (
-	"github.com/morehao/goark/apps/iam/iammodel"
+	"github.com/morehao/goark/apps/iam/model"
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/biz/genericdao"
 	"gorm.io/gorm"
@@ -30,13 +30,13 @@ func (c *PersonCond) BuildCondition(db *gorm.DB, tableName string) {
 }
 
 type PersonDao struct {
-	*genericdao.GenericDao[iammodel.PersonEntity, iammodel.PersonEntityList]
+	*genericdao.GenericDao[model.PersonEntity, model.PersonEntityList]
 }
 
 func NewPersonDao() *PersonDao {
 	return &PersonDao{
-		GenericDao: genericdao.NewGenericDao[iammodel.PersonEntity, iammodel.PersonEntityList](
-			iammodel.TableNamePerson, "PersonDao",
+		GenericDao: genericdao.NewGenericDao[model.PersonEntity, model.PersonEntityList](
+			model.TableNamePerson, "PersonDao",
 			dbclient.IamDB,
 		),
 	}

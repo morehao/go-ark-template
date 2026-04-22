@@ -1,7 +1,7 @@
-package iamdao
+package dao
 
 import (
-	"github.com/morehao/goark/apps/iam/iammodel"
+	"github.com/morehao/goark/apps/iam/model"
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/biz/genericdao"
 	"gorm.io/gorm"
@@ -12,7 +12,7 @@ type UserCond struct {
 	Username string
 	TenantID uint
 	PersonID uint
-	Status   iammodel.UserStatus
+	Status   model.UserStatus
 }
 
 func (c *UserCond) BuildCondition(db *gorm.DB, tableName string) {
@@ -34,13 +34,13 @@ func (c *UserCond) BuildCondition(db *gorm.DB, tableName string) {
 }
 
 type UserDao struct {
-	*genericdao.GenericDao[iammodel.UserEntity, iammodel.UserEntityList]
+	*genericdao.GenericDao[model.UserEntity, model.UserEntityList]
 }
 
 func NewUserDao() *UserDao {
 	return &UserDao{
-		GenericDao: genericdao.NewGenericDao[iammodel.UserEntity, iammodel.UserEntityList](
-			iammodel.TableNameUser, "UserDao",
+		GenericDao: genericdao.NewGenericDao[model.UserEntity, model.UserEntityList](
+			model.TableNameUser, "UserDao",
 			dbclient.IamDB,
 		),
 	}

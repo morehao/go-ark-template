@@ -1,7 +1,7 @@
-package iamdao
+package dao
 
 import (
-	"github.com/morehao/goark/apps/iam/iammodel"
+	"github.com/morehao/goark/apps/iam/model"
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/biz/genericdao"
 	"gorm.io/gorm"
@@ -14,7 +14,7 @@ type DepartmentCond struct {
 	ParentIDNil bool // 是否显式查询 ParentID（包括 ParentID=0 的情况）
 	DeptName    string
 	DeptCode    string
-	Status      iammodel.DeptStatus
+	Status      model.DeptStatus
 }
 
 func (c *DepartmentCond) BuildCondition(db *gorm.DB, tableName string) {
@@ -41,13 +41,13 @@ func (c *DepartmentCond) BuildCondition(db *gorm.DB, tableName string) {
 }
 
 type DepartmentDao struct {
-	*genericdao.GenericDao[iammodel.DepartmentEntity, iammodel.DepartmentEntityList]
+	*genericdao.GenericDao[model.DepartmentEntity, model.DepartmentEntityList]
 }
 
 func NewDepartmentDao() *DepartmentDao {
 	return &DepartmentDao{
-		GenericDao: genericdao.NewGenericDao[iammodel.DepartmentEntity, iammodel.DepartmentEntityList](
-			iammodel.TableNameDepartment, "DepartmentDao",
+		GenericDao: genericdao.NewGenericDao[model.DepartmentEntity, model.DepartmentEntityList](
+			model.TableNameDepartment, "DepartmentDao",
 			dbclient.IamDB,
 		),
 	}

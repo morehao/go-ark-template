@@ -1,7 +1,7 @@
-package iamdao
+package dao
 
 import (
-	"github.com/morehao/goark/apps/iam/iammodel"
+	"github.com/morehao/goark/apps/iam/model"
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/biz/genericdao"
 	"gorm.io/gorm"
@@ -30,13 +30,13 @@ func (c *RoleMenuCond) BuildCondition(db *gorm.DB, tableName string) {
 }
 
 type RoleMenuDao struct {
-	*genericdao.GenericDao[iammodel.RoleMenuEntity, iammodel.RoleMenuEntityList]
+	*genericdao.GenericDao[model.RoleMenuEntity, model.RoleMenuEntityList]
 }
 
 func NewRoleMenuDao() *RoleMenuDao {
 	return &RoleMenuDao{
-		GenericDao: genericdao.NewGenericDao[iammodel.RoleMenuEntity, iammodel.RoleMenuEntityList](
-			iammodel.TableNameRoleMenu, "RoleMenuDao",
+		GenericDao: genericdao.NewGenericDao[model.RoleMenuEntity, model.RoleMenuEntityList](
+			model.TableNameRoleMenu, "RoleMenuDao",
 			dbclient.IamDB,
 		),
 	}

@@ -1,4 +1,4 @@
-package iammodel
+package model
 
 import (
 	"gorm.io/gorm"

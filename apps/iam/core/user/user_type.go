@@ -1,7 +1,7 @@
 package user
 
 import (
-	"github.com/morehao/goark/apps/iam/iammodel"
+	"github.com/morehao/goark/apps/iam/model"
 )
 
 type CreatePersonResult struct {
@@ -17,8 +17,8 @@ type CreatePersonParams struct {
 	TenantID    uint
 	DeptID      uint
 	Username    string
-	UserType    iammodel.UserType
-	Status      iammodel.UserStatus
+	UserType    model.UserType
+	Status      model.UserStatus
 	EmployeeNo  string
 	JobLevel    string
 	Position    string

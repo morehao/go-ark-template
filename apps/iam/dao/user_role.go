@@ -1,7 +1,7 @@
-package iamdao
+package dao
 
 import (
-	"github.com/morehao/goark/apps/iam/iammodel"
+	"github.com/morehao/goark/apps/iam/model"
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/biz/genericdao"
 	"gorm.io/gorm"
@@ -30,13 +30,13 @@ func (c *UserRoleCond) BuildCondition(db *gorm.DB, tableName string) {
 }
 
 type UserRoleDao struct {
-	*genericdao.GenericDao[iammodel.UserRoleEntity, iammodel.UserRoleEntityList]
+	*genericdao.GenericDao[model.UserRoleEntity, model.UserRoleEntityList]
 }
 
 func NewUserRoleDao() *UserRoleDao {
 	return &UserRoleDao{
-		GenericDao: genericdao.NewGenericDao[iammodel.UserRoleEntity, iammodel.UserRoleEntityList](
-			iammodel.TableNameUserRole, "UserRoleDao",
+		GenericDao: genericdao.NewGenericDao[model.UserRoleEntity, model.UserRoleEntityList](
+			model.TableNameUserRole, "UserRoleDao",
 			dbclient.IamDB,
 		),
 	}

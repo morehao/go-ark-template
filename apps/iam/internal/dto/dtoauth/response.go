@@ -1,6 +1,6 @@
 package dtoauth
 
-import "github.com/morehao/goark/apps/iam/iammodel"
+import "github.com/morehao/goark/apps/iam/model"
 
 type LoginByPasswordResp struct {
 	TempToken        string           `json:"tempToken"`        // JWT临时令牌(需通过selectTenant换取正式token)
@@ -33,7 +33,7 @@ type LoginUserInfo struct {
 	PersonID   uint              `json:"personId"`   // 自然人ID
 	Username   string            `json:"username"`   // 用户名
 	RealName   string            `json:"realName"`   // 真实姓名
-	UserType   iammodel.UserType `json:"userType"`   // 用户类型
+	UserType   model.UserType `json:"userType"`   // 用户类型
 	TenantID   uint              `json:"tenantId"`   // 租户ID
 	TenantName string            `json:"tenantName"` // 租户名称
 }

@@ -6,9 +6,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/morehao/goark/apps/iam/core/user"
-	"github.com/morehao/goark/apps/iam/iamdao"
-	"github.com/morehao/goark/apps/iam/iammodel"
+	"github.com/morehao/goark/apps/iam/dao"
 	"github.com/morehao/goark/apps/iam/internal/dto/dtoorg"
+	"github.com/morehao/goark/apps/iam/model"
 	"github.com/morehao/goark/apps/iam/object/objorg"
 	"github.com/morehao/goark/pkg/code"
 	"github.com/morehao/goark/pkg/dbclient"
@@ -39,7 +39,7 @@ func NewTenantSvc() TenantSvc {
 
 func (svc *tenantSvc) Create(ctx *gin.Context, req *dtoorg.TenantCreateReq) (*dtoorg.TenantCreateResp, error) {
 	operatorID := gincontext.GetUserID(ctx)
-	insertEntity := &iammodel.TenantEntity{
+	insertEntity := &model.TenantEntity{
 		Address:                 req.Address,
 		ContactEmail:            req.ContactEmail,
 		ContactPhone:            req.ContactPhone,
@@ -47,7 +47,7 @@ func (svc *tenantSvc) Create(ctx *gin.Context, req *dtoorg.TenantCreateReq) (*dt
 		Logo:                    req.Logo,
 		OrgID:                   req.OrgID,
 		ShortName:               req.ShortName,
-		Status:                  iammodel.TenantStatus(req.Status),
+		Status:                  model.TenantStatus(req.Status),
 		TenantCode:              req.TenantCode,
 		TenantName:              req.TenantName,
 		UnifiedSocialCreditCode: req.UnifiedSocialCreditCode,
@@ -63,22 +63,22 @@ func (svc *tenantSvc) Create(ctx *gin.Context, req *dtoorg.TenantCreateReq) (*dt
 	var deptID uint
 	var result *user.CreatePersonResult
 	txErr := dbclient.IamDB(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := iamdao.NewTenantDao().WithTx(tx).Insert(ctx, insertEntity); err != nil {
+		if err := dao.NewTenantDao().WithTx(tx).Insert(ctx, insertEntity); err != nil {
 			return err
 		}
 		tenantID = insertEntity.ID
 
-		deptEntity := &iammodel.DepartmentEntity{
+		deptEntity := &model.DepartmentEntity{
 			TenantID:  tenantID,
 			DeptCode:  req.TenantCode,
 			DeptName:  req.TenantName,
 			DeptLevel: 1,
 			ParentID:  0,
-			Status:    iammodel.DeptStatusEnabled,
+			Status:    model.DeptStatusEnabled,
 			CreatedBy: operatorID,
 			UpdatedBy: operatorID,
 		}
-		if err := iamdao.NewDepartmentDao().WithTx(tx).Insert(ctx, deptEntity); err != nil {
+		if err := dao.NewDepartmentDao().WithTx(tx).Insert(ctx, deptEntity); err != nil {
 			return err
 		}
 		deptID = deptEntity.ID
@@ -86,7 +86,7 @@ func (svc *tenantSvc) Create(ctx *gin.Context, req *dtoorg.TenantCreateReq) (*dt
 		deptPathMap := map[string]any{
 			"dept_path": fmt.Sprintf("/%d/", deptEntity.ID),
 		}
-		if err := iamdao.NewDepartmentDao().WithTx(tx).UpdateMap(ctx, deptEntity.ID, deptPathMap); err != nil {
+		if err := dao.NewDepartmentDao().WithTx(tx).UpdateMap(ctx, deptEntity.ID, deptPathMap); err != nil {
 			return err
 		}
 
@@ -98,8 +98,8 @@ func (svc *tenantSvc) Create(ctx *gin.Context, req *dtoorg.TenantCreateReq) (*dt
 			TenantID:   tenantID,
 			DeptID:     deptID,
 			Username:   adminInfo.Username,
-			UserType:   iammodel.UserTypeTenantAdmin,
-			Status:     iammodel.UserStatusEnabled,
+			UserType:   model.UserTypeTenantAdmin,
+			Status:     model.UserStatusEnabled,
 		}
 		var err error
 		result, err = user.CreatePersonWithUser(ctx, tx, params)
@@ -124,7 +124,7 @@ func (svc *tenantSvc) Create(ctx *gin.Context, req *dtoorg.TenantCreateReq) (*dt
 
 func (svc *tenantSvc) Delete(ctx *gin.Context, req *dtoorg.TenantDeleteReq) error {
 	userID := gincontext.GetUserID(ctx)
-	tenantEntity, err := iamdao.NewTenantDao().GetByID(ctx, req.ID)
+	tenantEntity, err := dao.NewTenantDao().GetByID(ctx, req.ID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.Delete] daoTenant GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.TenantDeleteError)
@@ -133,7 +133,7 @@ func (svc *tenantSvc) Delete(ctx *gin.Context, req *dtoorg.TenantDeleteReq) erro
 		return code.GetError(code.TenantNotExistError)
 	}
 
-	if err = iamdao.NewTenantDao().Delete(ctx, req.ID, userID); err != nil {
+	if err = dao.NewTenantDao().Delete(ctx, req.ID, userID); err != nil {
 		glog.Errorf(ctx, "[svcorg.Delete] daoTenant Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.TenantDeleteError)
 	}
@@ -141,7 +141,7 @@ func (svc *tenantSvc) Delete(ctx *gin.Context, req *dtoorg.TenantDeleteReq) erro
 }
 
 func (svc *tenantSvc) Update(ctx *gin.Context, req *dtoorg.TenantUpdateReq) error {
-	tenantEntity, err := iamdao.NewTenantDao().GetByID(ctx, req.ID)
+	tenantEntity, err := dao.NewTenantDao().GetByID(ctx, req.ID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.TenantUpdate] daoTenant GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.TenantUpdateError)
@@ -162,7 +162,7 @@ func (svc *tenantSvc) Update(ctx *gin.Context, req *dtoorg.TenantUpdateReq) erro
 		"tenant_name":                req.TenantName,
 		"unified_social_credit_code": req.UnifiedSocialCreditCode,
 	}
-	if err = iamdao.NewTenantDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
+	if err = dao.NewTenantDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
 		glog.Errorf(ctx, "[svcorg.TenantUpdate] daoTenant UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.TenantUpdateError)
 	}
@@ -170,7 +170,7 @@ func (svc *tenantSvc) Update(ctx *gin.Context, req *dtoorg.TenantUpdateReq) erro
 }
 
 func (svc *tenantSvc) Detail(ctx *gin.Context, req *dtoorg.TenantDetailReq) (*dtoorg.TenantDetailResp, error) {
-	tenantEntity, err := iamdao.NewTenantDao().GetByID(ctx, req.ID)
+	tenantEntity, err := dao.NewTenantDao().GetByID(ctx, req.ID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.TenantDetail] daoTenant GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.TenantGetDetailError)
@@ -206,7 +206,7 @@ func (svc *tenantSvc) PageList(ctx *gin.Context, req *dtoorg.TenantPageListReq) 
 
 	isPlatformAdmin := gincontext.GetUserType(ctx) == "platform_admin"
 
-	cond := &iamdao.TenantCond{
+	cond := &dao.TenantCond{
 		BaseCond: &genericdao.BaseCond{
 			Page:     req.Page,
 			PageSize: req.PageSize,
@@ -217,7 +217,7 @@ func (svc *tenantSvc) PageList(ctx *gin.Context, req *dtoorg.TenantPageListReq) 
 		cond.ID = tenantID
 	}
 
-	tenantEntityList, total, err := iamdao.NewTenantDao().GetPageListByCond(ctx, cond)
+	tenantEntityList, total, err := dao.NewTenantDao().GetPageListByCond(ctx, cond)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.TenantPageList] daoTenant GetPageListByCond fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.TenantGetPageListError)

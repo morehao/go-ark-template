@@ -1,7 +1,7 @@
-package iamdao
+package dao
 
 import (
-	"github.com/morehao/goark/apps/iam/iammodel"
+	"github.com/morehao/goark/apps/iam/model"
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/biz/genericdao"
 	"gorm.io/gorm"
@@ -13,8 +13,8 @@ type MenuCond struct {
 	ParentID uint
 	MenuName string
 	MenuCode string
-	MenuType iammodel.MenuType
-	Status   iammodel.MenuStatus
+	MenuType model.MenuType
+	Status   model.MenuStatus
 }
 
 func (c *MenuCond) BuildCondition(db *gorm.DB, tableName string) {
@@ -42,13 +42,13 @@ func (c *MenuCond) BuildCondition(db *gorm.DB, tableName string) {
 }
 
 type MenuDao struct {
-	*genericdao.GenericDao[iammodel.MenuEntity, iammodel.MenuEntityList]
+	*genericdao.GenericDao[model.MenuEntity, model.MenuEntityList]
 }
 
 func NewMenuDao() *MenuDao {
 	return &MenuDao{
-		GenericDao: genericdao.NewGenericDao[iammodel.MenuEntity, iammodel.MenuEntityList](
-			iammodel.TableNameMenu, "MenuDao",
+		GenericDao: genericdao.NewGenericDao[model.MenuEntity, model.MenuEntityList](
+			model.TableNameMenu, "MenuDao",
 			dbclient.IamDB,
 		),
 	}
