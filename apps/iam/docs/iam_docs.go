@@ -2151,35 +2151,6 @@ const docTemplateiam = `{
                 }
             }
         },
-        "dtoorg.OrganizationLoginConfigResp": {
-            "type": "object",
-            "properties": {
-                "configs": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "domain": {
-                    "type": "string"
-                },
-                "logo": {
-                    "type": "string"
-                },
-                "organizationId": {
-                    "type": "integer"
-                },
-                "organizationName": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                }
-            }
-        },
         "dtopermission.MenuCreateReq": {
             "type": "object",
             "properties": {

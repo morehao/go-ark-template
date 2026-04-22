@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam/iamdao"
+	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/biz/gcontext"
 	"github.com/morehao/golib/biz/testkit"
 )
@@ -66,26 +66,37 @@ func NewContext(opts ...testkit.Option) *gin.Context {
 
 func WithAuthByUserID(userID uint) testkit.Option {
 	return func(ctx *gin.Context) {
-		userEntity, err := iamdao.NewUserDao().GetByID(ctx, userID)
-		if err != nil {
-			panic(fmt.Sprintf("WithAuthByUserID: get user failed, userID=%d, err=%v", userID, err))
+		db := dbclient.IamDB(ctx)
+
+		type userInfo struct {
+			ID       uint
+			TenantID uint
+			DeptID   uint
+			PersonID uint
 		}
-		if userEntity == nil || userEntity.ID == 0 {
+		var user userInfo
+		if err := db.Raw("SELECT id, tenant_id, dept_id, person_id FROM iam_user WHERE id = ? AND deleted_at IS NULL", userID).Scan(&user).Error; err != nil {
+			panic(fmt.Sprintf("WithAuthByUserID: query user failed, userID=%d, err=%v", userID, err))
+		}
+		if user.ID == 0 {
 			panic(fmt.Sprintf("WithAuthByUserID: user not found, userID=%d", userID))
 		}
 
 		ctx.Set(gcontext.KeyUserID, userID)
-		ctx.Set(gcontext.KeyTenantID, userEntity.TenantID)
-		ctx.Set(gcontext.KeyDeptID, userEntity.DeptID)
-		ctx.Set(gcontext.KeyPersonID, userEntity.PersonID)
+		ctx.Set(gcontext.KeyTenantID, user.TenantID)
+		ctx.Set(gcontext.KeyDeptID, user.DeptID)
+		ctx.Set(gcontext.KeyPersonID, user.PersonID)
 
-		if userEntity.TenantID > 0 {
-			tenantEntity, err := iamdao.NewTenantDao().GetByID(ctx, userEntity.TenantID)
-			if err != nil {
-				panic(fmt.Sprintf("WithAuthByUserID: get tenant failed, tenantID=%d, err=%v", userEntity.TenantID, err))
+		if user.TenantID > 0 {
+			type tenantInfo struct {
+				OrgID uint
 			}
-			if tenantEntity != nil && tenantEntity.OrgID > 0 {
-				ctx.Set(gcontext.KeyOrgID, tenantEntity.OrgID)
+			var tenant tenantInfo
+			if err := db.Raw("SELECT org_id FROM iam_tenant WHERE id = ? AND deleted_at IS NULL", user.TenantID).Scan(&tenant).Error; err != nil {
+				panic(fmt.Sprintf("WithAuthByUserID: query tenant failed, tenantID=%d, err=%v", user.TenantID, err))
+			}
+			if tenant.OrgID > 0 {
+				ctx.Set(gcontext.KeyOrgID, tenant.OrgID)
 			}
 		}
 	}
