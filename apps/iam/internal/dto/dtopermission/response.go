@@ -6,17 +6,17 @@ import (
 )
 
 type MenuCreateResp struct {
-	ID uint `json:"id"` // 数据自增 ID
+	MenuID uint `json:"menuID"` // 数据自增 ID
 }
 
 type MenuDetailResp struct {
-	ID uint `json:"id" validate:"required"` // 数据自增 ID
+	MenuID uint `json:"menuID" validate:"required"` // 数据自增 ID
 	objpermission.MenuBaseInfo
 	gobject.OperatorBaseInfo
 }
 
 type MenuPageListItem struct {
-	ID uint `json:"id" validate:"required"` // 数据自增 ID
+	MenuID uint `json:"menuID" validate:"required"` // 数据自增 ID
 	objpermission.MenuBaseInfo
 	gobject.OperatorBaseInfo
 }
@@ -27,17 +27,17 @@ type MenuPageListResp struct {
 }
 
 type RoleCreateResp struct {
-	ID uint `json:"id"` // 数据自增 ID
+	RoleID uint `json:"roleID"` // 数据自增 ID
 }
 
 type RoleDetailResp struct {
-	ID uint `json:"id" validate:"required"` // 数据自增 ID
+	RoleID uint `json:"roleID" validate:"required"` // 数据自增 ID
 	objpermission.RoleBaseInfo
 	gobject.OperatorBaseInfo
 }
 
 type RolePageListItem struct {
-	ID uint `json:"id" validate:"required"` // 数据自增 ID
+	RoleID uint `json:"roleID" validate:"required"` // 数据自增 ID
 	objpermission.RoleBaseInfo
 	gobject.OperatorBaseInfo
 }
@@ -48,7 +48,7 @@ type RolePageListResp struct {
 }
 
 type RoleMenuListItem struct {
-	ID uint `json:"id"` // 菜单ID
+	MenuID uint `json:"menuID"` // 菜单ID
 	objpermission.MenuBaseInfo
 	gobject.OperatorBaseInfo
 }
@@ -58,14 +58,14 @@ type RoleMenuListResp struct {
 }
 
 type MenuTreeNode struct {
-	ID       uint           `json:"id"`       // 菜单ID
+	MenuID   uint           `json:"menuID"`   // 菜单ID
 	Children []MenuTreeNode `json:"children"` // 子菜单列表（JSON 输出）
 	objpermission.MenuBaseInfo
 	gobject.OperatorBaseInfo
 }
 
 func (n *MenuTreeNode) GetKey() uint {
-	return n.ID
+	return n.MenuID
 }
 
 func (n *MenuTreeNode) GetParentKey() uint {

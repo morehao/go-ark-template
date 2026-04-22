@@ -85,14 +85,14 @@ func (svc *departmentSvc) Create(ctx *gin.Context, req *dtoorg.DepartmentCreateR
 	}
 
 	return &dtoorg.DepartmentCreateResp{
-		ID: insertEntity.ID,
+		DeptID: insertEntity.ID,
 	}, nil
 }
 
 // Delete 删除部门管理
 func (svc *departmentSvc) Delete(ctx *gin.Context, req *dtoorg.DepartmentDeleteReq) error {
 	userID := gincontext.GetUserID(ctx)
-	departmentEntity, err := dao.NewDepartmentDao().GetByID(ctx, req.ID)
+	departmentEntity, err := dao.NewDepartmentDao().GetByID(ctx, req.DeptID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.Delete] daoDepartment GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.DepartmentDeleteError)
@@ -101,7 +101,7 @@ func (svc *departmentSvc) Delete(ctx *gin.Context, req *dtoorg.DepartmentDeleteR
 		return code.GetError(code.DepartmentNotExistError)
 	}
 
-	if err = dao.NewDepartmentDao().Delete(ctx, req.ID, userID); err != nil {
+	if err = dao.NewDepartmentDao().Delete(ctx, req.DeptID, userID); err != nil {
 		glog.Errorf(ctx, "[svcorg.Delete] daoDepartment Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.DepartmentDeleteError)
 	}
@@ -110,7 +110,7 @@ func (svc *departmentSvc) Delete(ctx *gin.Context, req *dtoorg.DepartmentDeleteR
 
 // Update 更新部门管理
 func (svc *departmentSvc) Update(ctx *gin.Context, req *dtoorg.DepartmentUpdateReq) error {
-	departmentEntity, err := dao.NewDepartmentDao().GetByID(ctx, req.ID)
+	departmentEntity, err := dao.NewDepartmentDao().GetByID(ctx, req.DeptID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.DepartmentUpdate] daoDepartment GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.DepartmentUpdateError)
@@ -128,7 +128,7 @@ func (svc *departmentSvc) Update(ctx *gin.Context, req *dtoorg.DepartmentUpdateR
 		"sort_order": req.SortOrder,
 		"status":     req.Status,
 	}
-	if err = dao.NewDepartmentDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
+	if err = dao.NewDepartmentDao().UpdateMap(ctx, req.DeptID, updateMap); err != nil {
 		glog.Errorf(ctx, "[svcorg.DepartmentUpdate] daoDepartment UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.DepartmentUpdateError)
 	}
@@ -137,7 +137,7 @@ func (svc *departmentSvc) Update(ctx *gin.Context, req *dtoorg.DepartmentUpdateR
 
 // Detail 根据id获取部门管理
 func (svc *departmentSvc) Detail(ctx *gin.Context, req *dtoorg.DepartmentDetailReq) (*dtoorg.DepartmentDetailResp, error) {
-	departmentEntity, err := dao.NewDepartmentDao().GetByID(ctx, req.ID)
+	departmentEntity, err := dao.NewDepartmentDao().GetByID(ctx, req.DeptID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.DepartmentDetail] daoDepartment GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.DepartmentGetDetailError)
@@ -147,7 +147,7 @@ func (svc *departmentSvc) Detail(ctx *gin.Context, req *dtoorg.DepartmentDetailR
 		return nil, code.GetError(code.DepartmentNotExistError)
 	}
 	resp := &dtoorg.DepartmentDetailResp{
-		ID: departmentEntity.ID,
+		DeptID: departmentEntity.ID,
 		DepartmentBaseInfo: objorg.DepartmentBaseInfo{
 			TenantID:  departmentEntity.TenantID,
 			DeptCode:  departmentEntity.DeptCode,
@@ -186,7 +186,7 @@ func (svc *departmentSvc) PageList(ctx *gin.Context, req *dtoorg.DepartmentPageL
 	list := make([]dtoorg.DepartmentPageListItem, 0, len(departmentEntityList))
 	for _, v := range departmentEntityList {
 		list = append(list, dtoorg.DepartmentPageListItem{
-			ID: v.ID,
+			DeptID: v.ID,
 			DepartmentBaseInfo: objorg.DepartmentBaseInfo{
 				TenantID:  v.TenantID,
 				DeptCode:  v.DeptCode,
@@ -240,7 +240,7 @@ func (svc *departmentSvc) Tree(ctx *gin.Context, req *dtoorg.DepartmentTreeReq) 
 		}
 		for _, dept := range children {
 			node := dtoorg.DepartmentTreeNode{
-				ID: dept.ID,
+				DeptID: dept.ID,
 				DepartmentBaseInfo: objorg.DepartmentBaseInfo{
 					TenantID:  dept.TenantID,
 					DeptCode:  dept.DeptCode,

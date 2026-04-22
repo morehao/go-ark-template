@@ -11,12 +11,12 @@ type TenantCreateReq struct {
 }
 
 type TenantUpdateReq struct {
-	ID uint `json:"id" validate:"required" label:"数据自增id"` // 数据自增id
+	TenantID uint `json:"tenantID" validate:"required" label:"数据自增id"` // 数据自增id
 	objorg.TenantBaseInfo
 }
 
 type TenantDetailReq struct {
-	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增id
+	TenantID uint `json:"tenantID" form:"tenantID" validate:"required" label:"数据自增id"` // 数据自增id
 }
 
 type TenantPageListReq struct {
@@ -24,7 +24,7 @@ type TenantPageListReq struct {
 }
 
 type TenantDeleteReq struct {
-	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增id
+	TenantID uint `json:"tenantID" form:"tenantID" validate:"required" label:"数据自增id"` // 数据自增id
 }
 
 type DepartmentCreateReq struct {
@@ -32,12 +32,12 @@ type DepartmentCreateReq struct {
 }
 
 type DepartmentUpdateReq struct {
-	ID uint `json:"id" validate:"required" label:"数据自增id"` // 数据自增id
+	DeptID uint `json:"deptID" validate:"required" label:"数据自增id"` // 数据自增id
 	objorg.DepartmentBaseInfo
 }
 
 type DepartmentDetailReq struct {
-	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增id
+	DeptID uint `json:"deptID" form:"deptID" validate:"required" label:"数据自增id"` // 数据自增id
 }
 
 type DepartmentPageListReq struct {
@@ -49,7 +49,7 @@ type DepartmentTreeReq struct {
 }
 
 type DepartmentDeleteReq struct {
-	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增id
+	DeptID uint `json:"deptID" form:"deptID" validate:"required" label:"数据自增id"` // 数据自增id
 }
 
 type OrgConfigItem struct {
@@ -64,13 +64,13 @@ type OrgCreateReq struct {
 }
 
 type OrgUpdateReq struct {
-	ID      uint            `json:"id" validate:"required" label:"数据自增id"` // 数据自增id
-	Configs []OrgConfigItem `json:"configs" label:"配置信息"`                  // 配置信息
+	OrgID   uint            `json:"orgID" validate:"required" label:"数据自增id"` // 数据自增id
+	Configs []OrgConfigItem `json:"configs" label:"配置信息"`                   // 配置信息
 	objorg.OrgBaseInfo
 }
 
 type OrgDetailReq struct {
-	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增id
+	OrgID uint `json:"orgID" form:"orgID" validate:"required" label:"数据自增id"` // 数据自增id
 }
 
 type GetOrganizationConfigsReq struct {
@@ -83,5 +83,5 @@ type OrgPageListReq struct {
 }
 
 type OrgDeleteReq struct {
-	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增id
+	OrgID uint `json:"orgID" form:"orgID" validate:"required" label:"数据自增id"` // 数据自增id
 }

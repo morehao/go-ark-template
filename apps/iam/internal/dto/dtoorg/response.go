@@ -7,19 +7,19 @@ import (
 )
 
 type TenantCreateResp struct {
-	ID       uint `json:"id"`       // 租户ID
+	TenantID uint `json:"tenantID"` // 租户ID
 	AdminID  uint `json:"adminID"`  // 管理员ID
-	PersonID uint `json:"personID"` // 自然人ID
+	PersonID uint `json:"personID"`  // 自然人ID
 }
 
 type TenantDetailResp struct {
-	ID uint `json:"id" validate:"required"` // 数据自增id
+	TenantID uint `json:"tenantID" validate:"required"` // 数据自增id
 	objorg.TenantBaseInfo
 	gobject.OperatorBaseInfo
 }
 
 type TenantPageListItem struct {
-	ID uint `json:"id" validate:"required"` // 数据自增id
+	TenantID uint `json:"tenantID" validate:"required"` // 数据自增id
 	objorg.TenantBaseInfo
 	gobject.OperatorBaseInfo
 }
@@ -30,17 +30,17 @@ type TenantPageListResp struct {
 }
 
 type DepartmentCreateResp struct {
-	ID uint `json:"id"` // 数据自增id
+	DeptID uint `json:"deptID"` // 数据自增id
 }
 
 type DepartmentDetailResp struct {
-	ID uint `json:"id" validate:"required"` // 数据自增id
+	DeptID uint `json:"deptID" validate:"required"` // 数据自增id
 	objorg.DepartmentBaseInfo
 	gobject.OperatorBaseInfo
 }
 
 type DepartmentPageListItem struct {
-	ID uint `json:"id" validate:"required"` // 数据自增id
+	DeptID uint `json:"deptID" validate:"required"` // 数据自增id
 	objorg.DepartmentBaseInfo
 	gobject.OperatorBaseInfo
 }
@@ -51,7 +51,7 @@ type DepartmentPageListResp struct {
 }
 
 type DepartmentTreeNode struct {
-	ID       uint                 `json:"id"`       // 数据自增id
+	DeptID   uint                 `json:"deptID"`   // 数据自增id
 	Children []DepartmentTreeNode `json:"children"` // 子部门列表
 	objorg.DepartmentBaseInfo
 	gobject.OperatorBaseInfo
@@ -62,7 +62,7 @@ type DepartmentTreeResp struct {
 }
 
 type OrgCreateResp struct {
-	ID      uint `json:"id"`      // 组织ID
+	OrgID   uint `json:"orgID"`   // 组织ID
 	AdminID uint `json:"adminID"` // 管理员ID
 }
 
@@ -76,14 +76,14 @@ type GetOrganizationConfigsResp struct {
 }
 
 type OrgDetailResp struct {
-	ID      uint                         `json:"id" validate:"required"` // 数据自增id
-	Configs map[string]map[string]string `json:"configs"`                // 配置信息
+	OrgID   uint                         `json:"orgID" validate:"required"` // 数据自增id
+	Configs map[string]map[string]string `json:"configs"`                  // 配置信息
 	objorg.OrgBaseInfo
 	gobject.OperatorBaseInfo
 }
 
 type OrgPageListItem struct {
-	ID uint `json:"id" validate:"required"` // 数据自增id
+	OrgID uint `json:"orgID" validate:"required"` // 数据自增id
 	objorg.OrgBaseInfo
 	gobject.OperatorBaseInfo
 }

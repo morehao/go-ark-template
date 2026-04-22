@@ -97,7 +97,7 @@ func (svc *userSvc) Create(ctx *gin.Context, req *dtouser.UserCreateReq) (*dtous
 // Delete 删除用户管理
 func (svc *userSvc) Delete(ctx *gin.Context, req *dtouser.UserDeleteReq) error {
 	userID := gincontext.GetUserID(ctx)
-	userEntity, err := dao.NewUserDao().GetByID(ctx, req.ID)
+	userEntity, err := dao.NewUserDao().GetByID(ctx, req.UserID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcuser.Delete] daoUser GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.UserDeleteError)
@@ -106,7 +106,7 @@ func (svc *userSvc) Delete(ctx *gin.Context, req *dtouser.UserDeleteReq) error {
 		return code.GetError(code.UserNotExistError)
 	}
 
-	if err = dao.NewUserDao().Delete(ctx, req.ID, userID); err != nil {
+	if err = dao.NewUserDao().Delete(ctx, req.UserID, userID); err != nil {
 		glog.Errorf(ctx, "[svcuser.Delete] daoUser Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.UserDeleteError)
 	}
@@ -115,7 +115,7 @@ func (svc *userSvc) Delete(ctx *gin.Context, req *dtouser.UserDeleteReq) error {
 
 // Update 更新用户管理
 func (svc *userSvc) Update(ctx *gin.Context, req *dtouser.UserUpdateReq) error {
-	userEntity, err := dao.NewUserDao().GetByID(ctx, req.ID)
+	userEntity, err := dao.NewUserDao().GetByID(ctx, req.UserID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcuser.UserUpdate] daoUser GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.UserUpdateError)
@@ -135,7 +135,7 @@ func (svc *userSvc) Update(ctx *gin.Context, req *dtouser.UserUpdateReq) error {
 		"user_type":     req.UserType,
 		"username":      req.Username,
 	}
-	if err = dao.NewUserDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
+	if err = dao.NewUserDao().UpdateMap(ctx, req.UserID, updateMap); err != nil {
 		glog.Errorf(ctx, "[svcuser.UserUpdate] daoUser UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.UserUpdateError)
 	}
@@ -144,7 +144,7 @@ func (svc *userSvc) Update(ctx *gin.Context, req *dtouser.UserUpdateReq) error {
 
 // Detail 根据id获取用户管理
 func (svc *userSvc) Detail(ctx *gin.Context, req *dtouser.UserDetailReq) (*dtouser.UserDetailResp, error) {
-	userEntity, err := dao.NewUserDao().GetByID(ctx, req.ID)
+	userEntity, err := dao.NewUserDao().GetByID(ctx, req.UserID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcuser.UserDetail] daoUser GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.UserGetDetailError)
@@ -154,7 +154,7 @@ func (svc *userSvc) Detail(ctx *gin.Context, req *dtouser.UserDetailReq) (*dtous
 		return nil, code.GetError(code.UserNotExistError)
 	}
 	resp := &dtouser.UserDetailResp{
-		ID: userEntity.ID,
+		UserID: userEntity.ID,
 		UserBaseInfo: objuser.UserBaseInfo{
 			TenantID:    userEntity.TenantID,
 			DeptID:      userEntity.DeptID,
@@ -194,7 +194,7 @@ func (svc *userSvc) PageList(ctx *gin.Context, req *dtouser.UserPageListReq) (*d
 	list := make([]dtouser.UserPageListItem, 0, len(userEntityList))
 	for _, v := range userEntityList {
 		list = append(list, dtouser.UserPageListItem{
-			ID: v.ID,
+			UserID: v.ID,
 			UserBaseInfo: objuser.UserBaseInfo{
 				TenantID:    v.TenantID,
 				DeptID:      v.DeptID,

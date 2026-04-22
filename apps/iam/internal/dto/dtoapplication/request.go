@@ -10,12 +10,12 @@ type ApplicationCreateReq struct {
 }
 
 type ApplicationUpdateReq struct {
-	ID uint `json:"id" validate:"required" label:"数据自增id"` // 数据自增 ID
+	AppID uint `json:"appID" validate:"required" label:"数据自增id"` // 数据自增 ID
 	objapplication.ApplicationBaseInfo
 }
 
 type ApplicationDetailReq struct {
-	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增 ID
+	AppID uint `json:"appID" form:"appID" validate:"required" label:"数据自增id"` // 数据自增 ID
 }
 
 type ApplicationPageListReq struct {
@@ -23,5 +23,5 @@ type ApplicationPageListReq struct {
 }
 
 type ApplicationDeleteReq struct {
-	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增 ID
+	AppID uint `json:"appID" form:"appID" validate:"required" label:"数据自增id"` // 数据自增 ID
 }

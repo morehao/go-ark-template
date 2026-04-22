@@ -128,14 +128,14 @@ func (svc *organizationSvc) Create(ctx *gin.Context, req *dtoorg.OrgCreateReq) (
 		return nil, code.GetError(code.TenantCreateError)
 	}
 	return &dtoorg.OrgCreateResp{
-		ID:      insertEntity.ID,
+		OrgID:   insertEntity.ID,
 		AdminID: adminID,
 	}, nil
 }
 
 func (svc *organizationSvc) Delete(ctx *gin.Context, req *dtoorg.OrgDeleteReq) error {
 	userID := gincontext.GetUserID(ctx)
-	orgEntity, err := dao.NewOrganizationDao().GetByID(ctx, req.ID)
+	orgEntity, err := dao.NewOrganizationDao().GetByID(ctx, req.OrgID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.OrgDelete] daoOrg GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.TenantDeleteError)
@@ -144,7 +144,7 @@ func (svc *organizationSvc) Delete(ctx *gin.Context, req *dtoorg.OrgDeleteReq) e
 		return code.GetError(code.TenantNotExistError)
 	}
 
-	if err = dao.NewOrganizationDao().Delete(ctx, req.ID, userID); err != nil {
+	if err = dao.NewOrganizationDao().Delete(ctx, req.OrgID, userID); err != nil {
 		glog.Errorf(ctx, "[svcorg.OrgDelete] daoOrg Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.TenantDeleteError)
 	}
@@ -163,14 +163,14 @@ func (svc *organizationSvc) Update(ctx *gin.Context, req *dtoorg.OrgUpdateReq) e
 	}
 
 	txErr := dbclient.IamDB(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := dao.NewOrganizationDao().WithTx(tx).UpdateMap(ctx, req.ID, updateMap); err != nil {
+		if err := dao.NewOrganizationDao().WithTx(tx).UpdateMap(ctx, req.OrgID, updateMap); err != nil {
 			glog.Errorf(ctx, "[svcorg.OrgUpdate] daoOrg UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 			return code.GetError(code.TenantUpdateError)
 		}
 
 		if len(req.Configs) > 0 {
-			if err := tx.Where("org_id = ?", req.ID).Delete(&model.OrganizationConfigEntity{}).Error; err != nil {
-				glog.Errorf(ctx, "[svcorg.OrgUpdate] Delete configs fail, err:%v, orgID:%d", err, req.ID)
+			if err := tx.Where("org_id = ?", req.OrgID).Delete(&model.OrganizationConfigEntity{}).Error; err != nil {
+				glog.Errorf(ctx, "[svcorg.OrgUpdate] Delete configs fail, err:%v, orgID:%d", err, req.OrgID)
 				return code.GetError(code.TenantUpdateError)
 			}
 
@@ -192,7 +192,7 @@ func (svc *organizationSvc) Update(ctx *gin.Context, req *dtoorg.OrgUpdateReq) e
 					ConfigType:  meta.Type,
 					ConfigValue: configValue,
 					Description: meta.Description,
-					OrgID:       req.ID,
+					OrgID:       req.OrgID,
 				}
 				if err := dao.NewOrganizationConfigDao().WithTx(tx).Insert(ctx, configEntity); err != nil {
 					glog.Errorf(ctx, "[svcorg.OrgUpdate] Insert config fail, err:%v, key:%s", err, cfg.Key)
@@ -254,7 +254,7 @@ func (svc *organizationSvc) GetConfigs(ctx *gin.Context, req *dtoorg.GetOrganiza
 }
 
 func (svc *organizationSvc) Detail(ctx *gin.Context, req *dtoorg.OrgDetailReq) (*dtoorg.OrgDetailResp, error) {
-	orgEntity, err := dao.NewOrganizationDao().GetByID(ctx, req.ID)
+	orgEntity, err := dao.NewOrganizationDao().GetByID(ctx, req.OrgID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.OrgDetail] daoOrg GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.TenantGetDetailError)
@@ -280,7 +280,7 @@ func (svc *organizationSvc) Detail(ctx *gin.Context, req *dtoorg.OrgDetailReq) (
 	}
 
 	resp := &dtoorg.OrgDetailResp{
-		ID:      orgEntity.ID,
+		OrgID:   orgEntity.ID,
 		Configs: configs,
 		OrgBaseInfo: objorg.OrgBaseInfo{
 			Domain:      orgEntity.Domain,
@@ -315,7 +315,7 @@ func (svc *organizationSvc) PageList(ctx *gin.Context, req *dtoorg.OrgPageListRe
 	list := make([]dtoorg.OrgPageListItem, 0, len(orgEntityList))
 	for _, v := range orgEntityList {
 		list = append(list, dtoorg.OrgPageListItem{
-			ID: v.ID,
+			OrgID: v.ID,
 			OrgBaseInfo: objorg.OrgBaseInfo{
 				Domain:      v.Domain,
 				Logo:        v.Logo,

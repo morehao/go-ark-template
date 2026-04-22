@@ -11,13 +11,13 @@ type UserCreateResp struct {
 }
 
 type UserDetailResp struct {
-	ID uint `json:"id" validate:"required"` // 数据自增 ID
+	UserID uint `json:"userID" validate:"required"` // 数据自增 ID
 	objuser.UserBaseInfo
 	gobject.OperatorBaseInfo
 }
 
 type UserPageListItem struct {
-	ID uint `json:"id" validate:"required"` // 数据自增 ID
+	UserID uint `json:"userID" validate:"required"` // 数据自增 ID
 	objuser.UserBaseInfo
 	gobject.OperatorBaseInfo
 }
@@ -38,7 +38,7 @@ type UserDepartmentsResp struct {
 }
 
 type UserRoleItem struct {
-	RoleID   uint   `json:"roleId"`   // 角色ID
+	RoleID   uint   `json:"roleID"`   // 角色ID
 	RoleName string `json:"roleName"` // 角色名称
 	RoleCode string `json:"roleCode"` // 角色编码
 	RoleType string `json:"roleType"` // 角色类型

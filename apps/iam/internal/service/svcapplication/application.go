@@ -50,13 +50,13 @@ func (svc *applicationSvc) Create(ctx *gin.Context, req *dtoapplication.Applicat
 		return nil, code.GetError(code.ApplicationCreateError)
 	}
 	return &dtoapplication.ApplicationCreateResp{
-		ID: insertEntity.ID,
+		AppID: insertEntity.ID,
 	}, nil
 }
 
 // Delete 删除应用管理
 func (svc *applicationSvc) Delete(ctx *gin.Context, req *dtoapplication.ApplicationDeleteReq) error {
-	applicationEntity, err := dao.NewApplicationDao().GetByID(ctx, req.ID)
+	applicationEntity, err := dao.NewApplicationDao().GetByID(ctx, req.AppID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcapplication.ApplicationDelete] dao GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.ApplicationDeleteError)
@@ -67,7 +67,7 @@ func (svc *applicationSvc) Delete(ctx *gin.Context, req *dtoapplication.Applicat
 
 	userID := gincontext.GetUserID(ctx)
 
-	if err := dao.NewApplicationDao().Delete(ctx, req.ID, userID); err != nil {
+	if err := dao.NewApplicationDao().Delete(ctx, req.AppID, userID); err != nil {
 		glog.Errorf(ctx, "[svcapplication.Delete] dao Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.ApplicationDeleteError)
 	}
@@ -76,7 +76,7 @@ func (svc *applicationSvc) Delete(ctx *gin.Context, req *dtoapplication.Applicat
 
 // Update 更新应用管理
 func (svc *applicationSvc) Update(ctx *gin.Context, req *dtoapplication.ApplicationUpdateReq) error {
-	applicationEntity, err := dao.NewApplicationDao().GetByID(ctx, req.ID)
+	applicationEntity, err := dao.NewApplicationDao().GetByID(ctx, req.AppID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcapplication.ApplicationUpdate] dao GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.ApplicationUpdateError)
@@ -86,7 +86,7 @@ func (svc *applicationSvc) Update(ctx *gin.Context, req *dtoapplication.Applicat
 	}
 
 	updateMap := map[string]any{}
-	if err := dao.NewApplicationDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
+	if err := dao.NewApplicationDao().UpdateMap(ctx, req.AppID, updateMap); err != nil {
 		glog.Errorf(ctx, "[svcapplication.ApplicationUpdate] dao UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.ApplicationUpdateError)
 	}
@@ -95,7 +95,7 @@ func (svc *applicationSvc) Update(ctx *gin.Context, req *dtoapplication.Applicat
 
 // Detail 根据id获取应用管理
 func (svc *applicationSvc) Detail(ctx *gin.Context, req *dtoapplication.ApplicationDetailReq) (*dtoapplication.ApplicationDetailResp, error) {
-	applicationEntity, err := dao.NewApplicationDao().GetByID(ctx, req.ID)
+	applicationEntity, err := dao.NewApplicationDao().GetByID(ctx, req.AppID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcapplication.ApplicationDetail] dao GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.ApplicationGetDetailError)
@@ -104,7 +104,7 @@ func (svc *applicationSvc) Detail(ctx *gin.Context, req *dtoapplication.Applicat
 		return nil, code.GetError(code.ApplicationNotExistError)
 	}
 	resp := &dtoapplication.ApplicationDetailResp{
-		ID: applicationEntity.ID,
+		AppID: applicationEntity.ID,
 		ApplicationBaseInfo: objapplication.ApplicationBaseInfo{
 			AppCode:     applicationEntity.AppCode,
 			AppName:     applicationEntity.AppName,
@@ -140,7 +140,7 @@ func (svc *applicationSvc) PageList(ctx *gin.Context, req *dtoapplication.Applic
 	list := make([]dtoapplication.ApplicationPageListItem, 0, len(applicationEntityList))
 	for _, v := range applicationEntityList {
 		list = append(list, dtoapplication.ApplicationPageListItem{
-			ID: v.ID,
+			AppID: v.ID,
 			ApplicationBaseInfo: objapplication.ApplicationBaseInfo{
 				AppCode:     v.AppCode,
 				AppName:     v.AppName,

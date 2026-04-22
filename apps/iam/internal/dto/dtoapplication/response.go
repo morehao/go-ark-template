@@ -6,17 +6,17 @@ import (
 )
 
 type ApplicationCreateResp struct {
-	ID uint `json:"id"` // 数据自增 ID
+	AppID uint `json:"appID"` // 数据自增 ID
 }
 
 type ApplicationDetailResp struct {
-	ID uint `json:"id" validate:"required"` // 数据自增 ID
+	AppID uint `json:"appID" validate:"required"` // 数据自增 ID
 	objapplication.ApplicationBaseInfo
 	gobject.OperatorBaseInfo
 }
 
 type ApplicationPageListItem struct {
-	ID uint `json:"id" validate:"required"` // 数据自增 ID
+	AppID uint `json:"appID" validate:"required"` // 数据自增 ID
 	objapplication.ApplicationBaseInfo
 	gobject.OperatorBaseInfo
 }

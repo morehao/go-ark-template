@@ -145,7 +145,7 @@ func (svc *tenantSvc) Create(ctx *gin.Context, req *dtoorg.TenantCreateReq) (*dt
 	}
 
 	return &dtoorg.TenantCreateResp{
-		ID:       tenantID,
+		TenantID: tenantID,
 		AdminID:  result.UserID,
 		PersonID: result.PersonID,
 	}, nil
@@ -153,7 +153,7 @@ func (svc *tenantSvc) Create(ctx *gin.Context, req *dtoorg.TenantCreateReq) (*dt
 
 func (svc *tenantSvc) Delete(ctx *gin.Context, req *dtoorg.TenantDeleteReq) error {
 	userID := gincontext.GetUserID(ctx)
-	tenantEntity, err := dao.NewTenantDao().GetByID(ctx, req.ID)
+	tenantEntity, err := dao.NewTenantDao().GetByID(ctx, req.TenantID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.Delete] daoTenant GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.TenantDeleteError)
@@ -162,7 +162,7 @@ func (svc *tenantSvc) Delete(ctx *gin.Context, req *dtoorg.TenantDeleteReq) erro
 		return code.GetError(code.TenantNotExistError)
 	}
 
-	if err = dao.NewTenantDao().Delete(ctx, req.ID, userID); err != nil {
+	if err = dao.NewTenantDao().Delete(ctx, req.TenantID, userID); err != nil {
 		glog.Errorf(ctx, "[svcorg.Delete] daoTenant Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.TenantDeleteError)
 	}
@@ -171,7 +171,7 @@ func (svc *tenantSvc) Delete(ctx *gin.Context, req *dtoorg.TenantDeleteReq) erro
 
 func (svc *tenantSvc) Update(ctx *gin.Context, req *dtoorg.TenantUpdateReq) error {
 	operatorID := gincontext.GetUserID(ctx)
-	tenantEntity, err := dao.NewTenantDao().GetByID(ctx, req.ID)
+	tenantEntity, err := dao.NewTenantDao().GetByID(ctx, req.TenantID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.TenantUpdate] daoTenant GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.TenantUpdateError)
@@ -216,12 +216,12 @@ func (svc *tenantSvc) Update(ctx *gin.Context, req *dtoorg.TenantUpdateReq) erro
 	}
 
 	txErr := dbclient.IamDB(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := dao.NewTenantDao().WithTx(tx).UpdateMap(ctx, req.ID, updateMap); err != nil {
+		if err := dao.NewTenantDao().WithTx(tx).UpdateMap(ctx, req.TenantID, updateMap); err != nil {
 			return err
 		}
 
 		if req.ParentID != tenantEntity.ParentID {
-			if err := svc.updateChildrenTenantPath(ctx, tx, req.ID, updateMap["tenant_path"].(string), updateMap["tenant_level"].(int32)); err != nil {
+			if err := svc.updateChildrenTenantPath(ctx, tx, req.TenantID, updateMap["tenant_path"].(string), updateMap["tenant_level"].(int32)); err != nil {
 				return err
 			}
 		}
@@ -263,7 +263,7 @@ func (svc *tenantSvc) updateChildrenTenantPath(ctx *gin.Context, tx *gorm.DB, pa
 }
 
 func (svc *tenantSvc) Detail(ctx *gin.Context, req *dtoorg.TenantDetailReq) (*dtoorg.TenantDetailResp, error) {
-	tenantEntity, err := dao.NewTenantDao().GetByID(ctx, req.ID)
+	tenantEntity, err := dao.NewTenantDao().GetByID(ctx, req.TenantID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.TenantDetail] daoTenant GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.TenantGetDetailError)
@@ -272,7 +272,7 @@ func (svc *tenantSvc) Detail(ctx *gin.Context, req *dtoorg.TenantDetailReq) (*dt
 		return nil, code.GetError(code.TenantNotExistError)
 	}
 	resp := &dtoorg.TenantDetailResp{
-		ID: tenantEntity.ID,
+		TenantID: tenantEntity.ID,
 		TenantBaseInfo: objorg.TenantBaseInfo{
 			Address:                 tenantEntity.Address,
 			ContactEmail:            tenantEntity.ContactEmail,
@@ -321,7 +321,7 @@ func (svc *tenantSvc) PageList(ctx *gin.Context, req *dtoorg.TenantPageListReq) 
 	list := make([]dtoorg.TenantPageListItem, 0, len(tenantEntityList))
 	for _, v := range tenantEntityList {
 		list = append(list, dtoorg.TenantPageListItem{
-			ID: v.ID,
+			TenantID: v.ID,
 			TenantBaseInfo: objorg.TenantBaseInfo{
 				Address:                 v.Address,
 				ContactEmail:            v.ContactEmail,

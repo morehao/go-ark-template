@@ -68,14 +68,14 @@ func (svc *menuSvc) Create(ctx *gin.Context, req *dtopermission.MenuCreateReq) (
 		return nil, code.GetError(code.MenuCreateError)
 	}
 	return &dtopermission.MenuCreateResp{
-		ID: insertEntity.ID,
+		MenuID: insertEntity.ID,
 	}, nil
 }
 
 // Delete 删除菜单管理
 func (svc *menuSvc) Delete(ctx *gin.Context, req *dtopermission.MenuDeleteReq) error {
 	userID := gincontext.GetUserID(ctx)
-	menuEntity, err := dao.NewMenuDao().GetByID(ctx, req.ID)
+	menuEntity, err := dao.NewMenuDao().GetByID(ctx, req.MenuID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcpermission.Delete] daoMenu GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.MenuDeleteError)
@@ -84,7 +84,7 @@ func (svc *menuSvc) Delete(ctx *gin.Context, req *dtopermission.MenuDeleteReq) e
 		return code.GetError(code.MenuNotExistError)
 	}
 
-	if err = dao.NewMenuDao().Delete(ctx, req.ID, userID); err != nil {
+	if err = dao.NewMenuDao().Delete(ctx, req.MenuID, userID); err != nil {
 		glog.Errorf(ctx, "[svcpermission.Delete] daoMenu Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.MenuDeleteError)
 	}
@@ -93,7 +93,7 @@ func (svc *menuSvc) Delete(ctx *gin.Context, req *dtopermission.MenuDeleteReq) e
 
 // Update 更新菜单管理
 func (svc *menuSvc) Update(ctx *gin.Context, req *dtopermission.MenuUpdateReq) error {
-	menuEntity, err := dao.NewMenuDao().GetByID(ctx, req.ID)
+	menuEntity, err := dao.NewMenuDao().GetByID(ctx, req.MenuID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcpermission.MenuUpdate] daoMenu GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.MenuUpdateError)
@@ -117,7 +117,7 @@ func (svc *menuSvc) Update(ctx *gin.Context, req *dtopermission.MenuUpdateReq) e
 		"visibility":     req.Visibility,
 		"access_policy":  model.AccessPoliciesToMask(req.AccessPolicies),
 	}
-	if err = dao.NewMenuDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
+	if err = dao.NewMenuDao().UpdateMap(ctx, req.MenuID, updateMap); err != nil {
 		glog.Errorf(ctx, "[svcpermission.MenuUpdate] daoMenu UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.MenuUpdateError)
 	}
@@ -126,7 +126,7 @@ func (svc *menuSvc) Update(ctx *gin.Context, req *dtopermission.MenuUpdateReq) e
 
 // Detail 根据id获取菜单管理
 func (svc *menuSvc) Detail(ctx *gin.Context, req *dtopermission.MenuDetailReq) (*dtopermission.MenuDetailResp, error) {
-	menuEntity, err := dao.NewMenuDao().GetByID(ctx, req.ID)
+	menuEntity, err := dao.NewMenuDao().GetByID(ctx, req.MenuID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcpermission.MenuDetail] daoMenu GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.MenuGetDetailError)
@@ -136,7 +136,7 @@ func (svc *menuSvc) Detail(ctx *gin.Context, req *dtopermission.MenuDetailReq) (
 		return nil, code.GetError(code.MenuNotExistError)
 	}
 	resp := &dtopermission.MenuDetailResp{
-		ID: menuEntity.ID,
+		MenuID: menuEntity.ID,
 		MenuBaseInfo: objpermission.MenuBaseInfo{
 			CacheType:      menuEntity.CacheType,
 			TenantID:       menuEntity.TenantID,
@@ -178,7 +178,7 @@ func (svc *menuSvc) PageList(ctx *gin.Context, req *dtopermission.MenuPageListRe
 	list := make([]dtopermission.MenuPageListItem, 0, len(menuEntityList))
 	for _, v := range menuEntityList {
 		list = append(list, dtopermission.MenuPageListItem{
-			ID: v.ID,
+			MenuID: v.ID,
 			MenuBaseInfo: objpermission.MenuBaseInfo{
 				CacheType:      v.CacheType,
 				TenantID:       v.TenantID,
@@ -219,7 +219,7 @@ func (svc *menuSvc) Tree(ctx *gin.Context, req *dtopermission.MenuTreeReq) (*dto
 	nodes := make([]*dtopermission.MenuTreeNode, len(allMenus))
 	for i, menu := range allMenus {
 		nodes[i] = &dtopermission.MenuTreeNode{
-			ID: menu.ID,
+			MenuID: menu.ID,
 			MenuBaseInfo: objpermission.MenuBaseInfo{
 				CacheType:      menu.CacheType,
 				TenantID:       menu.TenantID,
@@ -258,7 +258,7 @@ func (svc *menuSvc) Tree(ctx *gin.Context, req *dtopermission.MenuTreeReq) (*dto
 	result := make([]dtopermission.MenuTreeNode, len(roots))
 	for i, root := range roots {
 		result[i] = *root
-		result[i].Children = svc.buildJSONChildren(tree, root.ID)
+		result[i].Children = svc.buildJSONChildren(tree, root.MenuID)
 	}
 
 	return &dtopermission.MenuTreeResp{List: result}, nil
@@ -272,7 +272,7 @@ func (svc *menuSvc) buildJSONChildren(tree *gtree.Tree[uint, *dtopermission.Menu
 	result := make([]dtopermission.MenuTreeNode, len(children))
 	for i, child := range children {
 		result[i] = *child
-		result[i].Children = svc.buildJSONChildren(tree, child.ID)
+		result[i].Children = svc.buildJSONChildren(tree, child.MenuID)
 	}
 	return result
 }

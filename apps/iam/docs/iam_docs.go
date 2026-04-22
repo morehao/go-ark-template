@@ -15,6 +15,233 @@ const docTemplateiam = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/v1/iam/application/create": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "应用管理"
+                ],
+                "summary": "创建应用管理",
+                "parameters": [
+                    {
+                        "description": "创建应用管理",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtoapplication.ApplicationCreateReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"code\": 0, \"requestID\": \"xxx\", \"data\": \"ok\", \"msg\": \"success\"}",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/gincontext.DtoRender"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dtoapplication.ApplicationCreateResp"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/iam/application/delete": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "应用管理"
+                ],
+                "summary": "删除应用管理",
+                "parameters": [
+                    {
+                        "description": "删除应用管理",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtoapplication.ApplicationDeleteReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"code\": 0, \"requestID\": \"xxx\", \"data\": \"ok\", \"msg\": \"success\"}",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/gincontext.DtoRender"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/iam/application/detail": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "应用管理"
+                ],
+                "summary": "应用管理详情",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "数据自增 ID",
+                        "name": "appID",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"code\": 0, \"requestID\": \"xxx\", \"data\": \"ok\", \"msg\": \"success\"}",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/gincontext.DtoRender"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dtoapplication.ApplicationDetailResp"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/iam/application/pageList": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "应用管理"
+                ],
+                "summary": "应用管理列表分页",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page 页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 1000,
+                        "type": "integer",
+                        "description": "PageSize 每页数据条数",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"code\": 0, \"requestID\": \"xxx\", \"data\": \"ok\", \"msg\": \"success\"}",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/gincontext.DtoRender"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dtoapplication.ApplicationPageListResp"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/iam/application/update": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "应用管理"
+                ],
+                "summary": "修改应用管理",
+                "parameters": [
+                    {
+                        "description": "修改应用管理",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtoapplication.ApplicationUpdateReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"code\": 0, \"requestID\": \"xxx\", \"data\": \"ok\", \"msg\": \"修改成功\"}",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/gincontext.DtoRender"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/v1/iam/auth/loginByPassword": {
             "post": {
                 "consumes": [
@@ -346,7 +573,7 @@ const docTemplateiam = `{
                     {
                         "type": "integer",
                         "description": "数据自增id",
-                        "name": "id",
+                        "name": "deptID",
                         "in": "query",
                         "required": true
                     }
@@ -611,7 +838,7 @@ const docTemplateiam = `{
                     {
                         "type": "integer",
                         "description": "数据自增 ID",
-                        "name": "id",
+                        "name": "menuID",
                         "in": "query",
                         "required": true
                     }
@@ -963,7 +1190,7 @@ const docTemplateiam = `{
                     {
                         "type": "integer",
                         "description": "数据自增 ID",
-                        "name": "id",
+                        "name": "roleID",
                         "in": "query",
                         "required": true
                     }
@@ -1006,7 +1233,7 @@ const docTemplateiam = `{
                     {
                         "type": "integer",
                         "description": "角色ID",
-                        "name": "roleId",
+                        "name": "roleID",
                         "in": "query",
                         "required": true
                     }
@@ -1319,7 +1546,7 @@ const docTemplateiam = `{
                     {
                         "type": "integer",
                         "description": "数据自增 ID",
-                        "name": "id",
+                        "name": "userID",
                         "in": "query",
                         "required": true
                     }
@@ -1524,6 +1751,260 @@ const docTemplateiam = `{
         }
     },
     "definitions": {
+        "dtoapplication.ApplicationCreateReq": {
+            "type": "object",
+            "properties": {
+                "appCode": {
+                    "description": "应用编码",
+                    "type": "string"
+                },
+                "appName": {
+                    "description": "应用名称",
+                    "type": "string"
+                },
+                "appType": {
+                    "description": "应用类型: web-网页 app-移动端 mini-小程序",
+                    "type": "string"
+                },
+                "callbackUrl": {
+                    "description": "回调URL",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "应用描述",
+                    "type": "string"
+                },
+                "homepageUrl": {
+                    "description": "应用首页URL",
+                    "type": "string"
+                },
+                "logo": {
+                    "description": "应用Logo",
+                    "type": "string"
+                },
+                "sortOrder": {
+                    "description": "排序",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "状态: enabled-启用 disabled-停用",
+                    "type": "string"
+                }
+            }
+        },
+        "dtoapplication.ApplicationCreateResp": {
+            "type": "object",
+            "properties": {
+                "appID": {
+                    "description": "数据自增 ID",
+                    "type": "integer"
+                }
+            }
+        },
+        "dtoapplication.ApplicationDeleteReq": {
+            "type": "object",
+            "required": [
+                "appID"
+            ],
+            "properties": {
+                "appID": {
+                    "description": "数据自增 ID",
+                    "type": "integer"
+                }
+            }
+        },
+        "dtoapplication.ApplicationDetailResp": {
+            "type": "object",
+            "required": [
+                "appID"
+            ],
+            "properties": {
+                "appCode": {
+                    "description": "应用编码",
+                    "type": "string"
+                },
+                "appID": {
+                    "description": "数据自增 ID",
+                    "type": "integer"
+                },
+                "appName": {
+                    "description": "应用名称",
+                    "type": "string"
+                },
+                "appType": {
+                    "description": "应用类型: web-网页 app-移动端 mini-小程序",
+                    "type": "string"
+                },
+                "callbackUrl": {
+                    "description": "回调URL",
+                    "type": "string"
+                },
+                "createdAt": {
+                    "description": "CreatedAt 创建时间",
+                    "type": "integer"
+                },
+                "createdBy": {
+                    "description": "CreatedBy 创建人id",
+                    "type": "integer"
+                },
+                "description": {
+                    "description": "应用描述",
+                    "type": "string"
+                },
+                "homepageUrl": {
+                    "description": "应用首页URL",
+                    "type": "string"
+                },
+                "logo": {
+                    "description": "应用Logo",
+                    "type": "string"
+                },
+                "sortOrder": {
+                    "description": "排序",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "状态: enabled-启用 disabled-停用",
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "description": "UpdatedAt 更新时间",
+                    "type": "integer"
+                },
+                "updatedBy": {
+                    "description": "UpdatedBy 更新人id",
+                    "type": "integer"
+                }
+            }
+        },
+        "dtoapplication.ApplicationPageListItem": {
+            "type": "object",
+            "required": [
+                "appID"
+            ],
+            "properties": {
+                "appCode": {
+                    "description": "应用编码",
+                    "type": "string"
+                },
+                "appID": {
+                    "description": "数据自增 ID",
+                    "type": "integer"
+                },
+                "appName": {
+                    "description": "应用名称",
+                    "type": "string"
+                },
+                "appType": {
+                    "description": "应用类型: web-网页 app-移动端 mini-小程序",
+                    "type": "string"
+                },
+                "callbackUrl": {
+                    "description": "回调URL",
+                    "type": "string"
+                },
+                "createdAt": {
+                    "description": "CreatedAt 创建时间",
+                    "type": "integer"
+                },
+                "createdBy": {
+                    "description": "CreatedBy 创建人id",
+                    "type": "integer"
+                },
+                "description": {
+                    "description": "应用描述",
+                    "type": "string"
+                },
+                "homepageUrl": {
+                    "description": "应用首页URL",
+                    "type": "string"
+                },
+                "logo": {
+                    "description": "应用Logo",
+                    "type": "string"
+                },
+                "sortOrder": {
+                    "description": "排序",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "状态: enabled-启用 disabled-停用",
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "description": "UpdatedAt 更新时间",
+                    "type": "integer"
+                },
+                "updatedBy": {
+                    "description": "UpdatedBy 更新人id",
+                    "type": "integer"
+                }
+            }
+        },
+        "dtoapplication.ApplicationPageListResp": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "description": "数据列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dtoapplication.ApplicationPageListItem"
+                    }
+                },
+                "total": {
+                    "description": "数据总条数",
+                    "type": "integer"
+                }
+            }
+        },
+        "dtoapplication.ApplicationUpdateReq": {
+            "type": "object",
+            "required": [
+                "appID"
+            ],
+            "properties": {
+                "appCode": {
+                    "description": "应用编码",
+                    "type": "string"
+                },
+                "appID": {
+                    "description": "数据自增 ID",
+                    "type": "integer"
+                },
+                "appName": {
+                    "description": "应用名称",
+                    "type": "string"
+                },
+                "appType": {
+                    "description": "应用类型: web-网页 app-移动端 mini-小程序",
+                    "type": "string"
+                },
+                "callbackUrl": {
+                    "description": "回调URL",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "应用描述",
+                    "type": "string"
+                },
+                "homepageUrl": {
+                    "description": "应用首页URL",
+                    "type": "string"
+                },
+                "logo": {
+                    "description": "应用Logo",
+                    "type": "string"
+                },
+                "sortOrder": {
+                    "description": "排序",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "状态: enabled-启用 disabled-停用",
+                    "type": "string"
+                }
+            }
+        },
         "dtoauth.LoginByPasswordReq": {
             "type": "object",
             "required": [
@@ -1808,7 +2289,7 @@ const docTemplateiam = `{
         "dtoorg.DepartmentCreateResp": {
             "type": "object",
             "properties": {
-                "id": {
+                "deptID": {
                     "description": "数据自增id",
                     "type": "integer"
                 }
@@ -1817,10 +2298,10 @@ const docTemplateiam = `{
         "dtoorg.DepartmentDeleteReq": {
             "type": "object",
             "required": [
-                "id"
+                "deptID"
             ],
             "properties": {
-                "id": {
+                "deptID": {
                     "description": "数据自增id",
                     "type": "integer"
                 }
@@ -1829,7 +2310,7 @@ const docTemplateiam = `{
         "dtoorg.DepartmentDetailResp": {
             "type": "object",
             "required": [
-                "id"
+                "deptID"
             ],
             "properties": {
                 "createdAt": {
@@ -1844,6 +2325,10 @@ const docTemplateiam = `{
                     "description": "部门编码",
                     "type": "string"
                 },
+                "deptID": {
+                    "description": "数据自增id",
+                    "type": "integer"
+                },
                 "deptLevel": {
                     "description": "部门层级",
                     "type": "integer"
@@ -1855,10 +2340,6 @@ const docTemplateiam = `{
                 "deptPath": {
                     "description": "部门路径: /1/2/3/",
                     "type": "string"
-                },
-                "id": {
-                    "description": "数据自增id",
-                    "type": "integer"
                 },
                 "leaderID": {
                     "description": "部门负责人ID",
@@ -1893,7 +2374,7 @@ const docTemplateiam = `{
         "dtoorg.DepartmentPageListItem": {
             "type": "object",
             "required": [
-                "id"
+                "deptID"
             ],
             "properties": {
                 "createdAt": {
@@ -1908,6 +2389,10 @@ const docTemplateiam = `{
                     "description": "部门编码",
                     "type": "string"
                 },
+                "deptID": {
+                    "description": "数据自增id",
+                    "type": "integer"
+                },
                 "deptLevel": {
                     "description": "部门层级",
                     "type": "integer"
@@ -1919,10 +2404,6 @@ const docTemplateiam = `{
                 "deptPath": {
                     "description": "部门路径: /1/2/3/",
                     "type": "string"
-                },
-                "id": {
-                    "description": "数据自增id",
-                    "type": "integer"
                 },
                 "leaderID": {
                     "description": "部门负责人ID",
@@ -2006,6 +2487,10 @@ const docTemplateiam = `{
                     "description": "部门编码",
                     "type": "string"
                 },
+                "deptID": {
+                    "description": "数据自增id",
+                    "type": "integer"
+                },
                 "deptLevel": {
                     "description": "部门层级",
                     "type": "integer"
@@ -2017,10 +2502,6 @@ const docTemplateiam = `{
                 "deptPath": {
                     "description": "部门路径: /1/2/3/",
                     "type": "string"
-                },
-                "id": {
-                    "description": "数据自增id",
-                    "type": "integer"
                 },
                 "leaderID": {
                     "description": "部门负责人ID",
@@ -2067,12 +2548,16 @@ const docTemplateiam = `{
         "dtoorg.DepartmentUpdateReq": {
             "type": "object",
             "required": [
-                "id"
+                "deptID"
             ],
             "properties": {
                 "deptCode": {
                     "description": "部门编码",
                     "type": "string"
+                },
+                "deptID": {
+                    "description": "数据自增id",
+                    "type": "integer"
                 },
                 "deptLevel": {
                     "description": "部门层级",
@@ -2085,10 +2570,6 @@ const docTemplateiam = `{
                 "deptPath": {
                     "description": "部门路径: /1/2/3/",
                     "type": "string"
-                },
-                "id": {
-                    "description": "数据自增id",
-                    "type": "integer"
                 },
                 "leaderID": {
                     "description": "部门负责人ID",
@@ -2154,6 +2635,13 @@ const docTemplateiam = `{
         "dtopermission.MenuCreateReq": {
             "type": "object",
             "properties": {
+                "accessPolicies": {
+                    "description": "访问策略: public-全部人可见 authorized-需授权 org_admin-组织管理员 tenant_admin-租户管理员",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.MenuAccessPolicyString"
+                    }
+                },
                 "cacheType": {
                     "description": "缓存类型: enabled-启用 disabled-禁用",
                     "allOf": [
@@ -2235,7 +2723,7 @@ const docTemplateiam = `{
         "dtopermission.MenuCreateResp": {
             "type": "object",
             "properties": {
-                "id": {
+                "menuID": {
                     "description": "数据自增 ID",
                     "type": "integer"
                 }
@@ -2244,10 +2732,10 @@ const docTemplateiam = `{
         "dtopermission.MenuDeleteReq": {
             "type": "object",
             "required": [
-                "id"
+                "menuID"
             ],
             "properties": {
-                "id": {
+                "menuID": {
                     "description": "数据自增 ID",
                     "type": "integer"
                 }
@@ -2256,9 +2744,16 @@ const docTemplateiam = `{
         "dtopermission.MenuDetailResp": {
             "type": "object",
             "required": [
-                "id"
+                "menuID"
             ],
             "properties": {
+                "accessPolicies": {
+                    "description": "访问策略: public-全部人可见 authorized-需授权 org_admin-组织管理员 tenant_admin-租户管理员",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.MenuAccessPolicyString"
+                    }
+                },
                 "cacheType": {
                     "description": "缓存类型: enabled-启用 disabled-禁用",
                     "allOf": [
@@ -2283,10 +2778,6 @@ const docTemplateiam = `{
                     "description": "菜单图标",
                     "type": "string"
                 },
-                "id": {
-                    "description": "数据自增 ID",
-                    "type": "integer"
-                },
                 "linkType": {
                     "description": "链接类型: internal-内部链接 external-外部链接",
                     "allOf": [
@@ -2298,6 +2789,10 @@ const docTemplateiam = `{
                 "menuCode": {
                     "description": "菜单编码",
                     "type": "string"
+                },
+                "menuID": {
+                    "description": "数据自增 ID",
+                    "type": "integer"
                 },
                 "menuName": {
                     "description": "菜单名称",
@@ -2360,9 +2855,16 @@ const docTemplateiam = `{
         "dtopermission.MenuPageListItem": {
             "type": "object",
             "required": [
-                "id"
+                "menuID"
             ],
             "properties": {
+                "accessPolicies": {
+                    "description": "访问策略: public-全部人可见 authorized-需授权 org_admin-组织管理员 tenant_admin-租户管理员",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.MenuAccessPolicyString"
+                    }
+                },
                 "cacheType": {
                     "description": "缓存类型: enabled-启用 disabled-禁用",
                     "allOf": [
@@ -2387,10 +2889,6 @@ const docTemplateiam = `{
                     "description": "菜单图标",
                     "type": "string"
                 },
-                "id": {
-                    "description": "数据自增 ID",
-                    "type": "integer"
-                },
                 "linkType": {
                     "description": "链接类型: internal-内部链接 external-外部链接",
                     "allOf": [
@@ -2402,6 +2900,10 @@ const docTemplateiam = `{
                 "menuCode": {
                     "description": "菜单编码",
                     "type": "string"
+                },
+                "menuID": {
+                    "description": "数据自增 ID",
+                    "type": "integer"
                 },
                 "menuName": {
                     "description": "菜单名称",
@@ -2494,6 +2996,13 @@ const docTemplateiam = `{
         "dtopermission.MenuTreeNode": {
             "type": "object",
             "properties": {
+                "accessPolicies": {
+                    "description": "访问策略: public-全部人可见 authorized-需授权 org_admin-组织管理员 tenant_admin-租户管理员",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.MenuAccessPolicyString"
+                    }
+                },
                 "cacheType": {
                     "description": "缓存类型: enabled-启用 disabled-禁用",
                     "allOf": [
@@ -2525,10 +3034,6 @@ const docTemplateiam = `{
                     "description": "菜单图标",
                     "type": "string"
                 },
-                "id": {
-                    "description": "菜单ID",
-                    "type": "integer"
-                },
                 "linkType": {
                     "description": "链接类型: internal-内部链接 external-外部链接",
                     "allOf": [
@@ -2540,6 +3045,10 @@ const docTemplateiam = `{
                 "menuCode": {
                     "description": "菜单编码",
                     "type": "string"
+                },
+                "menuID": {
+                    "description": "菜单ID",
+                    "type": "integer"
                 },
                 "menuName": {
                     "description": "菜单名称",
@@ -2614,9 +3123,16 @@ const docTemplateiam = `{
         "dtopermission.MenuUpdateReq": {
             "type": "object",
             "required": [
-                "id"
+                "menuID"
             ],
             "properties": {
+                "accessPolicies": {
+                    "description": "访问策略: public-全部人可见 authorized-需授权 org_admin-组织管理员 tenant_admin-租户管理员",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.MenuAccessPolicyString"
+                    }
+                },
                 "cacheType": {
                     "description": "缓存类型: enabled-启用 disabled-禁用",
                     "allOf": [
@@ -2633,10 +3149,6 @@ const docTemplateiam = `{
                     "description": "菜单图标",
                     "type": "string"
                 },
-                "id": {
-                    "description": "数据自增 ID",
-                    "type": "integer"
-                },
                 "linkType": {
                     "description": "链接类型: internal-内部链接 external-外部链接",
                     "allOf": [
@@ -2648,6 +3160,10 @@ const docTemplateiam = `{
                 "menuCode": {
                     "description": "菜单编码",
                     "type": "string"
+                },
+                "menuID": {
+                    "description": "数据自增 ID",
+                    "type": "integer"
                 },
                 "menuName": {
                     "description": "菜单名称",
@@ -2702,18 +3218,18 @@ const docTemplateiam = `{
         "dtopermission.RoleAssignMenusReq": {
             "type": "object",
             "required": [
-                "menuIds",
-                "roleId"
+                "menuIDs",
+                "roleID"
             ],
             "properties": {
-                "menuIds": {
+                "menuIDs": {
                     "description": "菜单ID列表",
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
                 },
-                "roleId": {
+                "roleID": {
                     "description": "角色ID",
                     "type": "integer"
                 }
@@ -2771,7 +3287,7 @@ const docTemplateiam = `{
         "dtopermission.RoleCreateResp": {
             "type": "object",
             "properties": {
-                "id": {
+                "roleID": {
                     "description": "数据自增 ID",
                     "type": "integer"
                 }
@@ -2780,10 +3296,10 @@ const docTemplateiam = `{
         "dtopermission.RoleDeleteReq": {
             "type": "object",
             "required": [
-                "id"
+                "roleID"
             ],
             "properties": {
-                "id": {
+                "roleID": {
                     "description": "数据自增 ID",
                     "type": "integer"
                 }
@@ -2792,7 +3308,7 @@ const docTemplateiam = `{
         "dtopermission.RoleDetailResp": {
             "type": "object",
             "required": [
-                "id"
+                "roleID"
             ],
             "properties": {
                 "createdAt": {
@@ -2815,13 +3331,13 @@ const docTemplateiam = `{
                     "description": "角色描述",
                     "type": "string"
                 },
-                "id": {
-                    "description": "数据自增 ID",
-                    "type": "integer"
-                },
                 "roleCode": {
                     "description": "角色编码",
                     "type": "string"
+                },
+                "roleID": {
+                    "description": "数据自增 ID",
+                    "type": "integer"
                 },
                 "roleName": {
                     "description": "角色名称",
@@ -2864,6 +3380,13 @@ const docTemplateiam = `{
         "dtopermission.RoleMenuListItem": {
             "type": "object",
             "properties": {
+                "accessPolicies": {
+                    "description": "访问策略: public-全部人可见 authorized-需授权 org_admin-组织管理员 tenant_admin-租户管理员",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.MenuAccessPolicyString"
+                    }
+                },
                 "cacheType": {
                     "description": "缓存类型: enabled-启用 disabled-禁用",
                     "allOf": [
@@ -2888,10 +3411,6 @@ const docTemplateiam = `{
                     "description": "菜单图标",
                     "type": "string"
                 },
-                "id": {
-                    "description": "菜单ID",
-                    "type": "integer"
-                },
                 "linkType": {
                     "description": "链接类型: internal-内部链接 external-外部链接",
                     "allOf": [
@@ -2903,6 +3422,10 @@ const docTemplateiam = `{
                 "menuCode": {
                     "description": "菜单编码",
                     "type": "string"
+                },
+                "menuID": {
+                    "description": "菜单ID",
+                    "type": "integer"
                 },
                 "menuName": {
                     "description": "菜单名称",
@@ -2977,7 +3500,7 @@ const docTemplateiam = `{
         "dtopermission.RolePageListItem": {
             "type": "object",
             "required": [
-                "id"
+                "roleID"
             ],
             "properties": {
                 "createdAt": {
@@ -3000,13 +3523,13 @@ const docTemplateiam = `{
                     "description": "角色描述",
                     "type": "string"
                 },
-                "id": {
-                    "description": "数据自增 ID",
-                    "type": "integer"
-                },
                 "roleCode": {
                     "description": "角色编码",
                     "type": "string"
+                },
+                "roleID": {
+                    "description": "数据自增 ID",
+                    "type": "integer"
                 },
                 "roleName": {
                     "description": "角色名称",
@@ -3079,7 +3602,7 @@ const docTemplateiam = `{
         "dtopermission.RoleUpdateReq": {
             "type": "object",
             "required": [
-                "id"
+                "roleID"
             ],
             "properties": {
                 "dataScope": {
@@ -3094,13 +3617,13 @@ const docTemplateiam = `{
                     "description": "角色描述",
                     "type": "string"
                 },
-                "id": {
-                    "description": "数据自增 ID",
-                    "type": "integer"
-                },
                 "roleCode": {
                     "description": "角色编码",
                     "type": "string"
+                },
+                "roleID": {
+                    "description": "数据自增 ID",
+                    "type": "integer"
                 },
                 "roleName": {
                     "description": "角色名称",
@@ -3248,10 +3771,10 @@ const docTemplateiam = `{
         "dtouser.UserDeleteReq": {
             "type": "object",
             "required": [
-                "id"
+                "userID"
             ],
             "properties": {
-                "id": {
+                "userID": {
                     "description": "数据自增 ID",
                     "type": "integer"
                 }
@@ -3313,7 +3836,7 @@ const docTemplateiam = `{
         "dtouser.UserDetailResp": {
             "type": "object",
             "required": [
-                "id"
+                "userID"
             ],
             "properties": {
                 "createdAt": {
@@ -3334,10 +3857,6 @@ const docTemplateiam = `{
                 },
                 "entryDate": {
                     "description": "入职日期",
-                    "type": "integer"
-                },
-                "id": {
-                    "description": "数据自增 ID",
                     "type": "integer"
                 },
                 "jobLevel": {
@@ -3378,6 +3897,10 @@ const docTemplateiam = `{
                 },
                 "updatedBy": {
                     "description": "UpdatedBy 更新人id",
+                    "type": "integer"
+                },
+                "userID": {
+                    "description": "数据自增 ID",
                     "type": "integer"
                 },
                 "userType": {
@@ -3393,7 +3916,7 @@ const docTemplateiam = `{
         "dtouser.UserPageListItem": {
             "type": "object",
             "required": [
-                "id"
+                "userID"
             ],
             "properties": {
                 "createdAt": {
@@ -3414,10 +3937,6 @@ const docTemplateiam = `{
                 },
                 "entryDate": {
                     "description": "入职日期",
-                    "type": "integer"
-                },
-                "id": {
-                    "description": "数据自增 ID",
                     "type": "integer"
                 },
                 "jobLevel": {
@@ -3458,6 +3977,10 @@ const docTemplateiam = `{
                 },
                 "updatedBy": {
                     "description": "UpdatedBy 更新人id",
+                    "type": "integer"
+                },
+                "userID": {
+                    "description": "数据自增 ID",
                     "type": "integer"
                 },
                 "userType": {
@@ -3507,7 +4030,7 @@ const docTemplateiam = `{
                     "description": "角色编码",
                     "type": "string"
                 },
-                "roleId": {
+                "roleID": {
                     "description": "角色ID",
                     "type": "integer"
                 },
@@ -3536,7 +4059,7 @@ const docTemplateiam = `{
         "dtouser.UserUpdateReq": {
             "type": "object",
             "required": [
-                "id"
+                "userID"
             ],
             "properties": {
                 "deptID": {
@@ -3549,10 +4072,6 @@ const docTemplateiam = `{
                 },
                 "entryDate": {
                     "description": "入职日期",
-                    "type": "integer"
-                },
-                "id": {
-                    "description": "数据自增 ID",
                     "type": "integer"
                 },
                 "jobLevel": {
@@ -3587,6 +4106,10 @@ const docTemplateiam = `{
                     "description": "所属租户ID, 0表示平台管理员账号",
                     "type": "integer"
                 },
+                "userID": {
+                    "description": "数据自增 ID",
+                    "type": "integer"
+                },
                 "userType": {
                     "description": "用户类型: normal-普通用户 tenant_admin-租户管理员 platform_admin-平台管理员(可管理所有租户)",
                     "type": "string"
@@ -3611,6 +4134,21 @@ const docTemplateiam = `{
                     "type": "string"
                 }
             }
+        },
+        "model.MenuAccessPolicyString": {
+            "type": "string",
+            "enum": [
+                "public",
+                "authorized",
+                "org_admin",
+                "tenant_admin"
+            ],
+            "x-enum-varnames": [
+                "MenuAccessPolicyPublicStr",
+                "MenuAccessPolicyAuthorizedStr",
+                "MenuAccessPolicyOrgAdminStr",
+                "MenuAccessPolicyTenantAdminStr"
+            ]
         },
         "model.MenuCacheType": {
             "type": "string",
