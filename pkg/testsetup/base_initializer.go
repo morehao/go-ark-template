@@ -7,11 +7,11 @@ import (
 	"runtime"
 
 	"github.com/morehao/goark/pkg/dbclient"
-	"github.com/morehao/golib/conf"
 	"github.com/morehao/golib/dbaccess/dbes"
 	"github.com/morehao/golib/dbaccess/dbgorm"
 	"github.com/morehao/golib/dbaccess/dbredis"
 	"github.com/morehao/golib/glog"
+	"github.com/morehao/golib/gutil"
 )
 
 type baseAppInitializer struct {
@@ -61,7 +61,7 @@ func (i *baseAppInitializer) Init() error {
 	}
 
 	var cfg AppConfig
-	conf.LoadConfig(i.ConfigPath, &cfg)
+	gutil.LoadYamlConfig(i.ConfigPath, &cfg)
 
 	i.Log = cfg.Log
 	i.DBConfigs = cfg.DBConfigs

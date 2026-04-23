@@ -5,12 +5,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/morehao/golib/conf"
 	"github.com/morehao/golib/dbaccess/dbes"
 	"github.com/morehao/golib/dbaccess/dbgorm"
 	"github.com/morehao/golib/dbaccess/dbredis"
 	"github.com/morehao/golib/glog"
 	"github.com/morehao/golib/gtrace"
+	"github.com/morehao/golib/gutil"
 	"github.com/morehao/golib/protocol/ghttp"
 )
 
@@ -57,7 +57,7 @@ func LoadConfig(configPath string) {
 	fmt.Println("Load config file:", configPath)
 
 	var cfg Config
-	conf.LoadConfig(configPath, &cfg)
+	gutil.LoadYamlConfig(configPath, &cfg)
 	Conf = &cfg
 }
 

@@ -17,8 +17,6 @@ type UserEntity struct {
 
 type UserEntityList []UserEntity
 
-const TableNameUser = "user"
-
 func (UserEntity) TableName() string {
 	return TableNameUser
 }

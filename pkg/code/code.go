@@ -17,8 +17,8 @@ func registerError(codeMsgMap gerror.CodeMsgMap) {
 			panic(fmt.Sprintf("error code %d already exists", code))
 		}
 		errorMap[code] = gerror.Error{
-			Code:	code,
-			Msg:	msg,
+			Code: code,
+			Msg:  msg,
 		}
 	}
 }
