@@ -7,9 +7,9 @@ const (
 	ApplicationDeleteError      = 100101
 	ApplicationUpdateError      = 100102
 	ApplicationGetDetailError   = 100103
-	ApplicationGetPageListError = 100104
-	ApplicationNotExistError    = 100105
-	ApplicationInvalidError     = 100106
+	ApplicationGetPageListError = 100107
+	ApplicationNotExistError    = 100108
+	ApplicationInvalidError     = 100109
 )
 
 var applicationErrorMsgMap = gerror.CodeMsgMap{

@@ -18,7 +18,7 @@ func main() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	defer shutdownTraceProvider()
-	defer glog.Close()
+	defer glog.Sync()
 
 	engine := gin.New()
 	engine.Use(gin.Recovery())

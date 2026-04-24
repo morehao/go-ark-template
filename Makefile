@@ -167,7 +167,7 @@ swag:
 		--instanceName $(APP)
 	@echo "✅ Swagger 文档已生成：apps/$(APP)/docs"
 
-CLI_VERSION := v0.1.5
+CLI_VERSION := v0.1.7
 CLI_PKG     := github.com/morehao/gocli
 
 # 代码生成（API / module / model 等）

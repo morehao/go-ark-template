@@ -123,6 +123,6 @@ func (i *baseAppInitializer) initResources() error {
 }
 
 func (i *baseAppInitializer) Close() error {
-	glog.Close()
+	glog.Sync()
 	return nil
 }
