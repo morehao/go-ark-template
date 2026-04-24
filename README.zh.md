@@ -66,11 +66,11 @@ go install github.com/morehao/gocli@latest
 确保项目应用目录下有代码生成配置文件，示例：`goark/apps/demo/config/code_gen.yaml`。代码生成命令如下：
 ```bash
 # 基于表生成整个功能模块
-make codegen MODE=module APP=demo
+make codegen APP=demo COMMAND=module
 # 生成model代码
-make codegen MODE=model APP=demo
+make codegen APP=demo COMMAND=model
 # 生成单个接口代码
-make codegen MODE=api APP=demo
+make codegen APP=demo COMMAND=api
 ```
 代码生成详细说明文档见[generate](https://github.com/morehao/gocli?tab=readme-ov-file#generate)。
 
