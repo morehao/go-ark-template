@@ -32,7 +32,7 @@ type UserEntity struct {
 	EmployeeNo  string     `gorm:"column:employee_no;type:varchar(32);;default '';comment: 工号"`
 	EntryDate   *time.Time `gorm:"column:entry_date;type:date;;default '';comment: 入职日期"`
 	JobLevel    string     `gorm:"column:job_level;type:varchar(32);;default '';comment: 职级"`
-	LastLoginAt *time.Time `gorm:"column:last_login_at;type:datetime(3);;default '';comment: 最后登录时间"`
+	LastLoginAt *time.Time `gorm:"column:last_login_at;type:datetime(3);;default NULL;comment: 最后登录时间"`
 	LastLoginIp string     `gorm:"column:last_login_ip;type:varchar(45);;default '';comment: 最后登录IP(支持IPv6)"`
 	LoginCount  int32      `gorm:"column:login_count;type:int;;default 0;comment: 登录次数"`
 	PersonID    uint       `gorm:"column:person_id;type:bigint;not null;default '';comment: 自然人ID"`

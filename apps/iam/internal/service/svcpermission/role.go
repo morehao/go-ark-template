@@ -37,14 +37,20 @@ func NewRoleSvc() RoleSvc {
 
 // Create 创建角色管理
 func (svc *roleSvc) Create(ctx *gin.Context, req *dtopermission.RoleCreateReq) (*dtopermission.RoleCreateResp, error) {
+	tenantID := gincontext.GetTenantID(ctx)
+	operatorID := gincontext.GetUserID(ctx)
+
 	insertEntity := &model.RoleEntity{
-		DataScope:   model.RoleDataScope(req.DataScope),
+		TenantID:   tenantID,
+		DataScope:  model.RoleDataScope(req.DataScope),
 		Description: req.Description,
 		RoleCode:    req.RoleCode,
 		RoleName:    req.RoleName,
 		RoleType:    model.RoleType(req.RoleType),
 		Sequence:   req.Sequence,
 		Status:      model.RoleStatus(req.Status),
+		CreatedBy:   operatorID,
+		UpdatedBy:   operatorID,
 	}
 
 	if err := dao.NewRoleDao().Insert(ctx, insertEntity); err != nil {

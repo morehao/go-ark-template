@@ -41,7 +41,7 @@ func (svc *departmentSvc) Create(ctx *gin.Context, req *dtoorg.DepartmentCreateR
 	tenantID := gincontext.GetTenantID(ctx)
 
 	var deptLevel int32 = 1
-	var deptPath string = "/"
+	var deptPath string
 
 	if req.ParentID > 0 {
 		parentDept, err := dao.NewDepartmentDao().GetByID(ctx, req.ParentID)

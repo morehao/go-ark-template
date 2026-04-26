@@ -2,7 +2,6 @@ package svcuser
 
 import (
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/morehao/goark/apps/iam/core/user"
@@ -182,7 +181,6 @@ func (svc *userSvc) Detail(ctx *gin.Context, req *dtouser.UserDetailReq) (*dtous
 // PageList 分页获取用户管理列表
 func (svc *userSvc) PageList(ctx *gin.Context, req *dtouser.UserPageListReq) (*dtouser.UserPageListResp, error) {
 	glog.Infof(ctx, "[svcuser.UserPageList] req:%s", gutil.ToJsonString(req))
-	dbclient.RedisCli.Set(ctx, "1", 1, time.Second).Err()
 	cond := &dao.UserCond{
 		BaseCond: &genericdao.BaseCond{
 			Page:     req.Page,

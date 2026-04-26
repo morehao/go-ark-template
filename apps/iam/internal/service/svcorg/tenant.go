@@ -61,7 +61,7 @@ func (svc *tenantSvc) Create(ctx *gin.Context, req *dtoorg.TenantCreateReq) (*dt
 	}
 
 	var tenantLevel int32 = 1
-	var tenantPath string = "/"
+	var tenantPath string
 
 	if req.ParentID > 0 {
 		parentTenant, err := dao.NewTenantDao().GetByID(ctx, req.ParentID)

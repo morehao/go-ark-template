@@ -248,45 +248,6 @@ func (svc *authSvc) findPersonByAccount(ctx *gin.Context, account string) (*mode
 	return nil, code.GetError(code.AuthPersonNotFoundError)
 }
 
-func (svc *authSvc) generateToken(ctx *gin.Context, userEntity model.UserEntity, personID uint) (string, error) {
-	jwtAuth, err := jwtauth.New[gobject.UserClaims](config.Conf.JWT.SignKey)
-	if err != nil {
-		return "", code.GetError(code.AuthTokenGenerateError)
-	}
-
-	var orgID uint
-	if userEntity.TenantID > 0 {
-		tenantEntity, _ := dao.NewTenantDao().GetByID(ctx, userEntity.TenantID)
-		if tenantEntity != nil {
-			orgID = tenantEntity.OrgID
-		}
-	}
-
-	deptID, roleIDs := svc.getUserDeptAndRoles(ctx, userEntity.ID, userEntity.TenantID)
-
-	customData := gobject.UserClaims{
-		UserID:    userEntity.ID,
-		PersonID:  personID,
-		TenantID:  userEntity.TenantID,
-		OrgID:     orgID,
-		DeptID:    deptID,
-		RoleIDs:   roleIDs,
-		UserType:  string(userEntity.UserType),
-		TokenType: gobject.TokenTypeAuth,
-	}
-
-	token, err := jwtAuth.Issue(
-		fmt.Sprintf("%d", userEntity.ID),
-		tokenIssuer,
-		time.Now().Add(tokenExpireDuration),
-		customData,
-	)
-	if err != nil {
-		return "", code.GetError(code.AuthTokenGenerateError)
-	}
-	return token, nil
-}
-
 func (svc *authSvc) generateTempToken(personID uint, orgID uint) (string, error) {
 	jwtAuth, err := jwtauth.New[gobject.UserClaims](config.Conf.JWT.SignKey)
 	if err != nil {
@@ -652,6 +613,12 @@ func (svc *authSvc) Register(ctx *gin.Context, req *dtoauth.RegisterReq) (*dtoau
 			return err
 		}
 		tenantID = tenantEntity.ID
+
+		tenantPathMap := map[string]any{"tenant_path": fmt.Sprintf("/%d/", tenantID)}
+		if err := dao.NewTenantDao().WithTx(tx).UpdateMap(ctx, tenantID, tenantPathMap); err != nil {
+			glog.Errorf(ctx, "[svcauth.Register] Update tenant path fail, err:%v", err)
+			return err
+		}
 
 		deptEntity := &model.DepartmentEntity{
 			TenantID:  tenantID,

@@ -16,24 +16,24 @@ SET @platform_admin_email = 'admin@platform.com';
 SET @platform_admin_real_name = '平台管理员';
 
 -- 检查是否已存在平台组织
-SET @org_exists = (SELECT COUNT(*) FROM iam_org WHERE org_code = @platform_org_code);
+SET @org_exists = (SELECT COUNT(*) FROM iam_organization WHERE org_code = @platform_org_code);
 
 -- 1. 创建平台组织
-INSERT INTO iam_org 
+INSERT INTO iam_organization
 (org_code, org_name, description, status, created_at, updated_at)
-SELECT @platform_org_code, '平台管理组织', '平台系统管理专用组织', 'active', NOW(), NOW()
+SELECT @platform_org_code, '平台管理组织', '平台系统管理专用组织', 'enabled', NOW(), NOW()
 FROM DUAL WHERE @org_exists = 0;
 
 -- 获取平台组织ID
-SET @org_id = (SELECT id FROM iam_org WHERE org_code = @platform_org_code LIMIT 1);
+SET @org_id = (SELECT id FROM iam_organization WHERE org_code = @platform_org_code LIMIT 1);
 
 -- 检查是否已存在平台租户
 SET @tenant_exists = (SELECT COUNT(*) FROM iam_tenant WHERE tenant_code = @platform_tenant_code);
 
 -- 2. 创建平台租户
-INSERT INTO iam_tenant 
+INSERT INTO iam_tenant
 (org_id, tenant_code, tenant_name, status, created_at, updated_at)
-SELECT @org_id, @platform_tenant_code, '平台管理租户', 'active', NOW(), NOW()
+SELECT @org_id, @platform_tenant_code, '平台管理租户', 'enabled', NOW(), NOW()
 FROM DUAL WHERE @tenant_exists = 0;
 
 -- 获取平台租户ID
@@ -43,9 +43,9 @@ SET @tenant_id = (SELECT id FROM iam_tenant WHERE tenant_code = @platform_tenant
 SET @dept_exists = (SELECT COUNT(*) FROM iam_department WHERE tenant_id = @tenant_id AND dept_code = @platform_dept_code);
 
 -- 3. 创建平台部门（与租户同名）
-INSERT INTO iam_department 
+INSERT INTO iam_department
 (tenant_id, dept_code, dept_name, dept_level, parent_id, status, created_at, updated_at)
-SELECT @tenant_id, @platform_dept_code, '平台管理租户', 1, 0, 'active', NOW(), NOW()
+SELECT @tenant_id, @platform_dept_code, '平台管理租户', 1, 0, 'enabled', NOW(), NOW()
 FROM DUAL WHERE @dept_exists = 0;
 
 -- 获取平台部门ID
@@ -72,9 +72,9 @@ SET @person_id = (SELECT id FROM iam_person WHERE email = @platform_admin_email 
 SET @user_exists = (SELECT COUNT(*) FROM iam_user WHERE username = @platform_admin_username);
 
 -- 5. 创建平台管理员账号
-INSERT INTO iam_user 
+INSERT INTO iam_user
 (tenant_id, person_id, dept_id, username, user_type, status, created_at, updated_at)
-SELECT @tenant_id, @person_id, @dept_id, @platform_admin_username, 'platform_admin', 'active', NOW(), NOW()
+SELECT @tenant_id, @person_id, @dept_id, @platform_admin_username, 'platform_admin', 'enabled', NOW(), NOW()
 FROM DUAL WHERE @user_exists = 0;
 
 -- 输出结果

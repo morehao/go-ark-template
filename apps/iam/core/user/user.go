@@ -50,6 +50,21 @@ func CreatePersonWithUser(ctx *gin.Context, tx *gorm.DB, params *CreatePersonPar
 		personID = personCreateEntity.ID
 	}
 
+	if params.Username != "" {
+		existingUser, err := dao.NewUserDao().GetByCond(ctx, &dao.UserCond{
+			TenantID: params.TenantID,
+			Username: params.Username,
+		})
+		if err != nil {
+			glog.Errorf(ctx, "[user.CreatePersonWithUser] GetByCond for username check fail, err:%v, tenantID:%d, username:%s", err, params.TenantID, params.Username)
+			return nil, code.GetError(code.UserCreateError)
+		}
+		if existingUser != nil && existingUser.ID != 0 {
+			glog.Errorf(ctx, "[user.CreatePersonWithUser] username already exists, tenantID:%d, username:%s", params.TenantID, params.Username)
+			return nil, code.GetError(code.UsernameDuplicateError)
+		}
+	}
+
 	userEntity := &model.UserEntity{
 		TenantID:    params.TenantID,
 		DeptID:      params.DeptID,

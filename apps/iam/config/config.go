@@ -26,6 +26,7 @@ type Config struct {
 	Client      Client                    `yaml:"client"`
 	JWT         JWT                       `yaml:"jwt"`
 	Password    PasswordConfig            `yaml:"password"`
+	MasterKey   string                    `yaml:"masterKey"`
 }
 
 type PasswordConfig struct {

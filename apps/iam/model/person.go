@@ -26,7 +26,7 @@ type PersonEntity struct {
 	Mobile       string       `gorm:"column:mobile;type:varchar(16);;default '';comment: 手机号"`
 	PasswordHash string       `gorm:"column:password_hash;type:varchar(128);;default '';comment: 密码哈希(不存储盐值,盐值在应用层生成)"`
 	RealName     string       `gorm:"column:real_name;type:varchar(32);not null;default '';comment: 真实姓名"`
-	Remark       string       `gorm:"column:remark;type:varchar(255);;default '';comment: 备注"`
+	Remark       string       `gorm:"column:remark;type:varchar(500);;default '';comment: 备注"`
 	UpdatedBy    uint         `gorm:"column:updated_by;type:bigint;not null;default 0;comment: 更新人ID"`
 	Wechat       string       `gorm:"column:wechat;type:varchar(32);;default '';comment: 微信号"`
 }
