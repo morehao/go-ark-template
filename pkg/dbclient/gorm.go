@@ -42,6 +42,7 @@ func InitMultiDB(configs []dbgorm.GormConfig, logConfig *glog.LogConfig) error {
 	if logConfig != nil {
 		opts = append(opts, dbgorm.WithLogConfig(logConfig))
 	}
+	opts = append(opts, dbgorm.WithCallerSkip(9))
 	for _, cfg := range configs {
 		client, err := dbgorm.New(&cfg, opts...)
 		if err != nil {

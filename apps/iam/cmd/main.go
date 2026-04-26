@@ -18,7 +18,11 @@ func main() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	defer shutdownTraceProvider()
-	defer glog.Sync()
+	defer func() {
+		if err := glog.Close(); err != nil {
+			fmt.Printf("failed to close logger: %v\n", err)
+		}
+	}()
 
 	engine := gin.New()
 	engine.Use(gin.Recovery())

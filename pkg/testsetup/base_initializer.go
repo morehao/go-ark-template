@@ -123,6 +123,8 @@ func (i *baseAppInitializer) initResources() error {
 }
 
 func (i *baseAppInitializer) Close() error {
-	glog.Sync()
+	if err := glog.Close(); err != nil {
+		return fmt.Errorf("close logger: %w", err)
+	}
 	return nil
 }

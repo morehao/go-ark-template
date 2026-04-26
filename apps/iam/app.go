@@ -23,6 +23,7 @@ func Routers(engine *gin.Engine) {
 				"/v1/iam/auth/register",
 				"/v1/iam/auth/loginByPassword",
 				"/v1/iam/auth/selectTenant",
+				"/v1/iam/user/pageList",
 			)),
 			ginmiddleware.TokenBlacklistCheck(dbclient.RedisCli, ginmiddleware.WithBlacklistKeyPrefix("iam:token:blacklist:")),
 		},
