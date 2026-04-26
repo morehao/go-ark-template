@@ -2,9 +2,6 @@ package svcapikey
 
 import (
 	"crypto/rand"
-	"crypto/rsa"
-	"crypto/x509"
-	"encoding/pem"
 
 	"github.com/gin-gonic/gin"
 	"github.com/morehao/goark/apps/iam/config"
@@ -41,44 +38,36 @@ func (svc *apiKeySvc) Create(ctx *gin.Context, req *dtoapikey.ApiKeyCreateReq) (
 	userID := gincontext.GetUserID(ctx)
 	operatorID := gincontext.GetUserID(ctx)
 
-	privateKey, publicKey, err := gcrypto.GenerateRSAKeyPair(2048)
+	apiKeyPlain := svc.generateApiKey()
+
+	aesEncryptor, err := gcrypto.NewAES(config.Conf.MasterKey)
 	if err != nil {
-		glog.Errorf(ctx, "[svcapikey.Create] GenerateRSAKeyPair fail, err:%v", err)
+		glog.Errorf(ctx, "[svcapikey.Create] NewAES fail, err:%v", err)
 		return nil, code.GetError(code.ApiKeyCreateError)
 	}
 
-	privateKeyPEM := encodePrivateKeyToPEM(privateKey)
-	publicKeyPEM := encodePublicKeyToPEM(publicKey)
-
-	rsaEncryptor, err := gcrypto.NewRSA(config.Conf.MasterKey, config.Conf.MasterKey)
+	encryptedApiKey, err := aesEncryptor.EncryptString(apiKeyPlain)
 	if err != nil {
-		glog.Errorf(ctx, "[svcapikey.Create] NewRSA fail, err:%v", err)
+		glog.Errorf(ctx, "[svcapikey.Create] Encrypt API Key fail, err:%v", err)
 		return nil, code.GetError(code.ApiKeyCreateError)
 	}
 
-	encryptedPrivateKey, err := rsaEncryptor.EncryptString(privateKeyPEM)
-	if err != nil {
-		glog.Errorf(ctx, "[svcapikey.Create] Encrypt private key fail, err:%v", err)
-		return nil, code.GetError(code.ApiKeyCreateError)
-	}
-
-	keyPrefix := svc.generateKeyPrefix()
+	keyPrefix := "ark_" + apiKeyPlain[4:12]
 
 	insertEntity := &model.ApiKeyEntity{
-		TenantID:            tenantID,
-		UserID:              userID,
-		AppID:               req.AppID,
-		KeyName:             req.KeyName,
-		KeyPrefix:           keyPrefix,
-		PublicKey:           publicKeyPEM,
-		EncryptedPrivateKey: encryptedPrivateKey,
-		AccessPolicy:        model.ApiKeyAccessPolicy(req.AccessPolicy),
-		AllowedIPs:          req.AllowedIPs,
-		Scopes:              req.Scopes,
-		ExpiresAt:           req.ExpiresAt,
-		Status:              model.ApiKeyStatusEnabled,
-		CreatedBy:           operatorID,
-		UpdatedBy:           operatorID,
+		TenantID:     tenantID,
+		UserID:       userID,
+		AppID:        req.AppID,
+		KeyName:      req.KeyName,
+		KeyPrefix:    keyPrefix,
+		ApiKey:       encryptedApiKey,
+		AccessPolicy: model.ApiKeyAccessPolicy(req.AccessPolicy),
+		AllowedIPs:   req.AllowedIPs,
+		Scopes:       req.Scopes,
+		ExpiresAt:    req.ExpiresAt,
+		Status:       model.ApiKeyStatusEnabled,
+		CreatedBy:    operatorID,
+		UpdatedBy:    operatorID,
 	}
 
 	if err := dao.NewApiKeyDao().Insert(ctx, insertEntity); err != nil {
@@ -87,10 +76,10 @@ func (svc *apiKeySvc) Create(ctx *gin.Context, req *dtoapikey.ApiKeyCreateReq) (
 	}
 
 	return &dtoapikey.ApiKeyCreateResp{
-		ID:                 insertEntity.ID,
-		KeyPrefix:          keyPrefix,
-		EncryptedPrivateKey: encryptedPrivateKey,
-		ExpiresAt:          req.ExpiresAt,
+		ID:        insertEntity.ID,
+		KeyPrefix: keyPrefix,
+		ApiKey:    apiKeyPlain,
+		ExpiresAt: req.ExpiresAt,
 	}, nil
 }
 
@@ -133,19 +122,32 @@ func (svc *apiKeySvc) List(ctx *gin.Context, req *dtoapikey.ApiKeyListReq) (*dto
 		return nil, code.GetError(code.ApiKeyGetPageListError)
 	}
 
+	aesDecryptor, err := gcrypto.NewAES(config.Conf.MasterKey)
+	if err != nil {
+		glog.Errorf(ctx, "[svcapikey.List] NewAES fail, err:%v", err)
+		return nil, code.GetError(code.ApiKeyGetPageListError)
+	}
+
 	list := make([]dtoapikey.ApiKeyListItem, 0, len(apiKeyList))
 	for _, v := range apiKeyList {
+		apiKeyPlain, err := aesDecryptor.DecryptString(v.ApiKey)
+		if err != nil {
+			glog.Errorf(ctx, "[svcapikey.List] Decrypt API Key fail, err:%v, id:%d", err, v.ID)
+			apiKeyPlain = ""
+		}
+
 		list = append(list, dtoapikey.ApiKeyListItem{
-			ID:                 v.ID,
-			AppID:              v.AppID,
-			KeyName:            v.KeyName,
-			KeyPrefix:          v.KeyPrefix,
-			Scopes:             v.Scopes,
-			AccessPolicy:       string(v.AccessPolicy),
-			AllowedIPs:         v.AllowedIPs,
-			Status:             string(v.Status),
-			LastUsedAt:        v.LastUsedAt,
-			ExpiresAt:          v.ExpiresAt,
+			ID:           v.ID,
+			AppID:        v.AppID,
+			KeyName:      v.KeyName,
+			KeyPrefix:    v.KeyPrefix,
+			ApiKey:       apiKeyPlain,
+			Scopes:       v.Scopes,
+			AccessPolicy: string(v.AccessPolicy),
+			AllowedIPs:   v.AllowedIPs,
+			Status:       string(v.Status),
+			LastUsedAt:   v.LastUsedAt,
+			ExpiresAt:    v.ExpiresAt,
 		})
 	}
 
@@ -201,31 +203,13 @@ func (svc *apiKeySvc) Enable(ctx *gin.Context, req *dtoapikey.ApiKeyEnableReq) e
 	return nil
 }
 
-func (svc *apiKeySvc) generateKeyPrefix() string {
+func (svc *apiKeySvc) generateApiKey() string {
 	const charset = "abcdefghijklmnopqrstuvwxyz0123456789"
-	result := make([]byte, 8)
+	result := make([]byte, 16)
 	for i := range result {
 		b := make([]byte, 1)
 		rand.Read(b)
 		result[i] = charset[int(b[0])%len(charset)]
 	}
 	return "ark_" + string(result)
-}
-
-func encodePrivateKeyToPEM(privateKey *rsa.PrivateKey) string {
-	privateKeyBytes := x509.MarshalPKCS1PrivateKey(privateKey)
-	block := &pem.Block{
-		Type:  "RSA PRIVATE KEY",
-		Bytes: privateKeyBytes,
-	}
-	return string(pem.EncodeToMemory(block))
-}
-
-func encodePublicKeyToPEM(publicKey *rsa.PublicKey) string {
-	publicKeyBytes := x509.MarshalPKCS1PublicKey(publicKey)
-	block := &pem.Block{
-		Type:  "RSA PUBLIC KEY",
-		Bytes: publicKeyBytes,
-	}
-	return string(pem.EncodeToMemory(block))
 }
