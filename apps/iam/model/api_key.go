@@ -24,9 +24,8 @@ type ApiKeyEntity struct {
 	UserID              uint           `gorm:"column:user_id;type:bigint;not null;default 0;comment: 关联用户ID"`
 	AppID               uint           `gorm:"column:app_id;type:bigint;not null;default 0;comment: 应用ID"`
 	KeyName             string         `gorm:"column:key_name;type:varchar(64);not null;comment: 密钥名称"`
-	KeyPrefix           string         `gorm:"column:key_prefix;type:varchar(16);not null;comment: 密钥前缀"`
-	PublicKey           string         `gorm:"column:public_key;type:text;not null;comment: 公钥"`
-	EncryptedPrivateKey string         `gorm:"column:encrypted_private_key;type:text;not null;comment: 加密私钥"`
+	KeyPrefix           string         `gorm:"column:key_prefix;type:varchar(16);not null;comment: 密钥前缀(ark_开头)"`
+	ApiKey              string         `gorm:"column:api_key;type:text;not null;comment: AES加密的API Key"`
 	AccessPolicy        ApiKeyAccessPolicy `gorm:"column:access_policy;type:varchar(16);default all;comment: 访问策略"`
 	AllowedIPs          string         `gorm:"column:allowed_ips;type:text;;comment: 允许的IP列表(JSON)"`
 	Scopes              string         `gorm:"column:scopes;type:varchar(255);;comment: 权限范围"`
