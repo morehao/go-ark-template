@@ -128,7 +128,7 @@ git commit -m "feat(iam): update DTO - add ApiKey field to resp and list item"
 
 - [ ] **Step 1: 修改 import**
 
-删除不再使用的 `crypto/rand`, `crypto/rsa`, `crypto/x509`, `encoding/pem`，新增 `gcrypto.AES` 相关方法的使用
+删除不再使用的 `crypto/rsa`, `crypto/x509`, `encoding/pem`，保留 `crypto/rand`（用于随机字符串生成），使用 `gcrypto.NewAES`
 
 - [ ] **Step 2: 修改 Create 方法**
 

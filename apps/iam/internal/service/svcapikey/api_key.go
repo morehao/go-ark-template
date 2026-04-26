@@ -2,6 +2,7 @@ package svcapikey
 
 import (
 	"crypto/rand"
+	"math/big"
 
 	"github.com/gin-gonic/gin"
 	"github.com/morehao/goark/apps/iam/config"
@@ -207,9 +208,11 @@ func (svc *apiKeySvc) generateApiKey() string {
 	const charset = "abcdefghijklmnopqrstuvwxyz0123456789"
 	result := make([]byte, 16)
 	for i := range result {
-		b := make([]byte, 1)
-		rand.Read(b)
-		result[i] = charset[int(b[0])%len(charset)]
+		n, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
+		if err != nil {
+			n = big.NewInt(int64(i % len(charset)))
+		}
+		result[i] = charset[n.Int64()]
 	}
 	return "ark_" + string(result)
 }
