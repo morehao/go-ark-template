@@ -12,7 +12,7 @@ type ApiKeyCreateReq struct {
 type ApiKeyCreateResp struct {
 	ID                 uint   `json:"id"`
 	KeyPrefix          string `json:"keyPrefix" comment:"密钥前缀"`
-	EncryptedPrivateKey string `json:"encryptedPrivateKey" comment:"加密私钥(仅显示一次)"`
+	ApiKey             string `json:"apiKey" comment:"完整 API Key 明文"`
 	ExpiresAt          string `json:"expiresAt" comment:"过期时间"`
 }
 
@@ -38,6 +38,7 @@ type ApiKeyListItem struct {
 	AppID              uint   `json:"appID"`
 	KeyName            string `json:"keyName"`
 	KeyPrefix          string `json:"keyPrefix"`
+	ApiKey             string `json:"apiKey" comment:"解密后的完整 API Key"`
 	Scopes             string `json:"scopes"`
 	AccessPolicy       string `json:"accessPolicy"`
 	AllowedIPs         string `json:"allowedIPs"`
