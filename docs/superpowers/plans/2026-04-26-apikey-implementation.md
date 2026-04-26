@@ -17,7 +17,6 @@
 | Model | `apps/iam/model/api_key.go` | 删除字段、新增字段 |
 | DTO | `apps/iam/internal/dto/dtoapikey/request.go` | 新增 `ApiKey` 字段 |
 | Service | `apps/iam/internal/service/svcapikey/api_key.go` | 重写加密逻辑 |
-| - | 数据库迁移 SQL | 执行表结构变更 |
 
 ---
 
@@ -286,34 +285,7 @@ git commit -m "refactor(iam): replace RSA keypair with random string API Key and
 
 ---
 
-## Task 4: 数据库迁移
-
-**Files:**
-- Create: `apps/iam/internal/dal/migration/2026-04-26_update_apikey_table.sql`
-
-- [ ] **Step 1: 创建迁移 SQL**
-
-```sql
--- 迁移 API Key 表结构
--- 1. 删除公钥和加密私钥字段
--- 2. 新增加密 API Key 字段
-
-ALTER TABLE `iam_api_key`
-    DROP COLUMN IF EXISTS `public_key`,
-    DROP COLUMN IF EXISTS `encrypted_private_key`,
-    ADD COLUMN IF NOT EXISTS `api_key` TEXT NOT NULL COMMENT 'AES加密的API Key' AFTER `key_prefix`;
-```
-
-- [ ] **Step 2: Commit**
-
-```bash
-git add apps/iam/internal/dal/migration/2026-04-26_update_apikey_table.sql
-git commit -m "db: add migration for apikey table structure update"
-```
-
----
-
-## Task 5: 验证整体构建
+## Task 4: 验证整体构建
 
 - [ ] **Step 1: 运行 lint**
 
@@ -334,11 +306,10 @@ Expected: 构建成功
 
 ## 实施检查清单
 
-- [ ] Task 1: Model 层修改完成
-- [ ] Task 2: DTO 层修改完成
-- [ ] Task 3: Service 层修改完成
-- [ ] Task 4: 数据库迁移完成
-- [ ] Task 5: 整体验证通过
+- [x] Task 1: Model 层修改完成
+- [x] Task 2: DTO 层修改完成
+- [x] Task 3: Service 层修改完成
+- [x] Task 4: 整体验证通过
 
 ---
 
