@@ -29,6 +29,7 @@ type UserSvc interface {
 	ListDepartments(ctx *gin.Context, req *dtouser.UserDepartmentsReq) (*dtouser.UserDepartmentsResp, error)
 	AssignRoles(ctx *gin.Context, req *dtouser.UserAssignRolesReq) error
 	ListRoles(ctx *gin.Context, req *dtouser.UserRolesReq) (*dtouser.UserRolesResp, error)
+	GetCurrentUserInfo(ctx *gin.Context) (*dtouser.UserInfoResp, error)
 }
 
 type userSvc struct {
@@ -506,4 +507,89 @@ func (svc *userSvc) ListRoles(ctx *gin.Context, req *dtouser.UserRolesReq) (*dto
 	return &dtouser.UserRolesResp{
 		List: list,
 	}, nil
+}
+
+func (svc *userSvc) GetCurrentUserInfo(ctx *gin.Context) (*dtouser.UserInfoResp, error) {
+	userID := gincontext.GetUserID(ctx)
+	tenantID := gincontext.GetTenantID(ctx)
+
+	userEntity, err := dao.NewUserDao().GetByID(ctx, userID)
+	if err != nil || userEntity == nil || userEntity.ID == 0 {
+		return nil, code.GetError(code.UserNotExistError)
+	}
+
+	personEntity, err := dao.NewPersonDao().GetByID(ctx, userEntity.PersonID)
+	if err != nil || personEntity == nil {
+		return nil, code.GetError(code.UserNotExistError)
+	}
+
+	tenantName, orgID, orgName := "", uint(0), ""
+	if userEntity.TenantID > 0 {
+		tenantEntity, _ := dao.NewTenantDao().GetByID(ctx, userEntity.TenantID)
+		if tenantEntity != nil {
+			tenantName = tenantEntity.TenantName
+			orgID = tenantEntity.OrgID
+			orgEntity, _ := dao.NewOrganizationDao().GetByID(ctx, orgID)
+			if orgEntity != nil {
+				orgName = orgEntity.OrgName
+			}
+		}
+	}
+
+	roleIDs, roleNames := svc.getUserRoles(ctx, userID, tenantID)
+	deptIDs, deptNames := svc.getUserDepts(ctx, userID, tenantID)
+
+	return &dtouser.UserInfoResp{
+		UserID:     userEntity.ID,
+		Username:   userEntity.Username,
+		PersonID:   userEntity.PersonID,
+		Email:      personEntity.Email,
+		Phone:      personEntity.Mobile,
+		Avatar:     personEntity.AvatarUrl,
+		Nickname:   personEntity.RealName,
+		Status:     string(userEntity.Status),
+		UserType:   string(userEntity.UserType),
+		TenantID:   userEntity.TenantID,
+		TenantName: tenantName,
+		OrgID:      orgID,
+		OrgName:    orgName,
+		RoleIDs:    roleIDs,
+		RoleNames:  roleNames,
+		DeptIDs:    deptIDs,
+		DeptNames:  deptNames,
+	}, nil
+}
+
+func (svc *userSvc) getUserRoles(ctx *gin.Context, userID, tenantID uint) ([]uint, []string) {
+	roleIDs := make([]uint, 0)
+	roleNames := make([]string, 0)
+	userRoleList, _ := dao.NewUserRoleDao().GetListByCond(ctx, &dao.UserRoleCond{
+		UserID:   userID,
+		TenantID: tenantID,
+	})
+	for _, ur := range userRoleList {
+		roleEntity, _ := dao.NewRoleDao().GetByID(ctx, ur.RoleID)
+		if roleEntity != nil && roleEntity.ID > 0 {
+			roleIDs = append(roleIDs, roleEntity.ID)
+			roleNames = append(roleNames, roleEntity.RoleName)
+		}
+	}
+	return roleIDs, roleNames
+}
+
+func (svc *userSvc) getUserDepts(ctx *gin.Context, userID, tenantID uint) ([]uint, []string) {
+	deptIDs := make([]uint, 0)
+	deptNames := make([]string, 0)
+	userDeptList, _ := dao.NewUserDepartmentDao().GetListByCond(ctx, &dao.UserDepartmentCond{
+		UserID:   userID,
+		TenantID: tenantID,
+	})
+	for _, ud := range userDeptList {
+		deptEntity, _ := dao.NewDepartmentDao().GetByID(ctx, ud.DeptID)
+		if deptEntity != nil && deptEntity.ID > 0 {
+			deptIDs = append(deptIDs, deptEntity.ID)
+			deptNames = append(deptNames, deptEntity.DeptName)
+		}
+	}
+	return deptIDs, deptNames
 }

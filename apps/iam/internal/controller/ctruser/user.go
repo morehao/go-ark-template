@@ -17,6 +17,7 @@ type UserCtr interface {
 	ListDepartments(ctx *gin.Context)
 	AssignRoles(ctx *gin.Context)
 	ListRoles(ctx *gin.Context)
+	GetCurrentUserInfo(ctx *gin.Context)
 }
 
 type userCtr struct {
@@ -224,6 +225,22 @@ func (ctr *userCtr) ListRoles(ctx *gin.Context) {
 		return
 	}
 	res, err := ctr.userSvc.ListRoles(ctx, &req)
+	if err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	gincontext.Success(ctx, res)
+}
+
+// GetCurrentUserInfo 获取当前用户信息
+// @Tags 用户管理
+// @Summary 获取当前用户信息
+// @accept application/json
+// @Produce application/json
+// @Success 200 {object} gincontext.DtoRender{data=dtouser.UserInfoResp}
+// @Router /v1/iam/user/getCurrentUserInfo [get]
+func (ctr *userCtr) GetCurrentUserInfo(ctx *gin.Context) {
+	res, err := ctr.userSvc.GetCurrentUserInfo(ctx)
 	if err != nil {
 		gincontext.Fail(ctx, err)
 		return
