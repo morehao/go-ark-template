@@ -39,7 +39,6 @@ type LoginUserInfo struct {
 }
 
 type RegisterResp struct {
-	TenantID     uint   `json:"tenantId"`     // 租户ID
 	UserID       uint   `json:"userId"`       // 用户ID
 	PersonID     uint   `json:"personId"`     // 自然人ID
 	Status       string `json:"status"`       // 状态

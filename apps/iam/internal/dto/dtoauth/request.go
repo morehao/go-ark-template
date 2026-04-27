@@ -18,13 +18,16 @@ type LogoutReq struct {
 }
 
 type RegisterReq struct {
-	TenantName string `json:"tenantName" validate:"required" label:"租户名称"` // 租户名称
-	TenantCode string `json:"tenantCode" validate:"required" label:"租户编码"` // 租户编码
-	Username   string `json:"username" validate:"required" label:"用户名"`    // 用户名
-	Password   string `json:"password" validate:"required" label:"密码"`     // 密码
-	Mobile     string `json:"mobile" label:"手机号"`                          // 手机号
-	Email      string `json:"email" validate:"required" label:"邮箱"`        // 邮箱
-	RealName   string `json:"realName" validate:"required" label:"真实姓名"`   // 真实姓名
+	Username string `json:"username" validate:"required" label:"用户名"`    // 用户名
+	Password string `json:"password" validate:"required" label:"密码"`     // 密码
+	Mobile   string `json:"mobile" label:"手机号"`                          // 手机号
+	Email    string `json:"email" validate:"required" label:"邮箱"`        // 邮箱
+	RealName string `json:"realName" validate:"required" label:"真实姓名"`   // 真实姓名
+}
+
+type ApproveReq struct {
+	UserID   uint `json:"userId" validate:"required" label:"用户ID"` // 用户ID
+	Approved bool `json:"approved" label:"是否通过"`                  // true=通过, false=拒绝
 }
 
 type UnlockAccountReq struct {
