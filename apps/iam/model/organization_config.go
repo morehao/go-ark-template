@@ -46,16 +46,25 @@ const (
 )
 
 const (
-	OrgConfigKeyRegisterEnabled         = "auth.register.enabled"
-	OrgConfigKeyRegisterRequireApproval = "auth.register.requireApproval"
-	OrgConfigKeyRegisterIdentityType    = "auth.register.identityType"
-	OrgConfigKeyPasswordMinLength       = "auth.password.minLength"
-	OrgConfigKeyPasswordRequireUppercase = "auth.password.requireUppercase"
-	OrgConfigKeyPasswordRequireLowercase = "auth.password.requireLowercase"
-	OrgConfigKeyPasswordRequireNumber   = "auth.password.requireNumber"
-	OrgConfigKeyPasswordRequireSpecial   = "auth.password.requireSpecial"
-	OrgConfigKeyLoginMaxFailCount       = "auth.login.maxFailCount"
-	OrgConfigKeyLoginLockDuration       = "auth.login.lockDuration"
+	OrgConfigKeyRegisterEnabled            = "auth.register.enabled"
+	OrgConfigKeyRegisterRequireApproval    = "auth.register.requireApproval"
+	OrgConfigKeyRegisterIdentityType       = "auth.register.identityType"
+	OrgConfigKeyRegisterWay                = "auth.register.way"
+	OrgConfigKeyRegisterOpenTenantID        = "auth.register.openTenantId"
+	OrgConfigKeyRegisterSSODefaultTenantID  = "auth.register.ssoDefaultTenantId"
+	OrgConfigKeyRegisterCodeExpireHours    = "auth.register.codeExpireHours"
+	OrgConfigKeyRegisterCodeMaxUse         = "auth.register.codeMaxUse"
+	OrgConfigKeyRegisterVerifyEnabled      = "auth.register.verifyEnabled"
+	OrgConfigKeyRegisterDefaultRoles       = "auth.register.defaultRoles"
+	OrgConfigKeyRegisterDefaultDepts       = "auth.register.defaultDepts"
+	OrgConfigKeyLoginCaptchaEnabled        = "auth.login.captchaEnabled"
+	OrgConfigKeyPasswordMinLength          = "auth.password.minLength"
+	OrgConfigKeyPasswordRequireUppercase   = "auth.password.requireUppercase"
+	OrgConfigKeyPasswordRequireLowercase   = "auth.password.requireLowercase"
+	OrgConfigKeyPasswordRequireNumber      = "auth.password.requireNumber"
+	OrgConfigKeyPasswordRequireSpecial    = "auth.password.requireSpecial"
+	OrgConfigKeyLoginMaxFailCount          = "auth.login.maxFailCount"
+	OrgConfigKeyLoginLockDuration          = "auth.login.lockDuration"
 )
 
 type RegisterIdentityType string
@@ -106,6 +115,75 @@ var OrgConfigMetaList = []OrgConfigMeta{
 			{Value: string(RegisterIdentityTypeEmail), Description: "邮箱注册"},
 			{Value: string(RegisterIdentityTypeBoth), Description: "手机号或邮箱注册"},
 		},
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyRegisterWay,
+		Type:         OrgConfigTypeString,
+		DefaultValue: "domain",
+		Description:  "注册策略",
+		Options: []OrgConfigOption{
+			{Value: "open", Description: "开放型"},
+			{Value: "domain", Description: "域名驱动"},
+			{Value: "invite", Description: "邀请制"},
+			{Value: "sso", Description: "SSO"},
+		},
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyRegisterOpenTenantID,
+		Type:         OrgConfigTypeString,
+		DefaultValue: "",
+		Description:  "开放型注册指定租户ID",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyRegisterSSODefaultTenantID,
+		Type:         OrgConfigTypeString,
+		DefaultValue: "",
+		Description:  "SSO默认租户ID",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyRegisterCodeExpireHours,
+		Type:         OrgConfigTypeNumber,
+		DefaultValue: "72",
+		Description:  "邀请码过期小时数",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyRegisterCodeMaxUse,
+		Type:         OrgConfigTypeNumber,
+		DefaultValue: "0",
+		Description:  "邀请码最大使用次数，0表示不限制",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyRegisterVerifyEnabled,
+		Type:         OrgConfigTypeBoolean,
+		DefaultValue: "false",
+		Description:  "注册验证码开关",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyRegisterDefaultRoles,
+		Type:         OrgConfigTypeJSON,
+		DefaultValue: "[]",
+		Description:  "注册后默认角色ID列表",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyRegisterDefaultDepts,
+		Type:         OrgConfigTypeJSON,
+		DefaultValue: "[]",
+		Description:  "注册后默认部门ID列表",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyLoginCaptchaEnabled,
+		Type:         OrgConfigTypeBoolean,
+		DefaultValue: "false",
+		Description:  "登录验证码开关",
 	},
 	{
 		Group:        OrgConfigGroupAuth,
