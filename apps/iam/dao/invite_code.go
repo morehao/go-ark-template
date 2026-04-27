@@ -51,7 +51,7 @@ func NewInviteCodeDao() *InviteCodeDao {
 
 func (dao *InviteCodeDao) IncrUseCount(ctx context.Context, id uint) (int64, error) {
 	db := dao.DB(ctx).Table(model.TableNameInviteCode)
-	result := db.Where("id = ? AND status = ?", id, model.InviteCodeStatusActive).
+	result := db.Where("id = ? AND status = ? AND (max_use_count = 0 OR use_count < max_use_count)", id, model.InviteCodeStatusActive).
 		Update("use_count", gorm.Expr("use_count + 1"))
 	if result.Error != nil {
 		return 0, result.Error
