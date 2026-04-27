@@ -20,6 +20,7 @@ const (
 	AuthRegisterDisabled         = 100814
 	AuthRegisterError            = 100815
 	AuthRegisterIdentityRequired = 100817
+	AuthUserLockedError           = 100818
 )
 
 var authErrorMsgMap = gerror.CodeMsgMap{
@@ -40,4 +41,5 @@ var authErrorMsgMap = gerror.CodeMsgMap{
 	AuthRegisterDisabled:         "该组织未开放用户注册",
 	AuthRegisterError:            "注册失败",
 	AuthRegisterIdentityRequired: "请填写邮箱",
+	AuthUserLockedError:          "用户已被锁定",
 }
