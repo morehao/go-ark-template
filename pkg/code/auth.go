@@ -24,6 +24,10 @@ const (
 	AuthTokenInvalidError         = 100819
 	AuthSessionRequiredError      = 100820
 	AuthTokenRequiredError        = 100821
+	InviteCodeRequiredError       = 100822
+	InviteCodeInvalidError        = 100823
+	InviteCodeExpiredError        = 100824
+	InviteCodeUsedUpError         = 100825
 )
 
 var authErrorMsgMap = gerror.CodeMsgMap{
@@ -48,4 +52,8 @@ var authErrorMsgMap = gerror.CodeMsgMap{
 	AuthTokenInvalidError:         "无效的token",
 	AuthSessionRequiredError:      "请先登录",
 	AuthTokenRequiredError:        "token不能为空",
+	InviteCodeRequiredError:       "邀请码不能为空",
+	InviteCodeInvalidError:        "邀请码无效",
+	InviteCodeExpiredError:        "邀请码已过期",
+	InviteCodeUsedUpError:         "邀请码已用完",
 }
