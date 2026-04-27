@@ -2,6 +2,7 @@ package ctruser
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/morehao/goark/apps/iam/internal/dto/dtoauth"
 	"github.com/morehao/goark/apps/iam/internal/dto/dtouser"
 	"github.com/morehao/goark/apps/iam/internal/service/svcuser"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
@@ -22,6 +23,8 @@ type UserCtr interface {
 	ChangePassword(ctx *gin.Context)
 	LoginHistory(ctx *gin.Context)
 	Logout(ctx *gin.Context)
+	PendingList(ctx *gin.Context)
+	Approve(ctx *gin.Context)
 }
 
 type userCtr struct {
@@ -329,4 +332,47 @@ func (ctr *userCtr) Logout(ctx *gin.Context) {
 		return
 	}
 	gincontext.Success(ctx, "登出成功")
+}
+
+// PendingList 待审批用户列表
+// @Tags 用户管理
+// @Summary 待审批用户列表
+// @accept application/json
+// @Produce application/json
+// @Param req query dtouser.PendingListReq true "待审批用户列表"
+// @Success 200 {object} gincontext.DtoRender{data=dtouser.PendingListResp}
+// @Router /v1/iam/user/pendingList [get]
+func (ctr *userCtr) PendingList(ctx *gin.Context) {
+	var req dtouser.PendingListReq
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	res, err := ctr.userSvc.PendingList(ctx, &req)
+	if err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	gincontext.Success(ctx, res)
+}
+
+// Approve 审批用户
+// @Tags 用户管理
+// @Summary 审批用户
+// @accept application/json
+// @Produce application/json
+// @Param req body dtoauth.ApproveReq true "审批用户"
+// @Success 200 {object} gincontext.DtoRender{data=string}
+// @Router /v1/iam/user/approve [post]
+func (ctr *userCtr) Approve(ctx *gin.Context) {
+	var req dtoauth.ApproveReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	if err := ctr.userSvc.Approve(ctx, &req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	gincontext.Success(ctx, "审批成功")
 }

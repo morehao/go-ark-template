@@ -1,6 +1,8 @@
 package dao
 
 import (
+	"context"
+
 	"github.com/morehao/goark/apps/iam/model"
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/biz/genericdao"
@@ -46,11 +48,10 @@ func NewUserDao() *UserDao {
 	}
 }
 
-func (dao *UserDao) GetPendingUsers(ctx context.Context, tenantID uint) ([]*model.UserEntity, error) {
-	var users []*model.UserEntity
-	err := dao.GetListByCond(ctx, &UserCond{
+func (dao *UserDao) GetPendingUsers(ctx context.Context, tenantID uint) (model.UserEntityList, error) {
+	result, err := dao.GetListByCond(ctx, &UserCond{
 		TenantID: tenantID,
 		Status:   model.UserStatusPending,
-	}, &users)
-	return users, err
+	})
+	return result, err
 }

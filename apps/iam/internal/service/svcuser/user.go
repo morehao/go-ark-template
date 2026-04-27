@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/morehao/goark/apps/iam/core/user"
 	"github.com/morehao/goark/apps/iam/dao"
+	"github.com/morehao/goark/apps/iam/internal/dto/dtoauth"
 	"github.com/morehao/goark/apps/iam/internal/dto/dtouser"
 	"github.com/morehao/goark/apps/iam/model"
 	"github.com/morehao/goark/apps/iam/object/objuser"
@@ -38,6 +39,8 @@ type UserSvc interface {
 	ChangePassword(ctx *gin.Context, req *dtouser.ChangePasswordReq) error
 	LoginHistory(ctx *gin.Context, req *dtouser.LoginHistoryReq) (*dtouser.LoginHistoryResp, error)
 	Logout(ctx *gin.Context) error
+	PendingList(ctx *gin.Context, req *dtouser.PendingListReq) (*dtouser.PendingListResp, error)
+	Approve(ctx *gin.Context, req *dtoauth.ApproveReq) error
 }
 
 type userSvc struct {
@@ -748,6 +751,68 @@ func (svc *userSvc) Logout(ctx *gin.Context) error {
 			return code.GetError(code.AuthLogoutError)
 		}
 	}
+	return nil
+}
+
+func (svc *userSvc) PendingList(ctx *gin.Context, req *dtouser.PendingListReq) (*dtouser.PendingListResp, error) {
+	tenantID := gincontext.GetTenantID(ctx)
+	glog.Infof(ctx, "[svcuser.PendingList] req:%s", gutil.ToJsonString(req))
+
+	pendingUsers, err := dao.NewUserDao().GetPendingUsers(ctx, tenantID)
+	if err != nil {
+		glog.Errorf(ctx, "[svcuser.PendingList] GetPendingUsers fail, err:%v, tenantID:%d", err, tenantID)
+		return nil, code.GetError(code.UserGetPageListError)
+	}
+
+	list := make([]dtouser.PendingListItem, 0, len(pendingUsers))
+	for _, v := range pendingUsers {
+		list = append(list, dtouser.PendingListItem{
+			UserID:     v.ID,
+			Username:   v.Username,
+			Status:     string(v.Status),
+			TenantID:   v.TenantID,
+			DeptID:     v.DeptID,
+			EmployeeNo: v.EmployeeNo,
+			Position:   v.Position,
+			JobLevel:   v.JobLevel,
+		})
+	}
+
+	return &dtouser.PendingListResp{
+		List:  list,
+		Total: int64(len(pendingUsers)),
+	}, nil
+}
+
+func (svc *userSvc) Approve(ctx *gin.Context, req *dtoauth.ApproveReq) error {
+	tenantID := gincontext.GetTenantID(ctx)
+	glog.Infof(ctx, "[svcuser.Approve] req:%s", gutil.ToJsonString(req))
+
+	userEntity, err := dao.NewUserDao().GetByID(ctx, req.UserID)
+	if err != nil || userEntity == nil || userEntity.ID == 0 {
+		glog.Errorf(ctx, "[svcuser.Approve] user not found, userID:%d", req.UserID)
+		return code.GetError(code.UserNotExistError)
+	}
+
+	if userEntity.TenantID != tenantID {
+		return code.GetError(code.TenantScopeForbiddenError)
+	}
+
+	var newStatus model.UserStatus
+	if req.Approved {
+		newStatus = model.UserStatusEnabled
+	} else {
+		newStatus = model.UserStatusDisabled
+	}
+
+	updateMap := map[string]any{
+		"status": newStatus,
+	}
+	if err := dao.NewUserDao().UpdateMap(ctx, req.UserID, updateMap); err != nil {
+		glog.Errorf(ctx, "[svcuser.Approve] UpdateMap fail, err:%v, userID:%d", err, req.UserID)
+		return code.GetError(code.UserUpdateError)
+	}
+
 	return nil
 }
 

@@ -69,3 +69,24 @@ type LoginHistoryReq struct {
 	StartTime string `json:"startTime"` // 开始时间
 	EndTime   string `json:"endTime"`   // 结束时间
 }
+
+type PendingListReq struct {
+	gobject.PageQuery
+}
+
+type PendingListResp struct {
+	List  []PendingListItem `json:"list"`
+	Total int64             `json:"total"`
+}
+
+type PendingListItem struct {
+	UserID     uint   `json:"userId"`
+	Username   string `json:"username"`
+	Status     string `json:"status"`
+	TenantID   uint   `json:"tenantId"`
+	DeptID     uint   `json:"deptId"`
+	EmployeeNo string `json:"employeeNo"`
+	Position   string `json:"position"`
+	JobLevel   string `json:"jobLevel"`
+	EntryDate  int64  `json:"entryDate"`
+}
