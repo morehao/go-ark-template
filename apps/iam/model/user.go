@@ -34,8 +34,10 @@ type UserEntity struct {
 	JobLevel    string     `gorm:"column:job_level;type:varchar(32);;default '';comment: 职级"`
 	LastLoginAt *time.Time `gorm:"column:last_login_at;type:datetime(3);;default NULL;comment: 最后登录时间"`
 	LastLoginIp string     `gorm:"column:last_login_ip;type:varchar(45);;default '';comment: 最后登录IP(支持IPv6)"`
-	LoginCount  int32      `gorm:"column:login_count;type:int;;default 0;comment: 登录次数"`
-	PersonID    uint       `gorm:"column:person_id;type:bigint;not null;default '';comment: 自然人ID"`
+	LoginCount     int        `gorm:"column:login_count;type:int;;default 0;comment: 登录次数"`
+	LoginFailCount int        `gorm:"column:login_fail_count;type:int;;default 0;comment: 连续登录失败次数"`
+	LockedUntil    *time.Time `gorm:"column:locked_until;type:datetime(3);;default NULL;comment: 账户锁定截止时间"`
+	PersonID       uint       `gorm:"column:person_id;type:bigint;not null;default '';comment: 自然人ID"`
 	Position    string     `gorm:"column:position;type:varchar(64);;default '';comment: 职位"`
 	Status      UserStatus `gorm:"column:status;type:varchar(16);;default enabled;comment: 状态: enabled-正常 locked-锁定 disabled-禁用"`
 	UpdatedBy   uint       `gorm:"column:updated_by;type:bigint;not null;default 0;comment: 更新人ID"`
