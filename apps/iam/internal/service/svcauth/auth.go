@@ -490,6 +490,22 @@ func resolveDomain(ctx *gin.Context) string {
 	return host
 }
 
+func resolveDomainFromHost(ctx *gin.Context) string {
+	host := ctx.Request.Host
+	if idx := strings.Index(host, ":"); idx != -1 {
+		host = host[:idx]
+	}
+	return strings.TrimSpace(host)
+}
+
+func (svc *authSvc) getTenantByDomain(ctx *gin.Context, orgID uint, domain string) (*model.TenantEntity, error) {
+	return dao.NewTenantDao().GetByCond(ctx, &dao.TenantCond{
+		OrgID:  orgID,
+		Domain: domain,
+		Status: model.TenantStatusEnabled,
+	})
+}
+
 func (svc *authSvc) updateLoginInfo(ctx *gin.Context, userEntity *model.UserEntity) {
 	now := time.Now()
 	updateMap := map[string]any{
@@ -543,6 +559,17 @@ func (svc *authSvc) Register(ctx *gin.Context, req *dtoauth.RegisterReq) (*dtoau
 		return nil, code.GetError(code.AuthRegisterDisabled)
 	}
 
+	domain := resolveDomainFromHost(ctx)
+
+	tenantEntity, err := svc.getTenantByDomain(ctx, orgEntity.ID, domain)
+	if err != nil || tenantEntity == nil {
+		return nil, code.GetError(code.TenantNotExistError)
+	}
+
+	if tenantEntity.Status != model.TenantStatusEnabled {
+		return nil, code.GetError(code.AuthRegisterError)
+	}
+
 	identityType, _ := svc.getOrgConfigString(ctx, orgEntity.ID, model.OrgConfigKeyRegisterIdentityType)
 	if identityType == "" {
 		identityType = string(model.RegisterIdentityTypeEmail)
@@ -555,7 +582,7 @@ func (svc *authSvc) Register(ctx *gin.Context, req *dtoauth.RegisterReq) (*dtoau
 	userStatus := model.UserStatusEnabled
 	message := "注册成功"
 	if requireApproval {
-		userStatus = model.UserStatusDisabled
+		userStatus = model.UserStatusPending
 		message = "注册成功，等待管理员审核"
 	}
 
@@ -569,53 +596,11 @@ func (svc *authSvc) Register(ctx *gin.Context, req *dtoauth.RegisterReq) (*dtoau
 	personEntity, _ := dao.NewPersonDao().GetByCond(ctx, &dao.PersonCond{Email: email})
 	personExists := personEntity != nil && personEntity.ID > 0
 
-	var tenantID, userID, personID uint
-	var deptID uint
+	var userID, personID uint
 	txErr := dbclient.IamDB(ctx).Transaction(func(tx *gorm.DB) error {
-		tenantEntity := &model.TenantEntity{
-			OrgID: orgEntity.ID,
-			TenantName:     req.TenantName,
-			TenantCode:     req.TenantCode,
-			Status:         model.TenantStatusEnabled,
-			CreatedBy:      0,
-			UpdatedBy:      0,
-		}
-		if err := dao.NewTenantDao().WithTx(tx).Insert(ctx, tenantEntity); err != nil {
-			glog.Errorf(ctx, "[svcauth.Register] Insert tenant fail, err:%v", err)
-			return err
-		}
-		tenantID = tenantEntity.ID
-
-		tenantPathMap := map[string]any{"tenant_path": fmt.Sprintf("/%d/", tenantID)}
-		if err := dao.NewTenantDao().WithTx(tx).UpdateMap(ctx, tenantID, tenantPathMap); err != nil {
-			glog.Errorf(ctx, "[svcauth.Register] Update tenant path fail, err:%v", err)
-			return err
-		}
-
-		deptEntity := &model.DepartmentEntity{
-			TenantID:  tenantID,
-			DeptCode:  req.TenantCode,
-			DeptName:  req.TenantName,
-			DeptLevel: 1,
-			ParentID:  0,
-			Status:    model.DeptStatusEnabled,
-			CreatedBy: 0,
-			UpdatedBy: 0,
-		}
-		if err := dao.NewDepartmentDao().WithTx(tx).Insert(ctx, deptEntity); err != nil {
-			glog.Errorf(ctx, "[svcauth.Register] Insert department fail, err:%v", err)
-			return err
-		}
-		deptID = deptEntity.ID
-
-		deptPathMap := map[string]any{"dept_path": fmt.Sprintf("/%d/", deptEntity.ID)}
-		if err := dao.NewDepartmentDao().WithTx(tx).UpdateMap(ctx, deptEntity.ID, deptPathMap); err != nil {
-			glog.Errorf(ctx, "[svcauth.Register] Update department path fail, err:%v", err)
-			return err
-		}
-
+		var newPersonID uint
 		if personExists {
-			personID = personEntity.ID
+			newPersonID = personEntity.ID
 		} else {
 			newPerson := &model.PersonEntity{
 				Mobile:       strings.TrimSpace(req.Mobile),
@@ -626,40 +611,24 @@ func (svc *authSvc) Register(ctx *gin.Context, req *dtoauth.RegisterReq) (*dtoau
 				UpdatedBy:    0,
 			}
 			if err := dao.NewPersonDao().WithTx(tx).Insert(ctx, newPerson); err != nil {
-				glog.Errorf(ctx, "[svcauth.Register] Insert person fail, err:%v", err)
 				return err
 			}
-			personID = newPerson.ID
+			newPersonID = newPerson.ID
 		}
 
 		userEntity := &model.UserEntity{
-			TenantID:  tenantID,
-			DeptID:    deptID,
-			PersonID:  personID,
+			TenantID:  tenantEntity.ID,
+			PersonID:  newPersonID,
 			Username:  req.Username,
-			UserType:  model.UserTypeTenantAdmin,
+			UserType:  model.UserTypeNormal,
 			Status:    userStatus,
 			CreatedBy: 0,
 			UpdatedBy: 0,
 		}
 		if err := dao.NewUserDao().WithTx(tx).Insert(ctx, userEntity); err != nil {
-			glog.Errorf(ctx, "[svcauth.Register] Insert user fail, err:%v", err)
 			return err
 		}
 		userID = userEntity.ID
-
-		userDeptEntity := &model.UserDepartmentEntity{
-			TenantID:  tenantID,
-			UserID:    userID,
-			DeptID:    deptID,
-			DeptType:  model.UserDeptTypePrimary,
-			CreatedBy: 0,
-			UpdatedBy: 0,
-		}
-		if err := dao.NewUserDepartmentDao().WithTx(tx).Insert(ctx, userDeptEntity); err != nil {
-			glog.Errorf(ctx, "[svcauth.Register] Insert user department fail, err:%v", err)
-			return err
-		}
 
 		return nil
 	})
@@ -669,7 +638,6 @@ func (svc *authSvc) Register(ctx *gin.Context, req *dtoauth.RegisterReq) (*dtoau
 	}
 
 	return &dtoauth.RegisterResp{
-		TenantID:     tenantID,
 		UserID:       userID,
 		PersonID:     personID,
 		Status:       string(userStatus),
