@@ -1,7 +1,6 @@
 package svcauth
 
 import (
-	"crypto/sha256"
 	"fmt"
 	"strings"
 	"time"
@@ -10,9 +9,11 @@ import (
 	"github.com/morehao/goark/apps/iam/config"
 	"github.com/morehao/goark/apps/iam/dao"
 	"github.com/morehao/goark/apps/iam/internal/dto/dtoauth"
+	"github.com/morehao/goark/apps/iam/internal/service/svcuser"
 	"github.com/morehao/goark/apps/iam/model"
 	"github.com/morehao/goark/pkg/code"
 	"github.com/morehao/goark/pkg/dbclient"
+	"github.com/morehao/goark/pkg/token"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
 	"github.com/morehao/golib/biz/gobject"
 	"github.com/morehao/golib/gauth/jwtauth"
@@ -22,12 +23,8 @@ import (
 )
 
 const (
-	tokenExpireDuration            = 24 * time.Hour
-	tempTokenExpireDuration        = 10 * time.Minute
-	refreshTokenExpireDuration     = 7 * 24 * time.Hour
-	tokenBlacklistKeyPrefix        = "iam:token:blacklist:"
-	refreshTokenBlacklistKeyPrefix = "iam:refreshToken:blacklist:"
-	tokenIssuer                    = "iam"
+	tempTokenExpireDuration = 10 * time.Minute
+	tokenIssuer             = "iam"
 )
 
 type AuthSvc interface {
@@ -62,12 +59,6 @@ func (svc *authSvc) LoginByPassword(ctx *gin.Context, req *dtoauth.LoginByPasswo
 		return nil, err
 	}
 
-	// 验证密码
-	if err := gcrypto.ComparePasswordHash(personEntity.PasswordHash, req.Password); err != nil {
-		glog.Errorf(ctx, "[svcauth.LoginByPassword] password mismatch, account:%s", account)
-		return nil, code.GetError(code.AuthPasswordError)
-	}
-
 	// 查询该自然人关联的所有用户账号
 	userList, err := dao.NewUserDao().GetListByCond(ctx, &dao.UserCond{
 		PersonID: personEntity.ID,
@@ -84,6 +75,22 @@ func (svc *authSvc) LoginByPassword(ctx *gin.Context, req *dtoauth.LoginByPasswo
 	if len(userList) == 0 {
 		return nil, code.GetError(code.AuthNoTenantError)
 	}
+
+	// 检查用户锁定状态
+	if err := svcuser.NewPasswordSvc().CheckUserLockStatus(ctx, userList[0].ID); err != nil {
+		return nil, err
+	}
+
+	// 验证密码
+	if err := gcrypto.ComparePasswordHash(personEntity.PasswordHash, req.Password); err != nil {
+		// 记录登录失败
+		svcuser.NewPasswordSvc().RecordLoginFail(ctx, userList[0].ID, orgEntity.ID)
+		glog.Errorf(ctx, "[svcauth.LoginByPassword] password mismatch, account:%s", account)
+		return nil, code.GetError(code.AuthPasswordError)
+	}
+
+	// 清除登录失败计数
+	svcuser.NewPasswordSvc().ClearLoginFail(ctx, userList[0].ID)
 
 	// 统一返回临时token + 租户列表
 	tempToken, err := svc.generateTempToken(personEntity.ID, orgEntity.ID)
@@ -176,27 +183,16 @@ func (svc *authSvc) SelectTenant(ctx *gin.Context, req *dtoauth.SelectTenantReq)
 
 // Logout 登出(token加黑名单)
 func (svc *authSvc) Logout(ctx *gin.Context, refreshToken string) error {
-	// 1. 将 access token 加入黑名单
-	token := ctx.GetHeader("Authorization")
-	if token != "" {
-		token = strings.TrimPrefix(token, "Bearer ")
-		if token != "" {
-			key := tokenBlacklistKeyPrefix + hashToken(token)
-			if err := dbclient.RedisCli.Set(ctx.Request.Context(), key, "1", tokenExpireDuration).Err(); err != nil {
-				glog.Errorf(ctx, "[svcauth.Logout] Redis Set access token fail, err:%v", err)
-				return code.GetError(code.AuthLogoutError)
-			}
+	authToken := ctx.GetHeader("Authorization")
+	if authToken != "" {
+		if err := token.AddTokenToBlacklist(ctx.Request.Context(), authToken, token.TokenExpireDuration); err != nil {
+			return code.GetError(code.AuthLogoutError)
 		}
 	}
 
-	// 2. 将 refreshToken 加入黑名单（如果提供了）
 	if refreshToken != "" {
-		refreshToken = strings.TrimPrefix(refreshToken, "Bearer ")
-		if refreshToken != "" {
-			key := refreshTokenBlacklistKeyPrefix + hashToken(refreshToken)
-			if err := dbclient.RedisCli.Set(ctx.Request.Context(), key, "1", refreshTokenExpireDuration).Err(); err != nil {
-				glog.Errorf(ctx, "[svcauth.Logout] Redis Set refresh token fail, err:%v", err)
-			}
+		if err := token.AddRefreshTokenToBlacklist(ctx.Request.Context(), refreshToken); err != nil {
+			glog.Errorf(ctx, "[svcauth.Logout] AddRefreshTokenToBlacklist fail, err:%v", err)
 		}
 	}
 
@@ -205,19 +201,7 @@ func (svc *authSvc) Logout(ctx *gin.Context, refreshToken string) error {
 
 // IsTokenBlacklisted 检查token是否在黑名单中
 func IsTokenBlacklisted(ctx *gin.Context, token string) bool {
-	if dbclient.RedisCli == nil {
-		return false
-	}
-	token = strings.TrimPrefix(token, "Bearer ")
-	if token == "" {
-		return false
-	}
-	key := tokenBlacklistKeyPrefix + hashToken(token)
-	exists, err := dbclient.RedisCli.Exists(ctx.Request.Context(), key).Result()
-	if err != nil {
-		return false
-	}
-	return exists > 0
+	return token.IsTokenBlacklisted(ctx.Request.Context(), token)
 }
 
 func (svc *authSvc) findPersonByAccount(ctx *gin.Context, account string) (*model.PersonEntity, error) {
@@ -425,15 +409,7 @@ func isRefreshTokenBlacklisted(ctx *gin.Context, token string) bool {
 }
 
 func addRefreshTokenToBlacklist(ctx *gin.Context, token string) error {
-	if dbclient.RedisCli == nil {
-		return nil
-	}
-	token = strings.TrimPrefix(token, "Bearer ")
-	if token == "" {
-		return nil
-	}
-	key := refreshTokenBlacklistKeyPrefix + hashToken(token)
-	return dbclient.RedisCli.Set(ctx.Request.Context(), key, "1", refreshTokenExpireDuration).Err()
+	return token.AddRefreshTokenToBlacklist(ctx.Request.Context(), token)
 }
 
 func (svc *authSvc) buildTenantList(ctx *gin.Context, userList model.UserEntityList) ([]dtoauth.TenantListItem, error) {
@@ -553,11 +529,6 @@ func (svc *authSvc) getUserDeptAndRoles(ctx *gin.Context, userID uint, tenantID 
 	}
 
 	return deptID, roleIDs
-}
-
-func hashToken(token string) string {
-	h := sha256.Sum256([]byte(token))
-	return fmt.Sprintf("%x", h)
 }
 
 func (svc *authSvc) Register(ctx *gin.Context, req *dtoauth.RegisterReq) (*dtoauth.RegisterResp, error) {
