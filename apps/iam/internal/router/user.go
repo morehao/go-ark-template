@@ -20,4 +20,5 @@ func userRouter(groups *ginserver.RouterGroups) {
 	v1RouterGroup.POST("/user/assignRoles", userCtr.AssignRoles)
 	v1RouterGroup.GET("/user/listRoles", userCtr.ListRoles)
 	v1RouterGroup.GET("/user/getCurrentUserInfo", userCtr.GetCurrentUserInfo)
+	v1RouterGroup.POST("/user/updateProfile", userCtr.UpdateProfile)
 }

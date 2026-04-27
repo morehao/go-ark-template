@@ -18,6 +18,7 @@ type UserCtr interface {
 	AssignRoles(ctx *gin.Context)
 	ListRoles(ctx *gin.Context)
 	GetCurrentUserInfo(ctx *gin.Context)
+	UpdateProfile(ctx *gin.Context)
 }
 
 type userCtr struct {
@@ -246,4 +247,25 @@ func (ctr *userCtr) GetCurrentUserInfo(ctx *gin.Context) {
 		return
 	}
 	gincontext.Success(ctx, res)
+}
+
+// UpdateProfile 更新个人资料
+// @Tags 用户管理
+// @Summary 更新个人资料
+// @accept application/json
+// @Produce application/json
+// @Param req body dtouser.UpdateProfileReq true "更新个人资料"
+// @Success 200 {object} gincontext.DtoRender{data=string}
+// @Router /v1/iam/user/updateProfile [post]
+func (ctr *userCtr) UpdateProfile(ctx *gin.Context) {
+	var req dtouser.UpdateProfileReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	if err := ctr.userSvc.UpdateProfile(ctx, &req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	gincontext.Success(ctx, "更新成功")
 }

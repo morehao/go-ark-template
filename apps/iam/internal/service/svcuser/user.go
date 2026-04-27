@@ -30,6 +30,7 @@ type UserSvc interface {
 	AssignRoles(ctx *gin.Context, req *dtouser.UserAssignRolesReq) error
 	ListRoles(ctx *gin.Context, req *dtouser.UserRolesReq) (*dtouser.UserRolesResp, error)
 	GetCurrentUserInfo(ctx *gin.Context) (*dtouser.UserInfoResp, error)
+	UpdateProfile(ctx *gin.Context, req *dtouser.UpdateProfileReq) error
 }
 
 type userSvc struct {
@@ -592,4 +593,41 @@ func (svc *userSvc) getUserDepts(ctx *gin.Context, userID, tenantID uint) ([]uin
 		}
 	}
 	return deptIDs, deptNames
+}
+
+func (svc *userSvc) UpdateProfile(ctx *gin.Context, req *dtouser.UpdateProfileReq) error {
+	userID := gincontext.GetUserID(ctx)
+
+	userEntity, err := dao.NewUserDao().GetByID(ctx, userID)
+	if err != nil || userEntity == nil || userEntity.ID == 0 {
+		return code.GetError(code.UserNotExistError)
+	}
+
+	personEntity, err := dao.NewPersonDao().GetByID(ctx, userEntity.PersonID)
+	if err != nil || personEntity == nil {
+		return code.GetError(code.UserNotExistError)
+	}
+
+	updateMap := map[string]any{}
+	if req.Email != "" {
+		updateMap["email"] = req.Email
+	}
+	if req.Phone != "" {
+		updateMap["mobile"] = req.Phone
+	}
+	if req.Avatar != "" {
+		updateMap["avatar_url"] = req.Avatar
+	}
+	if req.Nickname != "" {
+		updateMap["real_name"] = req.Nickname
+	}
+
+	if len(updateMap) > 0 {
+		if err := dao.NewPersonDao().UpdateMap(ctx, personEntity.ID, updateMap); err != nil {
+			glog.Errorf(ctx, "[svcuser.UpdateProfile] UpdateMap fail, err:%v, personID:%d", err, personEntity.ID)
+			return code.GetError(code.UserUpdateError)
+		}
+	}
+
+	return nil
 }
