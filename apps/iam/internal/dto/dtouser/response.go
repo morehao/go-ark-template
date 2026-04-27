@@ -6,8 +6,9 @@ import (
 )
 
 type UserCreateResp struct {
-	UserID   uint `json:"userID"`   // 用户UserID
-	PersonID uint `json:"personID"` // 自然人ID
+	UserID   uint   `json:"userID"`             // 用户UserID
+	PersonID uint   `json:"personID"`           // 自然人ID
+	Password string `json:"password,omitempty"` // 仅创建成功时返回
 }
 
 type UserDetailResp struct {

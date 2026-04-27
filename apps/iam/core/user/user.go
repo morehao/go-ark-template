@@ -15,10 +15,16 @@ func CreatePersonWithUser(ctx *gin.Context, tx *gorm.DB, params *CreatePersonPar
 	mobile := params.Mobile
 	email := params.Email
 
-	passwordHash, err := GeneratePassword(mobile, email)
-	if err != nil {
-		glog.Errorf(ctx, "[user.CreatePersonWithUser] GeneratePassword fail, err:%v, mobile:%s, email:%s", err, mobile, email)
-		return nil, code.GetError(code.PersonCreateError)
+	var passwordHash string
+	if params.PasswordHash != "" {
+		passwordHash = params.PasswordHash
+	} else {
+		var err error
+		passwordHash, err = GeneratePassword(mobile, email)
+		if err != nil {
+			glog.Errorf(ctx, "[user.CreatePersonWithUser] GeneratePassword fail, err:%v, mobile:%s, email:%s", err, mobile, email)
+			return nil, code.GetError(code.PersonCreateError)
+		}
 	}
 
 	personCreateEntity := &model.PersonEntity{

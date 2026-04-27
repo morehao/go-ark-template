@@ -10,8 +10,10 @@ type UserCreateReq struct {
 	Mobile           string `json:"mobile" form:"mobile"`                     // 手机号
 	Email            string `json:"email" form:"email"`                       // 邮箱
 	RealName         string `json:"realName" form:"realName"`                 // 真实姓名
-	PrimaryDeptID    uint   `json:"primaryDeptID" form:"primaryDeptID"`       // 主部门ID，未传入时自动使用租户顶级部门
+	PrimaryDeptID    uint   `json:"primaryDeptID" form:"primaryDeptID"`         // 主部门ID，未传入时自动使用租户顶级部门
 	SecondaryDeptIDs []uint `json:"secondaryDeptIDs" form:"secondaryDeptIDs"` // 其他关联部门ID列表（第二部门）
+	Password         string `json:"password"`                                 // 可选，管理员指定密码
+	SendNotify       bool   `json:"sendNotify"`                                // 是否发送通知
 }
 
 type UserUpdateReq struct {

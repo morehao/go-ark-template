@@ -1,17 +1,19 @@
 package svcuser
 
 import (
+	"math/rand"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/morehao/goark/apps/iam/core/user"
 	"github.com/morehao/goark/apps/iam/dao"
 	"github.com/morehao/goark/apps/iam/internal/dto/dtouser"
-	"github.com/morehao/goark/apps/iam/internal/service/svcauth"
 	"github.com/morehao/goark/apps/iam/model"
 	"github.com/morehao/goark/apps/iam/object/objuser"
 	"github.com/morehao/goark/pkg/code"
 	"github.com/morehao/goark/pkg/dbclient"
+	"github.com/morehao/goark/pkg/token"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
 	"github.com/morehao/golib/biz/genericdao"
 	"github.com/morehao/golib/biz/gobject"
@@ -51,6 +53,7 @@ func NewUserSvc() UserSvc {
 func (svc *userSvc) Create(ctx *gin.Context, req *dtouser.UserCreateReq) (*dtouser.UserCreateResp, error) {
 	tenantID := gincontext.GetTenantID(ctx)
 	operatorID := gincontext.GetUserID(ctx)
+	orgID := gincontext.GetOrgID(ctx)
 
 	primaryDeptID, err := svc.getOrCreatePrimaryDeptID(ctx, tenantID, req.PrimaryDeptID)
 	if err != nil {
@@ -61,21 +64,47 @@ func (svc *userSvc) Create(ctx *gin.Context, req *dtouser.UserCreateReq) (*dtous
 		return nil, err
 	}
 
+	var password string
+	var passwordHash string
+	if req.Password != "" {
+		passwordSvc := NewPasswordSvc()
+		if err := passwordSvc.ValidatePasswordComplexity(ctx, orgID, req.Password); err != nil {
+			glog.Errorf(ctx, "[svcuser.Create] ValidatePasswordComplexity fail, err:%v", err)
+			return nil, code.GetError(code.PasswordComplexityError)
+		}
+		password = req.Password
+		hash, err := gcrypto.GeneratePasswordHash(password)
+		if err != nil {
+			glog.Errorf(ctx, "[svcuser.Create] GeneratePasswordHash fail, err:%v", err)
+			return nil, code.GetError(code.UserCreateError)
+		}
+		passwordHash = hash
+	} else {
+		password = svc.generateRandomPassword()
+		hash, err := gcrypto.GeneratePasswordHash(password)
+		if err != nil {
+			glog.Errorf(ctx, "[svcuser.Create] GeneratePasswordHash fail, err:%v", err)
+			return nil, code.GetError(code.UserCreateError)
+		}
+		passwordHash = hash
+	}
+
 	params := &user.CreatePersonParams{
-		Mobile:      strings.TrimSpace(req.Mobile),
-		Email:       strings.TrimSpace(req.Email),
-		RealName:    req.RealName,
-		OperatorID:  operatorID,
-		TenantID:    tenantID,
-		DeptID:      primaryDeptID,
-		Username:    req.Username,
-		UserType:    model.UserType(req.UserType),
-		Status:      model.UserStatus(req.Status),
-		EmployeeNo:  req.EmployeeNo,
-		JobLevel:    req.JobLevel,
-		Position:    req.Position,
-		LastLoginIp: req.LastLoginIp,
-		LoginCount:  req.LoginCount,
+		Mobile:       strings.TrimSpace(req.Mobile),
+		Email:        strings.TrimSpace(req.Email),
+		RealName:     req.RealName,
+		OperatorID:   operatorID,
+		TenantID:     tenantID,
+		DeptID:       primaryDeptID,
+		Username:     req.Username,
+		UserType:     model.UserType(req.UserType),
+		Status:       model.UserStatus(req.Status),
+		EmployeeNo:   req.EmployeeNo,
+		JobLevel:     req.JobLevel,
+		Position:     req.Position,
+		LastLoginIp:  req.LastLoginIp,
+		LoginCount:   int(req.LoginCount),
+		PasswordHash: passwordHash,
 	}
 
 	var result *user.CreatePersonResult
@@ -98,6 +127,7 @@ func (svc *userSvc) Create(ctx *gin.Context, req *dtouser.UserCreateReq) (*dtous
 	return &dtouser.UserCreateResp{
 		UserID:   result.UserID,
 		PersonID: result.PersonID,
+		Password: password,
 	}, nil
 }
 
@@ -170,7 +200,7 @@ func (svc *userSvc) Detail(ctx *gin.Context, req *dtouser.UserDetailReq) (*dtous
 			JobLevel:    userEntity.JobLevel,
 			LastLoginAt: userEntity.LastLoginAt.Unix(),
 			LastLoginIp: userEntity.LastLoginIp,
-			LoginCount:  userEntity.LoginCount,
+			LoginCount:  int32(userEntity.LoginCount),
 			PersonID:    userEntity.PersonID,
 			Position:    userEntity.Position,
 			Status:      string(userEntity.Status),
@@ -211,7 +241,7 @@ func (svc *userSvc) PageList(ctx *gin.Context, req *dtouser.UserPageListReq) (*d
 				JobLevel:    v.JobLevel,
 				LastLoginAt: v.LastLoginAt.Unix(),
 				LastLoginIp: v.LastLoginIp,
-				LoginCount:  v.LoginCount,
+				LoginCount:  int32(v.LoginCount),
 				PersonID:    v.PersonID,
 				Position:    v.Position,
 				Status:      string(v.Status),
@@ -712,5 +742,21 @@ func (svc *userSvc) LoginHistory(ctx *gin.Context, req *dtouser.LoginHistoryReq)
 }
 
 func (svc *userSvc) Logout(ctx *gin.Context) error {
-	return svcauth.NewAuthSvc().Logout(ctx, "")
+	authToken := ctx.GetHeader("Authorization")
+	if authToken != "" {
+		if err := token.AddTokenToBlacklist(ctx.Request.Context(), authToken, token.TokenExpireDuration); err != nil {
+			return code.GetError(code.AuthLogoutError)
+		}
+	}
+	return nil
+}
+
+func (svc *userSvc) generateRandomPassword() string {
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*"
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	b := make([]byte, 12)
+	for i := range b {
+		b[i] = charset[r.Intn(len(charset))]
+	}
+	return string(b)
 }
