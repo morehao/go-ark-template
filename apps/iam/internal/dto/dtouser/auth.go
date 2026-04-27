@@ -20,11 +20,14 @@ type LogoutReq struct {
 }
 
 type RegisterReq struct {
-	Username string `json:"username" validate:"required" label:"用户名"`
-	Password string `json:"password" validate:"required" label:"密码"`
-	Mobile   string `json:"mobile" label:"手机号"`
-	Email    string `json:"email" validate:"required" label:"邮箱"`
-	RealName string `json:"realName" validate:"required" label:"真实姓名"`
+	Username   string `json:"username" validate:"required" label:"用户名"`
+	Password   string `json:"password" validate:"required" label:"密码"`
+	Mobile     string `json:"mobile" label:"手机号"`
+	Email      string `json:"email" validate:"required" label:"邮箱"`
+	RealName   string `json:"realName" validate:"required" label:"真实姓名"`
+	InviteCode string `json:"inviteCode" label:"邀请码"`
+	SSOType    string `json:"ssoType" label:"SSO类型"`
+	OpenID     string `json:"openID" label:"OpenID"`
 }
 
 type ApproveReq struct {
