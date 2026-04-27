@@ -392,3 +392,110 @@ CREATE TABLE IF NOT EXISTS iam_login_log (
     INDEX idx_tenant_created (tenant_id, created_at),
     INDEX idx_deleted_at (deleted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='登录日志表';
+
+-- ============================================
+-- 第二部分：OIDC & SSO 相关表
+-- ============================================
+
+-- API Key 表
+CREATE TABLE IF NOT EXISTS iam_api_key (
+    id BIGINT AUTO_INCREMENT COMMENT 'ID',
+    tenant_id BIGINT NOT NULL DEFAULT 0 COMMENT '租户ID',
+    user_id BIGINT NOT NULL DEFAULT 0 COMMENT '关联用户ID',
+    app_id BIGINT NOT NULL DEFAULT 0 COMMENT '应用ID',
+    key_name VARCHAR(64) NOT NULL COMMENT '密钥名称',
+    key_prefix VARCHAR(16) NOT NULL COMMENT '密钥前缀(ark_开头)',
+    api_key TEXT NOT NULL COMMENT 'AES加密的API Key',
+    access_policy VARCHAR(16) DEFAULT 'all' COMMENT '访问策略: all-所有 ip-IP限制',
+    allowed_ips TEXT COMMENT '允许的IP列表(JSON)',
+    scopes VARCHAR(255) COMMENT '权限范围',
+    status VARCHAR(16) DEFAULT 'enabled' COMMENT '状态: enabled-启用 disabled-停用',
+    last_used_at DATETIME(3) COMMENT '最后使用时间',
+    expires_at DATETIME(3) COMMENT '过期时间',
+    created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+    updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    deleted_at DATETIME(3) NULL COMMENT '删除时间',
+    created_by BIGINT NOT NULL DEFAULT 0 COMMENT '创建人ID',
+    updated_by BIGINT NOT NULL DEFAULT 0 COMMENT '更新人ID',
+    deleted_by BIGINT NOT NULL DEFAULT 0 COMMENT '删除人ID',
+    PRIMARY KEY (id),
+    INDEX idx_tenant_user (tenant_id, user_id),
+    INDEX idx_app_id (app_id),
+    INDEX idx_status (status),
+    INDEX idx_deleted_at (deleted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='API Key表';
+
+-- OIDC 授权码表
+CREATE TABLE IF NOT EXISTS iam_auth_code (
+    id BIGINT AUTO_INCREMENT COMMENT 'ID',
+    code VARCHAR(64) NOT NULL COMMENT '授权码',
+    client_id VARCHAR(64) NOT NULL COMMENT 'Client ID',
+    person_id BIGINT NOT NULL DEFAULT 0 COMMENT '自然人ID',
+    tenant_id BIGINT NOT NULL DEFAULT 0 COMMENT '租户ID',
+    org_id BIGINT NOT NULL DEFAULT 0 COMMENT '组织ID',
+    redirect_uri VARCHAR(255) NOT NULL COMMENT '重定向URI',
+    scope VARCHAR(255) DEFAULT 'openid,profile' COMMENT '请求的scope',
+    state VARCHAR(128) COMMENT 'state参数，防CSRF',
+    code_challenge VARCHAR(64) COMMENT 'PKCE code_challenge',
+    code_challenge_method VARCHAR(8) DEFAULT 'S256' COMMENT 'PKCE challenge方法',
+    expires_at DATETIME(3) NOT NULL COMMENT '过期时间',
+    used TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否已使用',
+    used_at DATETIME(3) COMMENT '使用时间',
+    created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+    updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    deleted_at DATETIME(3) NULL COMMENT '删除时间',
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_code (code),
+    INDEX idx_client_id (client_id),
+    INDEX idx_person_id (person_id),
+    INDEX idx_expires_at (expires_at),
+    INDEX idx_deleted_at (deleted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='OIDC授权码表';
+
+-- SSO 会话表
+CREATE TABLE IF NOT EXISTS iam_sso_session (
+    id BIGINT AUTO_INCREMENT COMMENT 'ID',
+    session_id VARCHAR(64) NOT NULL COMMENT 'SSO会话ID',
+    person_id BIGINT NOT NULL DEFAULT 0 COMMENT '自然人ID',
+    org_id BIGINT NOT NULL DEFAULT 0 COMMENT '组织ID',
+    login_time DATETIME(3) NOT NULL COMMENT '登录时间',
+    last_active_time DATETIME(3) NOT NULL COMMENT '最后活跃时间',
+    expires_at DATETIME(3) NOT NULL COMMENT '过期时间',
+    created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+    updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    deleted_at DATETIME(3) NULL COMMENT '删除时间',
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_session_id (session_id),
+    INDEX idx_person_id (person_id),
+    INDEX idx_expires_at (expires_at),
+    INDEX idx_deleted_at (deleted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='SSO会话表';
+
+-- Token 表
+CREATE TABLE IF NOT EXISTS iam_token (
+    id BIGINT AUTO_INCREMENT COMMENT 'ID',
+    token_id VARCHAR(64) NOT NULL COMMENT 'Token唯一标识',
+    person_id BIGINT NOT NULL DEFAULT 0 COMMENT '自然人ID',
+    user_id BIGINT NOT NULL DEFAULT 0 COMMENT '用户ID',
+    client_id VARCHAR(64) NOT NULL COMMENT 'Client ID',
+    tenant_id BIGINT NOT NULL DEFAULT 0 COMMENT '租户ID',
+    org_id BIGINT NOT NULL DEFAULT 0 COMMENT '组织ID',
+    token_type VARCHAR(16) NOT NULL COMMENT 'Token类型: access/refresh/id',
+    access_token_hash VARCHAR(128) COMMENT 'Access Token哈希',
+    refresh_token_hash VARCHAR(128) COMMENT 'Refresh Token哈希',
+    scopes VARCHAR(255) DEFAULT 'openid,profile' COMMENT '授权的scopes',
+    expires_at DATETIME(3) NOT NULL COMMENT '过期时间',
+    revoked TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否撤销',
+    revoked_at DATETIME(3) COMMENT '撤销时间',
+    created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+    updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    deleted_at DATETIME(3) NULL COMMENT '删除时间',
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_token_id (token_id),
+    INDEX idx_person_id (person_id),
+    INDEX idx_user_id (user_id),
+    INDEX idx_client_id (client_id),
+    INDEX idx_expires_at (expires_at),
+    INDEX idx_revoked (revoked),
+    INDEX idx_deleted_at (deleted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Token表';

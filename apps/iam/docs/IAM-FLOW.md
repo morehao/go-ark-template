@@ -21,60 +21,7 @@ IAM（Identity and Access Management）是 GoArk 平台的身份认证与访问�
 
 ### 1.3 模块架构图
 
-```mermaid
-graph TB
-    subgraph "展示层"
-        WebApp["Web前端"]
-        MobileApp["移动App"]
-        ThirdPartyApp["第三方应用"]
-    end
-
-    subgraph "IAM服务"
-        Auth["认证模块<br/>/auth/*"]
-        OIDC["OIDC/SSO模块<br/>/oidc/*"]
-        User["用户模块<br/>/user/*"]
-        Org["组织模块<br/>/organization/*<br/>/tenant/*<br/>/department/*"]
-        Permission["权限模块<br/>/menu/*<br/>/role/*"]
-        App["应用模块<br/>/application/*"]
-    end
-
-    subgraph "数据层"
-        Person["Person表"]
-        UserTable["User表"]
-        Tenant["Tenant表"]
-        OrgTable["Organization表"]
-        Dept["Department表"]
-        Role["Role表"]
-        Menu["Menu表"]
-        AppTable["Application表"]
-    end
-
-    WebApp --> Auth
-    MobileApp --> Auth
-    ThirdPartyApp --> OIDC
-
-    Auth --> UserTable
-    Auth --> Person
-    Auth --> Tenant
-    Auth --> OrgTable
-
-    User --> UserTable
-    User --> Person
-    User --> Dept
-    User --> Role
-
-    Org --> OrgTable
-    Org --> Tenant
-    Org --> Dept
-
-    Permission --> Role
-    Permission --> Menu
-    Permission --> UserTable
-
-    App --> AppTable
-    OIDC --> AppTable
-    OIDC --> Person
-```
+![IAM 架构图](./assets/iam-architecture.svg)
 
 ---
 
@@ -373,7 +320,7 @@ flowchart TD
     B -->|否| C[返回不支持的grant_type]
     B -->|是| D{验证AuthCode}
     D -->|Code不存在/已使用/过期| E[返回无效Code]
-    D -->|有效| F{验证RedirectURI]
+    D -->|有效| F{验证RedirectURI}
     F -->|不匹配| G[返回URI不匹配]
     F -->|匹配| H{验证ClientSecret}
     H -->|不匹配| I[返回无效Client]
@@ -451,7 +398,8 @@ sequenceDiagram
     end
     IAM->>DB: 生成密码哈希
     IAM->>DB: 事务创建:
-    Note over DB: 1. Tenant<br/>2. Department<br/>3. Person<br/>4. User<br/>5. UserDepartment
+    Note over DB: 创建租户相关数据
+    Note over DB: 创建用户相关数据
     IAM-->>C: 返回结果<br/>{tenantID, userID, status, message}
 ```
 
@@ -503,7 +451,8 @@ sequenceDiagram
     end
     IAM->>IAM: 生成密码哈希
     IAM->>DB: 事务创建:
-    Note over DB: 1. Person<br/>2. User<br/>3. UserDepartment<br/>4. UserRole
+    Note over DB: 1. Person 2. User
+    Note over DB: 3. UserDepartment 4. UserRole
     IAM-->>C: 返回结果<br/>{userID, personID, password}
 ```
 
@@ -513,9 +462,9 @@ sequenceDiagram
 flowchart TD
     A[开始] --> B{验证用户存在}
     B -->|不存在| C[返回用户不存在]
-    B -->|存在| D{验证主部门存在且属于当前租户]
+    B -->|存在| D{验证主部门存在且属于当前租户}
     D -->|不通过| E[返回部门不存在/范围错误]
-    D -->|通过| F{验证副部门存在且属于当前租户]
+    D -->|通过| F{验证副部门存在且属于当前租户}
     F -->|存在无效| G[返回部门不存在/范围错误]
     F -->|全部通过| H[开启事务]
     H --> I[删除现有部门关联]
