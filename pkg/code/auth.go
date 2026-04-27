@@ -22,6 +22,8 @@ const (
 	AuthRegisterIdentityRequired  = 100817
 	AuthUserLockedError           = 100818
 	AuthTokenInvalidError         = 100819
+	AuthSessionRequiredError      = 100820
+	AuthTokenRequiredError        = 100821
 )
 
 var authErrorMsgMap = gerror.CodeMsgMap{
@@ -44,4 +46,6 @@ var authErrorMsgMap = gerror.CodeMsgMap{
 	AuthRegisterIdentityRequired:  "请填写邮箱",
 	AuthUserLockedError:           "用户已被锁定",
 	AuthTokenInvalidError:         "无效的token",
+	AuthSessionRequiredError:      "请先登录",
+	AuthTokenRequiredError:        "token不能为空",
 }
