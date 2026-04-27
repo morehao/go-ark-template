@@ -49,3 +49,21 @@ type UserAssignRolesReq struct {
 type UserRolesReq struct {
 	UserID uint `json:"userId" form:"userId" validate:"required" label:"用户ID"` // 用户ID
 }
+
+type UpdateProfileReq struct {
+	Email    string `json:"email"`
+	Phone    string `json:"phone"`
+	Avatar   string `json:"avatar"`
+	Nickname string `json:"nickname"`
+}
+
+type ChangePasswordReq struct {
+	OldPassword string `json:"oldPassword" validate:"required"`
+	NewPassword string `json:"newPassword" validate:"required"`
+}
+
+type LoginHistoryReq struct {
+	gobject.PageQuery
+	StartTime string `json:"startTime"`
+	EndTime   string `json:"endTime"`
+}

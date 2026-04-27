@@ -47,3 +47,40 @@ type UserRoleItem struct {
 type UserRolesResp struct {
 	List []UserRoleItem `json:"list"` // 角色列表
 }
+
+type UserInfoResp struct {
+	UserID     uint     `json:"userID"`
+	Username   string   `json:"username"`
+	PersonID   uint     `json:"personID"`
+	Email      string   `json:"email"`
+	Phone      string   `json:"phone"`
+	Avatar     string   `json:"avatar"`
+	Nickname   string   `json:"nickname"`
+	Status     string   `json:"status"`
+	UserType   string   `json:"userType"`
+	TenantID   uint     `json:"tenantID"`
+	TenantName string   `json:"tenantName"`
+	OrgID      uint     `json:"orgID"`
+	OrgName    string   `json:"orgName"`
+	RoleIDs    []uint   `json:"roleIDs"`
+	RoleNames  []string `json:"roleNames"`
+	DeptIDs    []uint   `json:"deptIDs"`
+	DeptNames  []string `json:"deptNames"`
+}
+
+type LoginHistoryItem struct {
+	ID           uint   `json:"id"`
+	LoginType    string `json:"loginType"`
+	LoginStatus  string `json:"loginStatus"`
+	LoginMessage string `json:"loginMessage"`
+	IPAddress    string `json:"ipAddress"`
+	Location     string `json:"location"`
+	Browser      string `json:"browser"`
+	OS           string `json:"os"`
+	CreatedAt    string `json:"createdAt"`
+}
+
+type LoginHistoryResp struct {
+	List  []LoginHistoryItem `json:"list"`
+	Total int64              `json:"total"`
+}
