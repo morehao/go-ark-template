@@ -16,10 +16,16 @@ import (
     "gorm.io/gorm"
 )
 
+type RegisterSvc interface {
+    Register(ctx *gin.Context, req *dtouser.RegisterReq) (*dtouser.RegisterResp, error)
+}
+
 type registerSvc struct {
 }
 
-func NewRegisterSvc() *registerSvc {
+var _ RegisterSvc = (*registerSvc)(nil)
+
+func NewRegisterSvc() RegisterSvc {
     return &registerSvc{}
 }
 

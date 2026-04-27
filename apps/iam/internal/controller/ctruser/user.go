@@ -37,6 +37,7 @@ type userCtr struct {
 	userSvc     svcuser.UserSvc
 	authSvc     svcuser.AuthSvc
 	loginLogSvc svcuser.LoginLogSvc
+	registerSvc svcuser.RegisterSvc
 }
 
 var _ UserCtr = (*userCtr)(nil)
@@ -46,6 +47,7 @@ func NewUserCtr() UserCtr {
 		userSvc:     svcuser.NewUserSvc(),
 		authSvc:     svcuser.NewAuthSvc(),
 		loginLogSvc: svcuser.NewLoginLogSvc(),
+		registerSvc: svcuser.NewRegisterSvc(),
 	}
 }
 
@@ -467,7 +469,7 @@ func (ctr *userCtr) Register(ctx *gin.Context) {
 		gincontext.Fail(ctx, err)
 		return
 	}
-	res, err := ctr.authSvc.Register(ctx, &req)
+	res, err := ctr.registerSvc.Register(ctx, &req)
 	if err != nil {
 		gincontext.Fail(ctx, err)
 		return
