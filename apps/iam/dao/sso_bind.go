@@ -21,19 +21,19 @@ func (c *SSOBindCond) BuildCondition(db *gorm.DB, tableName string) {
 		c.BaseCond.BuildCondition(db, tableName)
 	}
 	if c.OrgID > 0 {
-		db = db.Where(tableName + ".org_id = ?", c.OrgID)
+		db.Where(tableName + ".org_id = ?", c.OrgID)
 	}
 	if c.TenantID > 0 {
-		db = db.Where(tableName + ".tenant_id = ?", c.TenantID)
+		db.Where(tableName + ".tenant_id = ?", c.TenantID)
 	}
 	if c.UserID > 0 {
-		db = db.Where(tableName + ".user_id = ?", c.UserID)
+		db.Where(tableName + ".user_id = ?", c.UserID)
 	}
 	if c.SSOType != "" {
-		db = db.Where(tableName + ".sso_type = ?", c.SSOType)
+		db.Where(tableName + ".sso_type = ?", c.SSOType)
 	}
 	if c.OpenID != "" {
-		db = db.Where(tableName + ".open_id = ?", c.OpenID)
+		db.Where(tableName + ".open_id = ?", c.OpenID)
 	}
 }
 
