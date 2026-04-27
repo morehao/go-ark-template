@@ -160,11 +160,38 @@ func (svc *tokenSvc) RefreshAccessToken(ctx context.Context, req *dtooidc.TokenR
 		return nil, code.GetError(code.OIDCInvalidRefreshTokenError)
 	}
 
-	if err := dao.NewTokenDao().RevokeByRefreshTokenHash(ctx, svc.hashToken(req.RefreshToken)); err != nil {
-		glog.Errorf(ctx, "[tokenSvc.RefreshAccessToken] RevokeByRefreshTokenHash fail, err:%v", err)
+	jwtAuth, err := jwtauth.New[gobject.UserClaims](config.Conf.JWT.SignKey)
+	if err != nil {
+		return nil, code.GetError(code.OIDCGenerateTokenError)
 	}
 
-	return svc.generateTokenPair(ctx, 0, 0, 0, "", "")
+	claims, err := jwtAuth.Parse(req.RefreshToken)
+	if err != nil {
+		glog.Errorf(ctx, "[tokenSvc.RefreshAccessToken] Parse refreshToken fail, err:%v", err)
+		return nil, code.GetError(code.OIDCInvalidRefreshTokenError)
+	}
+
+	if claims.CustomData.UserType != "refresh" {
+		return nil, code.GetError(code.OIDCInvalidRefreshTokenError)
+	}
+
+	personID := claims.CustomData.PersonID
+	tenantID := claims.CustomData.TenantID
+	orgID := claims.CustomData.OrgID
+
+	tokenEntity, _ := dao.NewTokenDao().GetByRefreshTokenHash(ctx, svc.hashToken(req.RefreshToken))
+	if tokenEntity != nil && tokenEntity.ClientID != "" {
+		if err := dao.NewTokenDao().RevokeByRefreshTokenHash(ctx, svc.hashToken(req.RefreshToken)); err != nil {
+			glog.Errorf(ctx, "[tokenSvc.RefreshAccessToken] RevokeByRefreshTokenHash fail, err:%v", err)
+		}
+	}
+
+	scopes := ""
+	if tokenEntity != nil {
+		scopes = tokenEntity.Scopes
+	}
+
+	return svc.generateTokenPair(ctx, personID, tenantID, orgID, "", scopes)
 }
 
 func (svc *tokenSvc) ValidateAccessToken(ctx context.Context, accessToken string) (*model.TokenEntity, error) {
@@ -172,12 +199,44 @@ func (svc *tokenSvc) ValidateAccessToken(ctx context.Context, accessToken string
 		return nil, code.GetError(code.AuthTokenInvalidError)
 	}
 
-	return nil, nil
+	jwtAuth, err := jwtauth.New[gobject.UserClaims](config.Conf.JWT.SignKey)
+	if err != nil {
+		return nil, code.GetError(code.AuthTokenInvalidError)
+	}
+
+	claims, err := jwtAuth.Parse(accessToken)
+	if err != nil {
+		glog.Errorf(ctx, "[tokenSvc.ValidateAccessToken] Parse accessToken fail, err:%v", err)
+		return nil, code.GetError(code.AuthTokenInvalidError)
+	}
+
+	if claims.CustomData.UserType != "access" {
+		return nil, code.GetError(code.AuthTokenInvalidError)
+	}
+
+	tokenEntity, err := dao.NewTokenDao().GetByAccessTokenHash(ctx, svc.hashToken(accessToken))
+	if err != nil {
+		glog.Errorf(ctx, "[tokenSvc.ValidateAccessToken] GetByAccessTokenHash fail, err:%v", err)
+		return nil, code.GetError(code.AuthTokenInvalidError)
+	}
+
+	if tokenEntity == nil {
+		return nil, code.GetError(code.AuthTokenInvalidError)
+	}
+
+	return tokenEntity, nil
 }
 
 func (svc *tokenSvc) RevokeToken(ctx context.Context, token string, tokenTypeHint string) error {
 	if token == "" {
 		return nil
+	}
+
+	if tokenTypeHint == "access_token" || tokenTypeHint == "" {
+		if err := dao.NewTokenDao().RevokeByAccessTokenHash(ctx, svc.hashToken(token)); err != nil {
+			glog.Errorf(ctx, "[tokenSvc.RevokeToken] RevokeByAccessTokenHash fail, err:%v", err)
+			return err
+		}
 	}
 
 	if tokenTypeHint == "refresh_token" || tokenTypeHint == "" {

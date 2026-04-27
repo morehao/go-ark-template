@@ -99,6 +99,16 @@ func (d *TokenDao) RevokeByRefreshTokenHash(ctx context.Context, hash string) er
 		}).Error
 }
 
+func (d *TokenDao) RevokeByAccessTokenHash(ctx context.Context, hash string) error {
+	now := time.Now()
+	return d.db(ctx).Model(&model.TokenEntity{}).
+		Where("access_token_hash = ? AND token_type = ?", hash, model.TokenTypeAccess).
+		Updates(map[string]interface{}{
+			"revoked":    true,
+			"revoked_at": now,
+		}).Error
+}
+
 func (d *TokenDao) CleanExpired(ctx context.Context) error {
 	return d.db(ctx).Where("expires_at < ? AND revoked = ?", time.Now(), true).
 		Delete(&model.TokenEntity{}).Error
