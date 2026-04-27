@@ -69,7 +69,7 @@ func (sc *strategyCommon) getOrgConfigInt(ctx *gin.Context, orgID uint, configKe
 	return val, err
 }
 
-func (sc *strategyCommon) createRegisterResult(ctx *gin.Context, orgID, tenantID uint, req *RegisterRequest) (*RegisterResult, error) {
+func (sc *strategyCommon) createRegisterResult(ctx *gin.Context, orgID, tenantID uint, req *RegisterRequest, inviteID uint) (*RegisterResult, error) {
 	registerEnabled, err := sc.getOrgConfigBool(ctx, orgID, model.OrgConfigKeyRegisterEnabled)
 	if err != nil {
 		glog.Errorf(ctx, "[createRegisterResult] GetBool registerEnabled fail, err:%v", err)
@@ -114,6 +114,7 @@ func (sc *strategyCommon) createRegisterResult(ctx *gin.Context, orgID, tenantID
 		PasswordHash: passwordHash,
 		Status:       userStatus,
 		Message:      message,
+		InviteID:     inviteID,
 	}, nil
 }
 

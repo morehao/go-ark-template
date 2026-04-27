@@ -54,10 +54,10 @@ func (s *openStrategy) PreRegister(ctx *gin.Context, req *RegisterRequest) (*Reg
 		return nil, code.GetError(code.AuthRegisterError)
 	}
 
-	return s.createRegisterResult(ctx, orgEntity.ID, tenant.ID, req)
+	return s.createRegisterResult(ctx, orgEntity.ID, tenant.ID, req, 0)
 }
 
-func (s *openStrategy) PostRegister(ctx *gin.Context, req *RegisterRequest, userID uint) error {
+func (s *openStrategy) PostRegister(ctx *gin.Context, req *RegisterRequest, userID uint, result *RegisterResult) error {
 	orgEntity, err := getCurrentOrg(ctx)
 	if err != nil {
 		return err

@@ -71,20 +71,22 @@ func (s *inviteStrategy) PreRegister(ctx *gin.Context, req *RegisterRequest) (*R
 		return nil, code.GetError(code.AuthRegisterError)
 	}
 
-	if _, err := dao.NewInviteCodeDao().IncrUseCount(ctx, invite.ID); err != nil {
-		glog.Errorf(ctx, "[inviteStrategy.PreRegister] IncrUseCount fail, inviteID:%d, err:%v", invite.ID, err)
-	}
-
-	return s.createRegisterResult(ctx, orgEntity.ID, tenant.ID, req)
+	return s.createRegisterResult(ctx, orgEntity.ID, tenant.ID, req, invite.ID)
 }
 
-func (s *inviteStrategy) PostRegister(ctx *gin.Context, req *RegisterRequest, userID uint) error {
+func (s *inviteStrategy) PostRegister(ctx *gin.Context, req *RegisterRequest, userID uint, result *RegisterResult) error {
 	orgEntity, err := getCurrentOrg(ctx)
 	if err != nil {
 		return err
 	}
 	if err := s.assignDefaultRolesAndDepts(ctx, orgEntity.ID, userID); err != nil {
 		return err
+	}
+	if result.InviteID > 0 {
+		if _, err := dao.NewInviteCodeDao().IncrUseCount(ctx, result.InviteID); err != nil {
+			glog.Errorf(ctx, "[inviteStrategy.PostRegister] IncrUseCount fail, inviteID:%d, err:%v", result.InviteID, err)
+			return code.GetError(code.UserUpdateError)
+		}
 	}
 	return nil
 }

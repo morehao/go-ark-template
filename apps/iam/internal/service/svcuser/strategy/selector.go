@@ -20,7 +20,7 @@ const (
 
 type RegisterStrategy interface {
 	PreRegister(ctx *gin.Context, req *RegisterRequest) (*RegisterResult, error)
-	PostRegister(ctx *gin.Context, req *RegisterRequest, userID uint) error
+	PostRegister(ctx *gin.Context, req *RegisterRequest, userID uint, result *RegisterResult) error
 	GetStrategyType() RegisterStrategyType
 }
 
@@ -42,6 +42,7 @@ type RegisterResult struct {
 	Status       model.UserStatus
 	PersonExists bool
 	Message      string
+	InviteID     uint
 }
 
 type strategySelector struct {

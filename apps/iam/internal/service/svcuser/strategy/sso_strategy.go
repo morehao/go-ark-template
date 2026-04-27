@@ -15,7 +15,7 @@ func (s *ssoStrategy) PreRegister(ctx *gin.Context, req *RegisterRequest) (*Regi
 	return &RegisterResult{}, nil
 }
 
-func (s *ssoStrategy) PostRegister(ctx *gin.Context, req *RegisterRequest, userID uint) error {
+func (s *ssoStrategy) PostRegister(ctx *gin.Context, req *RegisterRequest, userID uint, result *RegisterResult) error {
 	return nil
 }
 

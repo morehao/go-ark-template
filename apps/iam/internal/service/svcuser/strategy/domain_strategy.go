@@ -44,10 +44,10 @@ func (s *domainStrategy) PreRegister(ctx *gin.Context, req *RegisterRequest) (*R
 		return nil, code.GetError(code.AuthRegisterError)
 	}
 
-	return s.createRegisterResult(ctx, orgEntity.ID, tenant.ID, req)
+	return s.createRegisterResult(ctx, orgEntity.ID, tenant.ID, req, 0)
 }
 
-func (s *domainStrategy) PostRegister(ctx *gin.Context, req *RegisterRequest, userID uint) error {
+func (s *domainStrategy) PostRegister(ctx *gin.Context, req *RegisterRequest, userID uint, result *RegisterResult) error {
 	orgEntity, err := getCurrentOrg(ctx)
 	if err != nil {
 		return err
