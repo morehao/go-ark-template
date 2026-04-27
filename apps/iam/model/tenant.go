@@ -16,6 +16,7 @@ const (
 type TenantEntity struct {
 	gorm.Model
 	Address                 string       `gorm:"column:address;type:varchar(255);;default '';comment: 租户地址"`
+	Domain                  string       `gorm:"column:domain;type:varchar(255);;default '';comment: 租户域名(用于注册时子域名匹配)"`
 	ContactEmail            string       `gorm:"column:contact_email;type:varchar(64);;default '';comment: 联系邮箱"`
 	ContactPhone            string       `gorm:"column:contact_phone;type:varchar(16);;default '';comment: 联系电话"`
 	CreatedBy               uint         `gorm:"column:created_by;type:bigint;not null;default 0;comment: 创建人ID"`

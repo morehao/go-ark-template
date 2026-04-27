@@ -12,6 +12,7 @@ const (
 	UserStatusEnabled  UserStatus = "enabled"
 	UserStatusLocked   UserStatus = "locked"
 	UserStatusDisabled UserStatus = "disabled"
+	UserStatusPending  UserStatus = "pending"
 )
 
 type UserType string
