@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"errors"
 
 	"github.com/morehao/goark/apps/iam/model"
 	"github.com/morehao/goark/pkg/dbclient"
@@ -50,6 +51,13 @@ func NewInviteCodeDao() *InviteCodeDao {
 
 func (dao *InviteCodeDao) IncrUseCount(ctx context.Context, id uint) (int64, error) {
 	db := dao.DB(ctx).Table(model.TableNameInviteCode)
-	result := db.Where("id = ?", id).Update("use_count", gorm.Expr("use_count + 1"))
-	return result.RowsAffected, result.Error
+	result := db.Where("id = ? AND status = ?", id, model.InviteCodeStatusActive).
+		Update("use_count", gorm.Expr("use_count + 1"))
+	if result.Error != nil {
+		return 0, result.Error
+	}
+	if result.RowsAffected == 0 {
+		return 0, errors.New("invite code not found or already disabled")
+	}
+	return result.RowsAffected, nil
 }
