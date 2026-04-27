@@ -7,6 +7,7 @@ import (
 	"github.com/morehao/goark/apps/iam/core/user"
 	"github.com/morehao/goark/apps/iam/dao"
 	"github.com/morehao/goark/apps/iam/internal/dto/dtouser"
+	"github.com/morehao/goark/apps/iam/internal/service/svcauth"
 	"github.com/morehao/goark/apps/iam/model"
 	"github.com/morehao/goark/apps/iam/object/objuser"
 	"github.com/morehao/goark/pkg/code"
@@ -34,6 +35,7 @@ type UserSvc interface {
 	UpdateProfile(ctx *gin.Context, req *dtouser.UpdateProfileReq) error
 	ChangePassword(ctx *gin.Context, req *dtouser.ChangePasswordReq) error
 	LoginHistory(ctx *gin.Context, req *dtouser.LoginHistoryReq) (*dtouser.LoginHistoryResp, error)
+	Logout(ctx *gin.Context) error
 }
 
 type userSvc struct {
@@ -707,4 +709,8 @@ func (svc *userSvc) LoginHistory(ctx *gin.Context, req *dtouser.LoginHistoryReq)
 		List:  list,
 		Total: total,
 	}, nil
+}
+
+func (svc *userSvc) Logout(ctx *gin.Context) error {
+	return svcauth.NewAuthSvc().Logout(ctx, "")
 }

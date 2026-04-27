@@ -21,6 +21,7 @@ type UserCtr interface {
 	UpdateProfile(ctx *gin.Context)
 	ChangePassword(ctx *gin.Context)
 	LoginHistory(ctx *gin.Context)
+	Logout(ctx *gin.Context)
 }
 
 type userCtr struct {
@@ -313,4 +314,19 @@ func (ctr *userCtr) LoginHistory(ctx *gin.Context) {
 		return
 	}
 	gincontext.Success(ctx, res)
+}
+
+// Logout 登出
+// @Tags 用户管理
+// @Summary 登出
+// @accept application/json
+// @Produce application/json
+// @Success 200 {object} gincontext.DtoRender{data=string}
+// @Router /v1/iam/user/logout [post]
+func (ctr *userCtr) Logout(ctx *gin.Context) {
+	if err := ctr.userSvc.Logout(ctx); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	gincontext.Success(ctx, "登出成功")
 }
