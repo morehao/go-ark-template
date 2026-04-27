@@ -201,8 +201,8 @@ func (svc *authSvc) Logout(ctx *gin.Context, refreshToken string) error {
 }
 
 // IsTokenBlacklisted 检查token是否在黑名单中
-func IsTokenBlacklisted(ctx *gin.Context, token string) bool {
-	return token.IsTokenBlacklisted(ctx.Request.Context(), token)
+func IsTokenBlacklisted(ctx *gin.Context, tokenStr string) bool {
+	return token.IsTokenBlacklisted(ctx.Request.Context(), tokenStr)
 }
 
 func (svc *authSvc) findPersonByAccount(ctx *gin.Context, account string) (*model.PersonEntity, error) {
@@ -303,16 +303,16 @@ func (svc *authSvc) generateTokenWithOrgID(ctx *gin.Context, userEntity model.Us
 		TokenType: gobject.TokenTypeAuth,
 	}
 
-	token, err := jwtAuth.Issue(
+	newToken, err := jwtAuth.Issue(
 		fmt.Sprintf("%d", userEntity.ID),
 		tokenIssuer,
-		time.Now().Add(tokenExpireDuration),
+		time.Now().Add(token.TokenExpireDuration),
 		customData,
 	)
 	if err != nil {
 		return "", code.GetError(code.AuthTokenGenerateError)
 	}
-	return token, nil
+	return newToken, nil
 }
 
 func (svc *authSvc) generateRefreshToken(ctx *gin.Context, userID uint, personID uint, userType model.UserType, tenantID uint, orgID uint) (string, error) {
@@ -334,16 +334,16 @@ func (svc *authSvc) generateRefreshToken(ctx *gin.Context, userID uint, personID
 		TokenType: gobject.TokenTypeRefresh,
 	}
 
-	token, err := jwtAuth.Issue(
+	refreshTokenStr, err := jwtAuth.Issue(
 		fmt.Sprintf("%d", userID),
 		tokenIssuer,
-		time.Now().Add(refreshTokenExpireDuration),
+		time.Now().Add(token.RefreshTokenExpireDuration),
 		customData,
 	)
 	if err != nil {
 		return "", code.GetError(code.AuthTokenGenerateError)
 	}
-	return token, nil
+	return refreshTokenStr, nil
 }
 
 func (svc *authSvc) RefreshToken(ctx *gin.Context, req *dtoauth.RefreshTokenReq) (*dtoauth.RefreshTokenResp, error) {
@@ -392,15 +392,15 @@ func (svc *authSvc) RefreshToken(ctx *gin.Context, req *dtoauth.RefreshTokenReq)
 	}, nil
 }
 
-func isRefreshTokenBlacklisted(ctx *gin.Context, token string) bool {
+func isRefreshTokenBlacklisted(ctx *gin.Context, tokenStr string) bool {
 	if dbclient.RedisCli == nil {
 		return false
 	}
-	token = strings.TrimPrefix(token, "Bearer ")
-	if token == "" {
+	tokenStr = strings.TrimPrefix(tokenStr, "Bearer ")
+	if tokenStr == "" {
 		return false
 	}
-	key := refreshTokenBlacklistKeyPrefix + hashToken(token)
+	key := token.RefreshTokenBlacklistKeyPrefix + token.HashToken(tokenStr)
 	exists, err := dbclient.RedisCli.Exists(ctx.Request.Context(), key).Result()
 	if err != nil {
 		glog.Errorf(ctx, "[svcauth.isRefreshTokenBlacklisted] Redis Exists fail, err:%v", err)
@@ -409,8 +409,8 @@ func isRefreshTokenBlacklisted(ctx *gin.Context, token string) bool {
 	return exists > 0
 }
 
-func addRefreshTokenToBlacklist(ctx *gin.Context, token string) error {
-	return token.AddRefreshTokenToBlacklist(ctx.Request.Context(), token)
+func addRefreshTokenToBlacklist(ctx *gin.Context, tokenStr string) error {
+	return token.AddRefreshTokenToBlacklist(ctx.Request.Context(), tokenStr)
 }
 
 func (svc *authSvc) buildTenantList(ctx *gin.Context, userList model.UserEntityList) ([]dtoauth.TenantListItem, error) {
