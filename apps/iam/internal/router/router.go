@@ -14,4 +14,5 @@ func RegisterRouter(groups *ginserver.RouterGroups, appName string) {
 	applicationRouter(groups)
 	logRouter(groups)
 	apiKeyRouter(groups)
+	oidcRouter(groups)
 }
