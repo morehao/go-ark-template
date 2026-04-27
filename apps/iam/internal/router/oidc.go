@@ -16,7 +16,7 @@ func oidcRouter(groups *ginserver.RouterGroups) {
 
 	v1RouterGroup.GET("/oidc/authorize", authorizeCtr.Authorize)
 	v1RouterGroup.POST("/oidc/token", tokenCtr.Token)
-	v1RouterGroup.POST("/oidc/token/refresh", tokenCtr.RefreshToken)
+	v1RouterGroup.POST("/oidc/refreshToken", tokenCtr.RefreshToken)
 	v1RouterGroup.GET("/oidc/userinfo", userinfoCtr.UserInfo)
 	v1RouterGroup.POST("/oidc/logout", logoutCtr.Logout)
 }

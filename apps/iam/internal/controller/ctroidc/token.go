@@ -48,7 +48,7 @@ func (ctr *tokenCtr) Token(ctx *gin.Context) {
 // @Produce application/json
 // @Param req formData dtooidc.TokenRefreshReq true "刷新Token请求"
 // @Success 200 {object} gincontext.DtoRender{data=dtooidc.TokenResp}
-// @Router /v1/iam/oidc/token/refresh [POST]
+// @Router /v1/iam/oidc/refreshToken [POST]
 func (ctr *tokenCtr) RefreshToken(ctx *gin.Context) {
 	var req dtooidc.TokenRefreshReq
 	if err := ctx.ShouldBind(&req); err != nil {
