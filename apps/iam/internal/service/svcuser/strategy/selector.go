@@ -52,7 +52,7 @@ func NewStrategySelector() *strategySelector {
 }
 
 func (s *strategySelector) SelectStrategy(ctx *gin.Context, req *RegisterRequest) (RegisterStrategy, error) {
-	orgEntity, err := s.getCurrentOrg(ctx)
+	orgEntity, err := getCurrentOrg(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func (s *strategySelector) SelectStrategy(ctx *gin.Context, req *RegisterRequest
 	}
 }
 
-func (s *strategySelector) getCurrentOrg(ctx *gin.Context) (*model.OrganizationEntity, error) {
+func getCurrentOrg(ctx *gin.Context) (*model.OrganizationEntity, error) {
 	domain := resolveDomain(ctx)
 	if domain == "" {
 		return nil, code.GetError(code.AuthOrgNotFoundError)
