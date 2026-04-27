@@ -66,7 +66,15 @@ func (s *ssoStrategy) findTenantBySSO(ctx *gin.Context, orgID uint, ssoType, ope
 		return nil, code.GetError(code.AuthRegisterError)
 	}
 	if ssoBind != nil && ssoBind.TenantID > 0 {
-		return dao.NewTenantDao().GetByID(ctx, ssoBind.TenantID)
+		tenant, err := dao.NewTenantDao().GetByID(ctx, ssoBind.TenantID)
+		if err != nil {
+			glog.Errorf(ctx, "[findTenantBySSO] GetByID fail, tenantID:%d, err:%v", ssoBind.TenantID, err)
+			return nil, code.GetError(code.TenantNotExistError)
+		}
+		if tenant == nil {
+			return nil, code.GetError(code.TenantNotExistError)
+		}
+		return tenant, nil
 	}
 
 	tenantIDStr, err := s.getOrgConfigString(ctx, orgID, model.OrgConfigKeyRegisterSSODefaultTenantID)
@@ -82,5 +90,13 @@ func (s *ssoStrategy) findTenantBySSO(ctx *gin.Context, orgID uint, ssoType, ope
 	if _, err := fmt.Sscanf(tenantIDStr, "%d", &tenantID); err != nil {
 		return nil, code.GetError(code.AuthRegisterError)
 	}
-	return dao.NewTenantDao().GetByID(ctx, tenantID)
+	tenant, err := dao.NewTenantDao().GetByID(ctx, tenantID)
+	if err != nil {
+		glog.Errorf(ctx, "[findTenantBySSO] GetByID fail, tenantID:%d, err:%v", tenantID, err)
+		return nil, code.GetError(code.TenantNotExistError)
+	}
+	if tenant == nil {
+		return nil, code.GetError(code.TenantNotExistError)
+	}
+	return tenant, nil
 }
