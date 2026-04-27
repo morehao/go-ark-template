@@ -33,6 +33,7 @@ type UserSvc interface {
 	GetCurrentUserInfo(ctx *gin.Context) (*dtouser.UserInfoResp, error)
 	UpdateProfile(ctx *gin.Context, req *dtouser.UpdateProfileReq) error
 	ChangePassword(ctx *gin.Context, req *dtouser.ChangePasswordReq) error
+	LoginHistory(ctx *gin.Context, req *dtouser.LoginHistoryReq) (*dtouser.LoginHistoryResp, error)
 }
 
 type userSvc struct {
@@ -666,4 +667,44 @@ func (svc *userSvc) ChangePassword(ctx *gin.Context, req *dtouser.ChangePassword
 	}
 
 	return nil
+}
+
+func (svc *userSvc) LoginHistory(ctx *gin.Context, req *dtouser.LoginHistoryReq) (*dtouser.LoginHistoryResp, error) {
+	userID := gincontext.GetUserID(ctx)
+	tenantID := gincontext.GetTenantID(ctx)
+
+	cond := dao.LoginLogCond{
+		BaseCond: &genericdao.BaseCond{
+			Page:     req.Page,
+			PageSize: req.PageSize,
+		},
+		UserID:   userID,
+		TenantID: tenantID,
+	}
+
+	loginLogList, total, err := dao.NewLoginLogDao().GetPageListByCond(ctx, &cond)
+	if err != nil {
+		glog.Errorf(ctx, "[svcuser.LoginHistory] GetPageListByCond fail, err:%v", err)
+		return nil, code.GetError(code.UserGetDetailError)
+	}
+
+	list := make([]dtouser.LoginHistoryItem, 0, len(loginLogList))
+	for _, log := range loginLogList {
+		list = append(list, dtouser.LoginHistoryItem{
+			ID:           log.ID,
+			LoginType:    log.LoginType,
+			LoginStatus:  log.LoginStatus,
+			LoginMessage: log.LoginMessage,
+			IPAddress:    log.IPAddress,
+			Location:     log.Location,
+			Browser:      log.Browser,
+			OS:           log.OS,
+			CreatedAt:    log.CreatedAt,
+		})
+	}
+
+	return &dtouser.LoginHistoryResp{
+		List:  list,
+		Total: total,
+	}, nil
 }

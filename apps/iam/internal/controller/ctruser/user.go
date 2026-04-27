@@ -20,6 +20,7 @@ type UserCtr interface {
 	GetCurrentUserInfo(ctx *gin.Context)
 	UpdateProfile(ctx *gin.Context)
 	ChangePassword(ctx *gin.Context)
+	LoginHistory(ctx *gin.Context)
 }
 
 type userCtr struct {
@@ -290,4 +291,26 @@ func (ctr *userCtr) ChangePassword(ctx *gin.Context) {
 		return
 	}
 	gincontext.Success(ctx, "密码修改成功")
+}
+
+// LoginHistory 查看登录历史
+// @Tags 用户管理
+// @Summary 查看登录历史
+// @accept application/json
+// @Produce application/json
+// @Param req query dtouser.LoginHistoryReq true "查看登录历史"
+// @Success 200 {object} gincontext.DtoRender{data=dtouser.LoginHistoryResp}
+// @Router /v1/iam/user/loginHistory [get]
+func (ctr *userCtr) LoginHistory(ctx *gin.Context) {
+	var req dtouser.LoginHistoryReq
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	res, err := ctr.userSvc.LoginHistory(ctx, &req)
+	if err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	gincontext.Success(ctx, res)
 }
