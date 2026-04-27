@@ -50,38 +50,38 @@ type UserRolesResp struct {
 }
 
 type UserInfoResp struct {
-	UserID     uint     `json:"userID"`
-	Username   string   `json:"username"`
-	PersonID   uint     `json:"personID"`
-	Email      string   `json:"email"`
-	Phone      string   `json:"phone"`
-	Avatar     string   `json:"avatar"`
-	Nickname   string   `json:"nickname"`
-	Status     string   `json:"status"`
-	UserType   string   `json:"userType"`
-	TenantID   uint     `json:"tenantID"`
-	TenantName string   `json:"tenantName"`
-	OrgID      uint     `json:"orgID"`
-	OrgName    string   `json:"orgName"`
-	RoleIDs    []uint   `json:"roleIDs"`
-	RoleNames  []string `json:"roleNames"`
-	DeptIDs    []uint   `json:"deptIDs"`
-	DeptNames  []string `json:"deptNames"`
+	UserID     uint     `json:"userID"`     // 用户ID
+	Username   string   `json:"username"`   // 用户名
+	PersonID   uint     `json:"personID"`   // 自然人ID
+	Email      string   `json:"email"`      // 邮箱
+	Phone      string   `json:"phone"`      // 手机号
+	Avatar     string   `json:"avatar"`     // 头像
+	Nickname   string   `json:"nickname"`   // 昵称
+	Status     string   `json:"status"`     // 状态
+	UserType   string   `json:"userType"`   // 用户类型
+	TenantID   uint     `json:"tenantID"`   // 租户ID
+	TenantName string   `json:"tenantName"` // 租户名称
+	OrgID      uint     `json:"orgID"`      // 组织ID
+	OrgName    string   `json:"orgName"`    // 组织名称
+	RoleIDs    []uint   `json:"roleIDs"`    // 角色ID列表
+	RoleNames  []string `json:"roleNames"`  // 角色名称列表
+	DeptIDs    []uint   `json:"deptIDs"`    // 部门ID列表
+	DeptNames  []string `json:"deptNames"`  // 部门名称列表
 }
 
 type LoginHistoryItem struct {
-	ID           uint   `json:"id"`
-	LoginType    string `json:"loginType"`
-	LoginStatus  string `json:"loginStatus"`
-	LoginMessage string `json:"loginMessage"`
-	IPAddress    string `json:"ipAddress"`
-	Location     string `json:"location"`
-	Browser      string `json:"browser"`
-	OS           string `json:"os"`
-	CreatedAt    string `json:"createdAt"`
+	ID           uint   `json:"id"`            // 日志ID
+	LoginType    string `json:"loginType"`     // 登录类型
+	LoginStatus  string `json:"loginStatus"`   // 登录状态
+	LoginMessage string `json:"loginMessage"`  // 登录消息
+	IPAddress    string `json:"ipAddress"`     // IP地址
+	Location     string `json:"location"`      // 位置
+	Browser      string `json:"browser"`       // 浏览器
+	OS           string `json:"os"`            // 操作系统
+	CreatedAt    string `json:"createdAt"`     // 创建时间
 }
 
 type LoginHistoryResp struct {
-	List  []LoginHistoryItem `json:"list"`
-	Total int64              `json:"total"`
+	List  []LoginHistoryItem `json:"list"`  // 数据列表
+	Total int64              `json:"total"` // 数据总条数
 }

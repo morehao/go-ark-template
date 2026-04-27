@@ -12,7 +12,6 @@ func RegisterRouter(groups *ginserver.RouterGroups, appName string) {
 	menuRouter(groups)
 	roleRouter(groups)
 	applicationRouter(groups)
-	logRouter(groups)
 	apiKeyRouter(groups)
 	oidcRouter(groups)
 }

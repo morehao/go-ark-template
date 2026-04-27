@@ -42,7 +42,7 @@ type RegisterResp struct {
 	TenantID     uint   `json:"tenantId"`     // 租户ID
 	UserID       uint   `json:"userId"`       // 用户ID
 	PersonID     uint   `json:"personId"`     // 自然人ID
-	Status       string `json:"status"`       // 用户状态
+	Status       string `json:"status"`       // 状态
 	PersonExists bool   `json:"personExists"` // Person是否已存在
 	Message      string `json:"message"`      // 提示信息
 }

@@ -53,19 +53,19 @@ type UserRolesReq struct {
 }
 
 type UpdateProfileReq struct {
-	Email    string `json:"email"`
-	Phone    string `json:"phone"`
-	Avatar   string `json:"avatar"`
-	Nickname string `json:"nickname"`
+	Email    string `json:"email"`    // 邮箱
+	Phone    string `json:"phone"`    // 手机号
+	Avatar   string `json:"avatar"`   // 头像
+	Nickname string `json:"nickname"` // 昵称
 }
 
 type ChangePasswordReq struct {
-	OldPassword string `json:"oldPassword" validate:"required"`
-	NewPassword string `json:"newPassword" validate:"required"`
+	OldPassword string `json:"oldPassword" validate:"required"` // 旧密码
+	NewPassword string `json:"newPassword" validate:"required"`   // 新密码
 }
 
 type LoginHistoryReq struct {
 	gobject.PageQuery
-	StartTime string `json:"startTime"`
-	EndTime   string `json:"endTime"`
+	StartTime string `json:"startTime"` // 开始时间
+	EndTime   string `json:"endTime"`   // 结束时间
 }

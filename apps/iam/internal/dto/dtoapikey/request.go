@@ -1,5 +1,7 @@
 package dtoapikey
 
+import "github.com/morehao/golib/biz/gobject"
+
 type ApiKeyCreateReq struct {
 	AppID       uint   `json:"appID" comment:"应用ID"`
 	KeyName     string `json:"keyName" comment:"密钥名称" binding:"required"`
@@ -17,41 +19,42 @@ type ApiKeyCreateResp struct {
 }
 
 type ApiKeyDeleteReq struct {
-	ID uint `json:"id" form:"id" binding:"required"`
+	ID uint `json:"id" form:"id" binding:"required"` // ID
 }
 
 type ApiKeyListReq struct {
-	Page     int    `json:"page" form:"page"`
-	PageSize int    `json:"pageSize" form:"pageSize"`
-	AppID    uint   `json:"appID" form:"appID"`
-	KeyName  string `json:"keyName" form:"keyName"`
-	Status   string `json:"status" form:"status"`
+	gobject.PageQuery
+	Page     int    `json:"page" form:"page"`         // 页码
+	PageSize int    `json:"pageSize" form:"pageSize"`  // 每页数据条数
+	AppID    uint   `json:"appID" form:"appID"`       // 应用ID
+	KeyName  string `json:"keyName" form:"keyName"`   // 密钥名称
+	Status   string `json:"status" form:"status"`     // 状态
 }
 
 type ApiKeyListResp struct {
-	List  []ApiKeyListItem `json:"list"`
-	Total int64           `json:"total"`
+	List  []ApiKeyListItem `json:"list"`  // 数据列表
+	Total int64            `json:"total"` // 数据总条数
 }
 
 type ApiKeyListItem struct {
-	ID                 uint   `json:"id"`
-	AppID              uint   `json:"appID"`
-	KeyName            string `json:"keyName"`
-	KeyPrefix          string `json:"keyPrefix"`
-	ApiKey             string `json:"apiKey" comment:"解密后的完整 API Key"`
-	Scopes             string `json:"scopes"`
-	AccessPolicy       string `json:"accessPolicy"`
-	AllowedIPs         string `json:"allowedIPs"`
-	Status             string `json:"status"`
-	LastUsedAt         string `json:"lastUsedAt"`
-	ExpiresAt          string `json:"expiresAt"`
-	CreatedAt          int64  `json:"createdAt"`
+	ID          uint   `json:"id"`           // ID
+	AppID       uint   `json:"appID"`        // 应用ID
+	KeyName     string `json:"keyName"`      // 密钥名称
+	KeyPrefix   string `json:"keyPrefix"`    // 密钥前缀
+	ApiKey      string `json:"apiKey"`       // 解密后的完整 API Key
+	Scopes      string `json:"scopes"`       // 权限范围
+	AccessPolicy string `json:"accessPolicy"` // 访问策略
+	AllowedIPs  string `json:"allowedIPs"`  // 允许的IP列表
+	Status      string `json:"status"`       // 状态
+	LastUsedAt  string `json:"lastUsedAt"`   // 最后使用时间
+	ExpiresAt   string `json:"expiresAt"`    // 过期时间
+	CreatedAt   int64  `json:"createdAt"`   // 创建时间
 }
 
 type ApiKeyDisableReq struct {
-	ID uint `json:"id" form:"id" binding:"required"`
+	ID uint `json:"id" form:"id" binding:"required"` // ID
 }
 
 type ApiKeyEnableReq struct {
-	ID uint `json:"id" form:"id" binding:"required"`
+	ID uint `json:"id" form:"id" binding:"required"` // ID
 }
