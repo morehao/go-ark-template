@@ -23,5 +23,6 @@ func userRouter(groups *ginserver.RouterGroups) {
 	v1RouterGroup.POST("/user/updateProfile", userCtr.UpdateProfile)
 	v1RouterGroup.POST("/user/changePassword", userCtr.ChangePassword)
 	v1RouterGroup.GET("/user/loginHistory", userCtr.LoginHistory)
-	v1RouterGroup.POST("/user/logout", userCtr.Logout)
+	v1RouterGroup.GET("/user/pendingList", userCtr.PendingList)
+	v1RouterGroup.POST("/user/approve", userCtr.Approve)
 }
