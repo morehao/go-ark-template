@@ -2,7 +2,6 @@ package ctruser
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam/internal/dto/dtoauth"
 	"github.com/morehao/goark/apps/iam/internal/dto/dtouser"
 	"github.com/morehao/goark/apps/iam/internal/service/svcuser"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
@@ -25,17 +24,28 @@ type UserCtr interface {
 	Logout(ctx *gin.Context)
 	PendingList(ctx *gin.Context)
 	Approve(ctx *gin.Context)
+	LoginByPassword(ctx *gin.Context)
+	SelectTenant(ctx *gin.Context)
+	RefreshToken(ctx *gin.Context)
+	Register(ctx *gin.Context)
+	UnlockAccount(ctx *gin.Context)
+	LoginLogCreate(ctx *gin.Context)
+	LoginLogPageList(ctx *gin.Context)
 }
 
 type userCtr struct {
-	userSvc svcuser.UserSvc
+	userSvc     svcuser.UserSvc
+	authSvc     svcuser.AuthSvc
+	loginLogSvc svcuser.LoginLogSvc
 }
 
 var _ UserCtr = (*userCtr)(nil)
 
 func NewUserCtr() UserCtr {
 	return &userCtr{
-		userSvc: svcuser.NewUserSvc(),
+		userSvc:     svcuser.NewUserSvc(),
+		authSvc:     svcuser.NewAuthSvc(),
+		loginLogSvc: svcuser.NewLoginLogSvc(),
 	}
 }
 
@@ -361,11 +371,11 @@ func (ctr *userCtr) PendingList(ctx *gin.Context) {
 // @Summary 审批用户
 // @accept application/json
 // @Produce application/json
-// @Param req body dtoauth.ApproveReq true "审批用户"
+// @Param req body dtouser.ApproveReq true "审批用户"
 // @Success 200 {object} gincontext.DtoRender{data=string}
 // @Router /v1/iam/user/approve [post]
 func (ctr *userCtr) Approve(ctx *gin.Context) {
-	var req dtoauth.ApproveReq
+	var req dtouser.ApproveReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		gincontext.Fail(ctx, err)
 		return
@@ -375,4 +385,157 @@ func (ctr *userCtr) Approve(ctx *gin.Context) {
 		return
 	}
 	gincontext.Success(ctx, "审批成功")
+}
+
+// LoginByPassword 密码登录
+// @Tags 用户管理
+// @Summary 密码登录
+// @accept application/json
+// @Produce application/json
+// @Param req body dtouser.LoginByPasswordReq true "密码登录请求"
+// @Success 200 {object} gincontext.DtoRender{data=dtouser.LoginByPasswordResp}
+// @Router /v1/iam/user/loginByPassword [post]
+func (ctr *userCtr) LoginByPassword(ctx *gin.Context) {
+	var req dtouser.LoginByPasswordReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	res, err := ctr.authSvc.LoginByPassword(ctx, &req)
+	if err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	gincontext.Success(ctx, res)
+}
+
+// SelectTenant 选择租户
+// @Tags 用户管理
+// @Summary 选择租户
+// @accept application/json
+// @Produce application/json
+// @Param req body dtouser.SelectTenantReq true "选择租户请求"
+// @Success 200 {object} gincontext.DtoRender{data=dtouser.SelectTenantResp}
+// @Router /v1/iam/user/selectTenant [post]
+func (ctr *userCtr) SelectTenant(ctx *gin.Context) {
+	var req dtouser.SelectTenantReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	res, err := ctr.authSvc.SelectTenant(ctx, &req)
+	if err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	gincontext.Success(ctx, res)
+}
+
+// RefreshToken 刷新令牌
+// @Tags 用户管理
+// @Summary 刷新令牌
+// @accept application/json
+// @Produce application/json
+// @Param req body dtouser.RefreshTokenReq true "刷新令牌请求"
+// @Success 200 {object} gincontext.DtoRender{data=dtouser.RefreshTokenResp}
+// @Router /v1/iam/user/refreshToken [post]
+func (ctr *userCtr) RefreshToken(ctx *gin.Context) {
+	var req dtouser.RefreshTokenReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	res, err := ctr.authSvc.RefreshToken(ctx, &req)
+	if err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	gincontext.Success(ctx, res)
+}
+
+// Register 用户注册
+// @Tags 用户管理
+// @Summary 用户注册
+// @accept application/json
+// @Produce application/json
+// @Param req body dtouser.RegisterReq true "用户注册请求"
+// @Success 200 {object} gincontext.DtoRender{data=dtouser.RegisterResp}
+// @Router /v1/iam/user/register [post]
+func (ctr *userCtr) Register(ctx *gin.Context) {
+	var req dtouser.RegisterReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	res, err := ctr.authSvc.Register(ctx, &req)
+	if err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	gincontext.Success(ctx, res)
+}
+
+// UnlockAccount 自助解锁账户
+// @Tags 用户管理
+// @Summary 自助解锁账户
+// @accept application/json
+// @Produce application/json
+// @Param req body dtouser.UnlockAccountReq true "自助解锁账户"
+// @Success 200 {object} gincontext.DtoRender{data=string}
+// @Router /v1/iam/user/unlockAccount [post]
+func (ctr *userCtr) UnlockAccount(ctx *gin.Context) {
+	var req dtouser.UnlockAccountReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	if err := ctr.authSvc.UnlockAccount(ctx, &req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	gincontext.Success(ctx, "解锁成功")
+}
+
+// LoginLogCreate 创建登录日志
+// @Tags 用户管理
+// @Summary 创建登录日志
+// @accept application/json
+// @Produce application/json
+// @Param req body dtouser.LoginLogCreateReq true "创建登录日志"
+// @Success 200 {object} gincontext.DtoRender{data=dtouser.LoginLogCreateResp}
+// @Router /v1/iam/user/loginLog/create [post]
+func (ctr *userCtr) LoginLogCreate(ctx *gin.Context) {
+	var req dtouser.LoginLogCreateReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	res, err := ctr.loginLogSvc.Create(ctx, &req)
+	if err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	gincontext.Success(ctx, res)
+}
+
+// LoginLogPageList 登录日志列表
+// @Tags 用户管理
+// @Summary 登录日志列表
+// @accept application/json
+// @Produce application/json
+// @Param req query dtouser.LoginLogPageListReq true "登录日志列表"
+// @Success 200 {object} gincontext.DtoRender{data=dtouser.LoginLogPageListResp}
+// @Router /v1/iam/user/loginLog/pageList [get]
+func (ctr *userCtr) LoginLogPageList(ctx *gin.Context) {
+	var req dtouser.LoginLogPageListReq
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	res, err := ctr.loginLogSvc.PageList(ctx, &req)
+	if err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	gincontext.Success(ctx, res)
 }

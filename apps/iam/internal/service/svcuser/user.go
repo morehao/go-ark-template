@@ -8,7 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/morehao/goark/apps/iam/core/user"
 	"github.com/morehao/goark/apps/iam/dao"
-	"github.com/morehao/goark/apps/iam/internal/dto/dtoauth"
 	"github.com/morehao/goark/apps/iam/internal/dto/dtouser"
 	"github.com/morehao/goark/apps/iam/model"
 	"github.com/morehao/goark/apps/iam/object/objuser"
@@ -40,7 +39,7 @@ type UserSvc interface {
 	LoginHistory(ctx *gin.Context, req *dtouser.LoginHistoryReq) (*dtouser.LoginHistoryResp, error)
 	Logout(ctx *gin.Context) error
 	PendingList(ctx *gin.Context, req *dtouser.PendingListReq) (*dtouser.PendingListResp, error)
-	Approve(ctx *gin.Context, req *dtoauth.ApproveReq) error
+Approve(ctx *gin.Context, req *dtouser.ApproveReq) error
 }
 
 type userSvc struct {
@@ -784,7 +783,7 @@ func (svc *userSvc) PendingList(ctx *gin.Context, req *dtouser.PendingListReq) (
 	}, nil
 }
 
-func (svc *userSvc) Approve(ctx *gin.Context, req *dtoauth.ApproveReq) error {
+func (svc *userSvc) Approve(ctx *gin.Context, req *dtouser.ApproveReq) error {
 	tenantID := gincontext.GetTenantID(ctx)
 	glog.Infof(ctx, "[svcuser.Approve] req:%s", gutil.ToJsonString(req))
 
