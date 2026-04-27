@@ -32,8 +32,8 @@ SET @tenant_exists = (SELECT COUNT(*) FROM iam_tenant WHERE tenant_code = @platf
 
 -- 2. 创建平台租户
 INSERT INTO iam_tenant
-(org_id, tenant_code, tenant_name, status, created_at, updated_at)
-SELECT @org_id, @platform_tenant_code, '平台管理租户', 'enabled', NOW(), NOW()
+(org_id, tenant_code, tenant_name, domain, status, created_at, updated_at)
+SELECT @org_id, @platform_tenant_code, '平台管理租户', 'platform', 'enabled', NOW(), NOW()
 FROM DUAL WHERE @tenant_exists = 0;
 
 -- 获取平台租户ID
