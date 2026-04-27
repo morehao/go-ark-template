@@ -33,6 +33,7 @@ type AuthSvc interface {
 	Logout(ctx *gin.Context, refreshToken string) error
 	RefreshToken(ctx *gin.Context, req *dtoauth.RefreshTokenReq) (*dtoauth.RefreshTokenResp, error)
 	Register(ctx *gin.Context, req *dtoauth.RegisterReq) (*dtoauth.RegisterResp, error)
+	UnlockAccount(ctx *gin.Context, req *dtoauth.UnlockAccountReq) error
 }
 
 type authSvc struct {
@@ -725,5 +726,33 @@ func (svc *authSvc) validateRegisterIdentity(ctx *gin.Context, req *dtoauth.Regi
 			return code.GetError(code.AuthRegisterIdentityRequired)
 		}
 	}
+	return nil
+}
+
+func (svc *authSvc) UnlockAccount(ctx *gin.Context, req *dtoauth.UnlockAccountReq) error {
+	account := strings.TrimSpace(req.Account)
+
+	personEntity, err := svc.findPersonByAccount(ctx, account)
+	if err != nil {
+		return err
+	}
+
+	userEntity, err := dao.NewUserDao().GetByCond(ctx, &dao.UserCond{
+		PersonID: personEntity.ID,
+		Status:   model.UserStatusLocked,
+	})
+	if err != nil || userEntity == nil || userEntity.ID == 0 {
+		return code.GetError(code.UserNotExistError)
+	}
+
+	if err := dao.NewUserDao().UpdateMap(ctx, userEntity.ID, map[string]any{
+		"status":            model.UserStatusEnabled,
+		"login_fail_count":  0,
+		"locked_until":      nil,
+	}); err != nil {
+		glog.Errorf(ctx, "[svcauth.UnlockAccount] UpdateMap fail, err:%v, userID:%d", err, userEntity.ID)
+		return code.GetError(code.UserUpdateError)
+	}
+
 	return nil
 }

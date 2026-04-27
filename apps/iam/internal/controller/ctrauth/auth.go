@@ -13,6 +13,7 @@ type AuthCtr interface {
 	Logout(ctx *gin.Context)
 	RefreshToken(ctx *gin.Context)
 	Register(ctx *gin.Context)
+	UnlockAccount(ctx *gin.Context)
 }
 
 type authCtr struct {
@@ -133,4 +134,25 @@ func (ctr *authCtr) Register(ctx *gin.Context) {
 		return
 	}
 	gincontext.Success(ctx, res)
+}
+
+// UnlockAccount 自助解锁账户
+// @Tags 认证管理
+// @Summary 自助解锁账户
+// @accept application/json
+// @Produce application/json
+// @Param req body dtoauth.UnlockAccountReq true "自助解锁账户"
+// @Success 200 {object} gincontext.DtoRender{data=string}
+// @Router /v1/iam/auth/unlockAccount [post]
+func (ctr *authCtr) UnlockAccount(ctx *gin.Context) {
+	var req dtoauth.UnlockAccountReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	if err := ctr.authSvc.UnlockAccount(ctx, &req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	gincontext.Success(ctx, "解锁成功")
 }

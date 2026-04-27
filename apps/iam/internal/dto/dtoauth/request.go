@@ -26,3 +26,9 @@ type RegisterReq struct {
 	Email      string `json:"email" validate:"required" label:"邮箱"`        // 邮箱
 	RealName   string `json:"realName" validate:"required" label:"真实姓名"`   // 真实姓名
 }
+
+type UnlockAccountReq struct {
+	Account   string `json:"account" validate:"required" label:"账号"`
+	Captcha   string `json:"captcha" validate:"required" label:"验证码"`
+	CaptchaID string `json:"captchaId" label:"验证码ID"`
+}
