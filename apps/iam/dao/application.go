@@ -13,6 +13,7 @@ type ApplicationCond struct {
 	AppName     string
 	AppType     string
 	CallbackUrl string
+	ClientID    string
 	CreatedBy   uint
 	DeletedBy   uint
 	Description string
@@ -38,6 +39,9 @@ func (c *ApplicationCond) BuildCondition(db *gorm.DB, tableName string) {
 	}
 	if c.CallbackUrl != "" {
 		db.Where(tableName+".callback_url = ?", c.CallbackUrl)
+	}
+	if c.ClientID != "" {
+		db.Where(tableName+".client_id = ?", c.ClientID)
 	}
 	if c.CreatedBy != 0 {
 		db.Where(tableName+".created_by = ?", c.CreatedBy)

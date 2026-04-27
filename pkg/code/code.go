@@ -45,4 +45,5 @@ func init() {
 	registerError(operationLogErrorMsgMap)
 	registerError(loginLogErrorMsgMap)
 	registerError(apiKeyErrorMsgMap)
+	registerError(oidcErrorMsgMap)
 }
