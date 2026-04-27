@@ -1,8 +1,6 @@
 package strategy
 
 import (
-	"strings"
-
 	"github.com/gin-gonic/gin"
 	"github.com/morehao/goark/apps/iam/dao"
 	"github.com/morehao/goark/apps/iam/model"
@@ -26,7 +24,7 @@ func (s *domainStrategy) PreRegister(ctx *gin.Context, req *RegisterRequest) (*R
 		return nil, err
 	}
 
-	domain := resolveDomainFromHost(ctx)
+	domain := resolveDomain(ctx)
 	if domain == "" {
 		return nil, code.GetError(code.TenantNotExistError)
 	}
@@ -61,10 +59,4 @@ func (s *domainStrategy) GetStrategyType() RegisterStrategyType {
 	return RegisterStrategyDomain
 }
 
-func resolveDomainFromHost(ctx *gin.Context) string {
-	host := ctx.Request.Host
-	if idx := strings.Index(host, ":"); idx != -1 {
-		host = host[:idx]
-	}
-	return strings.TrimSpace(host)
-}
+
