@@ -1,6 +1,8 @@
 package model
 
 import (
+	"time"
+
 	"gorm.io/gorm"
 )
 
@@ -16,6 +18,8 @@ type LoginLogEntity struct {
 	Location     string         `gorm:"column:location;type:varchar(128);;comment: 登录地点"`
 	Browser      string         `gorm:"column:browser;type:varchar(64);;comment: 浏览器"`
 	OS           string         `gorm:"column:os;type:varchar(64);;comment: 操作系统"`
+	LogoutTime   time.Time      `gorm:"column:logout_time;type:datetime(3);comment:退出时间" json:"logout_time,omitempty"`
+	SessionID    string         `gorm:"column:session_id;type:varchar(64);comment:关联的SSO会话ID" json:"session_id,omitempty"`
 	CreatedAt    string         `gorm:"column:created_at;type:datetime(3);;comment: 创建时间"`
 	UpdatedAt    string         `gorm:"column:updated_at;type:datetime(3);;comment: 更新时间"`
 	DeletedAt    gorm.DeletedAt `gorm:"column:deleted_at;type:datetime(3);;comment: 删除时间"`
