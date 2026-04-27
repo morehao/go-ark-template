@@ -14,6 +14,7 @@ import (
 	"github.com/morehao/golib/biz/gcontext/gincontext"
 	"github.com/morehao/golib/biz/genericdao"
 	"github.com/morehao/golib/biz/gobject"
+	"github.com/morehao/golib/gcrypto"
 	"github.com/morehao/golib/glog"
 	"github.com/morehao/golib/gutil"
 	"gorm.io/gorm"
@@ -31,6 +32,7 @@ type UserSvc interface {
 	ListRoles(ctx *gin.Context, req *dtouser.UserRolesReq) (*dtouser.UserRolesResp, error)
 	GetCurrentUserInfo(ctx *gin.Context) (*dtouser.UserInfoResp, error)
 	UpdateProfile(ctx *gin.Context, req *dtouser.UpdateProfileReq) error
+	ChangePassword(ctx *gin.Context, req *dtouser.ChangePasswordReq) error
 }
 
 type userSvc struct {
@@ -627,6 +629,40 @@ func (svc *userSvc) UpdateProfile(ctx *gin.Context, req *dtouser.UpdateProfileRe
 			glog.Errorf(ctx, "[svcuser.UpdateProfile] UpdateMap fail, err:%v, personID:%d", err, personEntity.ID)
 			return code.GetError(code.UserUpdateError)
 		}
+	}
+
+	return nil
+}
+
+func (svc *userSvc) ChangePassword(ctx *gin.Context, req *dtouser.ChangePasswordReq) error {
+	userID := gincontext.GetUserID(ctx)
+
+	userEntity, err := dao.NewUserDao().GetByID(ctx, userID)
+	if err != nil || userEntity == nil || userEntity.ID == 0 {
+		return code.GetError(code.UserNotExistError)
+	}
+
+	personEntity, err := dao.NewPersonDao().GetByID(ctx, userEntity.PersonID)
+	if err != nil || personEntity == nil {
+		return code.GetError(code.UserNotExistError)
+	}
+
+	if err := gcrypto.ComparePasswordHash(personEntity.PasswordHash, req.OldPassword); err != nil {
+		return code.GetError(code.AuthPasswordError)
+	}
+
+	newHash, err := gcrypto.GeneratePasswordHash(req.NewPassword)
+	if err != nil {
+		glog.Errorf(ctx, "[svcuser.ChangePassword] GeneratePasswordHash fail, err:%v", err)
+		return code.GetError(code.UserUpdateError)
+	}
+
+	updateMap := map[string]any{
+		"password_hash": newHash,
+	}
+	if err := dao.NewPersonDao().UpdateMap(ctx, personEntity.ID, updateMap); err != nil {
+		glog.Errorf(ctx, "[svcuser.ChangePassword] UpdateMap fail, err:%v, personID:%d", err, personEntity.ID)
+		return code.GetError(code.UserUpdateError)
 	}
 
 	return nil

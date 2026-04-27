@@ -19,6 +19,7 @@ type UserCtr interface {
 	ListRoles(ctx *gin.Context)
 	GetCurrentUserInfo(ctx *gin.Context)
 	UpdateProfile(ctx *gin.Context)
+	ChangePassword(ctx *gin.Context)
 }
 
 type userCtr struct {
@@ -268,4 +269,25 @@ func (ctr *userCtr) UpdateProfile(ctx *gin.Context) {
 		return
 	}
 	gincontext.Success(ctx, "更新成功")
+}
+
+// ChangePassword 修改密码
+// @Tags 用户管理
+// @Summary 修改密码
+// @accept application/json
+// @Produce application/json
+// @Param req body dtouser.ChangePasswordReq true "修改密码"
+// @Success 200 {object} gincontext.DtoRender{data=string}
+// @Router /v1/iam/user/changePassword [post]
+func (ctr *userCtr) ChangePassword(ctx *gin.Context) {
+	var req dtouser.ChangePasswordReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	if err := ctr.userSvc.ChangePassword(ctx, &req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
+	gincontext.Success(ctx, "密码修改成功")
 }
