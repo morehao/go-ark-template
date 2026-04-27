@@ -14,6 +14,7 @@ type TenantCond struct {
 	TenantName string
 	TenantCode string
 	Status     model.TenantStatus
+	Domain     string
 }
 
 func (c *TenantCond) BuildCondition(db *gorm.DB, tableName string) {
@@ -34,6 +35,9 @@ func (c *TenantCond) BuildCondition(db *gorm.DB, tableName string) {
 	}
 	if c.Status != "" {
 		db.Where(tableName+".status = ?", c.Status)
+	}
+	if c.Domain != "" {
+		db.Where(tableName+".domain = ?", c.Domain)
 	}
 }
 
