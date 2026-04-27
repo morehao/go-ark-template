@@ -4,6 +4,13 @@ import (
 	"gorm.io/gorm"
 )
 
+type SSOType string
+
+const (
+	SSOTypeWechat SSOType = "wechat"
+	SSOTypeOIDC   SSOType = "oidc"
+)
+
 type SSOBindEntity struct {
 	gorm.Model
 	OrgID    uint   `gorm:"column:org_id;type:bigint;not null;default 0;comment: 组织ID"`
