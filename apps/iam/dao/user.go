@@ -45,3 +45,12 @@ func NewUserDao() *UserDao {
 		),
 	}
 }
+
+func (dao *UserDao) GetPendingUsers(ctx context.Context, tenantID uint) ([]*model.UserEntity, error) {
+	var users []*model.UserEntity
+	err := dao.GetListByCond(ctx, &UserCond{
+		TenantID: tenantID,
+		Status:   model.UserStatusPending,
+	}, &users)
+	return users, err
+}
