@@ -49,6 +49,13 @@ const (
 	OrgConfigKeyRegisterEnabled         = "auth.register.enabled"
 	OrgConfigKeyRegisterRequireApproval = "auth.register.requireApproval"
 	OrgConfigKeyRegisterIdentityType    = "auth.register.identityType"
+	OrgConfigKeyPasswordMinLength       = "auth.password.minLength"
+	OrgConfigKeyPasswordRequireUppercase = "auth.password.requireUppercase"
+	OrgConfigKeyPasswordRequireLowercase = "auth.password.requireLowercase"
+	OrgConfigKeyPasswordRequireNumber   = "auth.password.requireNumber"
+	OrgConfigKeyPasswordRequireSpecial   = "auth.password.requireSpecial"
+	OrgConfigKeyLoginMaxFailCount       = "auth.login.maxFailCount"
+	OrgConfigKeyLoginLockDuration       = "auth.login.lockDuration"
 )
 
 type RegisterIdentityType string
@@ -99,6 +106,55 @@ var OrgConfigMetaList = []OrgConfigMeta{
 			{Value: string(RegisterIdentityTypeEmail), Description: "邮箱注册"},
 			{Value: string(RegisterIdentityTypeBoth), Description: "手机号或邮箱注册"},
 		},
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyPasswordMinLength,
+		Type:         OrgConfigTypeNumber,
+		DefaultValue: "8",
+		Description:  "密码最小长度",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyPasswordRequireUppercase,
+		Type:         OrgConfigTypeBoolean,
+		DefaultValue: "true",
+		Description:  "密码必须包含大写字母",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyPasswordRequireLowercase,
+		Type:         OrgConfigTypeBoolean,
+		DefaultValue: "true",
+		Description:  "密码必须包含小写字母",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyPasswordRequireNumber,
+		Type:         OrgConfigTypeBoolean,
+		DefaultValue: "true",
+		Description:  "密码必须包含数字",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyPasswordRequireSpecial,
+		Type:         OrgConfigTypeBoolean,
+		DefaultValue: "false",
+		Description:  "密码必须包含特殊字符",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyLoginMaxFailCount,
+		Type:         OrgConfigTypeNumber,
+		DefaultValue: "5",
+		Description:  "登录失败最大次数",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyLoginLockDuration,
+		Type:         OrgConfigTypeNumber,
+		DefaultValue: "300",
+		Description:  "登录锁定时长(秒)",
 	},
 }
 
