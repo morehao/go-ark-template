@@ -9,11 +9,13 @@ import (
 	"github.com/morehao/goark/apps/iam/model"
 	"github.com/morehao/goark/apps/iam/object/objorg"
 	"github.com/morehao/goark/pkg/code"
+	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
 	"github.com/morehao/golib/biz/genericdao"
 	"github.com/morehao/golib/biz/gobject"
 	"github.com/morehao/golib/glog"
 	"github.com/morehao/golib/gutil"
+	"gorm.io/gorm"
 )
 
 type DepartmentSvc interface {
@@ -66,26 +68,35 @@ func (svc *departmentSvc) Create(ctx *gin.Context, req *dtoorg.DepartmentCreateR
 		DeptPath:  deptPath,
 		LeaderID:  req.LeaderID,
 		ParentID:  req.ParentID,
-		Sequence: req.Sequence,
+		Sequence:  req.Sequence,
 		Status:    model.DeptStatus(req.Status),
 		CreatedBy: operatorID,
 		UpdatedBy: operatorID,
 	}
 
-	if err := dao.NewDepartmentDao().Insert(ctx, insertEntity); err != nil {
-		glog.Errorf(ctx, "[svcorg.DepartmentCreate] daoDepartment Create fail, err:%v, req:%s", err, gutil.ToJsonString(req))
-		return nil, code.GetError(code.DepartmentCreateError)
-	}
+	var deptID uint
+	txErr := dbclient.IamDB(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := dao.NewDepartmentDao().WithTx(tx).Insert(ctx, insertEntity); err != nil {
+			glog.Errorf(ctx, "[svcorg.DepartmentCreate] daoDepartment Insert fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+			return code.GetError(code.DepartmentCreateError)
+		}
+		deptID = insertEntity.ID
 
-	updatePathMap := map[string]any{
-		"dept_path": fmt.Sprintf("/%d/", insertEntity.ID),
-	}
-	if err := dao.NewDepartmentDao().UpdateMap(ctx, insertEntity.ID, updatePathMap); err != nil {
-		glog.Errorf(ctx, "[svcorg.DepartmentCreate] update dept_path fail, err:%v", err)
+		updatePathMap := map[string]any{
+			"dept_path": fmt.Sprintf("/%d/", insertEntity.ID),
+		}
+		if err := dao.NewDepartmentDao().WithTx(tx).UpdateMap(ctx, insertEntity.ID, updatePathMap); err != nil {
+			glog.Errorf(ctx, "[svcorg.DepartmentCreate] UpdateMap dept_path fail, err:%v", err)
+			return code.GetError(code.DepartmentCreateError)
+		}
+		return nil
+	})
+	if txErr != nil {
+		return nil, txErr
 	}
 
 	return &dtoorg.DepartmentCreateResp{
-		DeptID: insertEntity.ID,
+		DeptID: deptID,
 	}, nil
 }
 
@@ -110,23 +121,28 @@ func (svc *departmentSvc) Delete(ctx *gin.Context, req *dtoorg.DepartmentDeleteR
 
 // Update 更新部门管理
 func (svc *departmentSvc) Update(ctx *gin.Context, req *dtoorg.DepartmentUpdateReq) error {
+	operatorID := gincontext.GetUserID(ctx)
+	tenantID := gincontext.GetTenantID(ctx)
+
 	departmentEntity, err := dao.NewDepartmentDao().GetByID(ctx, req.DeptID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.DepartmentUpdate] daoDepartment GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.DepartmentUpdateError)
 	}
 	if departmentEntity == nil || departmentEntity.ID == 0 {
-		return code.GetError(code.DepartmentUpdateError)
+		return code.GetError(code.DepartmentNotExistError)
 	}
+	if departmentEntity.TenantID != tenantID {
+		return code.GetError(code.TenantScopeForbiddenError)
+	}
+
 	updateMap := map[string]any{
-		"dept_code":  req.DeptCode,
-		"dept_level": req.DeptLevel,
-		"dept_name":  req.DeptName,
-		"dept_path":  req.DeptPath,
-		"leader_id":  req.LeaderID,
-		"parent_id":  req.ParentID,
-		"sequence": req.Sequence,
-		"status":     req.Status,
+		"dept_code": req.DeptCode,
+		"dept_name": req.DeptName,
+		"leader_id": req.LeaderID,
+		"sequence":  req.Sequence,
+		"status":    req.Status,
+		"updated_by": operatorID,
 	}
 	if err = dao.NewDepartmentDao().UpdateMap(ctx, req.DeptID, updateMap); err != nil {
 		glog.Errorf(ctx, "[svcorg.DepartmentUpdate] daoDepartment UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))

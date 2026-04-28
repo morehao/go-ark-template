@@ -3,21 +3,27 @@ package code
 import "github.com/morehao/golib/gerror"
 
 const (
-	CompanyCreateError      = 100300
-	CompanyDeleteError      = 100301
-	CompanyUpdateError      = 100302
-	CompanyGetDetailError   = 100303
-	CompanyGetPageListError = 100304
-	CompanyNotExistError    = 100305
+	OrganizationCreateError       = 100110
+	OrganizationDeleteError       = 100111
+	OrganizationUpdateError       = 100112
+	OrganizationGetDetailError     = 100113
+	OrganizationGetPageListError   = 100114
+	OrganizationNotExistError      = 100115
+	OrganizationCodeDuplicateError = 100116
+	OrganizationConfigError        = 100117
+	ErrInvalidParam                = 100118
 )
 
-var companyErrorMsgMap = gerror.CodeMsgMap{
-	CompanyCreateError:      "创建公司管理失败",
-	CompanyDeleteError:      "删除公司管理失败",
-	CompanyUpdateError:      "修改公司管理失败",
-	CompanyGetDetailError:   "查看公司管理失败",
-	CompanyGetPageListError: "查看公司管理列表失败",
-	CompanyNotExistError:    "公司管理不存在",
+var organizationErrorMsgMap = gerror.CodeMsgMap{
+	OrganizationCreateError:       "创建组织管理失败",
+	OrganizationDeleteError:       "删除组织管理失败",
+	OrganizationUpdateError:       "修改组织管理失败",
+	OrganizationGetDetailError:    "查看组织管理详情失败",
+	OrganizationGetPageListError:  "查看组织管理列表失败",
+	OrganizationNotExistError:     "组织管理不存在",
+	OrganizationCodeDuplicateError: "组织编码已存在",
+	OrganizationConfigError:        "组织配置错误",
+	ErrInvalidParam:                "参数错误",
 }
 
 const (

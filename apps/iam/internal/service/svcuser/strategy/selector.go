@@ -83,10 +83,18 @@ func getCurrentOrg(ctx *gin.Context) (*model.OrganizationEntity, error) {
 		return nil, code.GetError(code.AuthOrgNotFoundError)
 	}
 
-	orgEntity, err := dao.NewOrganizationDao().GetByCond(ctx, &dao.OrganizationCond{
+	tenant, err := dao.NewTenantDao().GetByCond(ctx, &dao.TenantCond{
 		Domain: domain,
-		Status: model.OrgStatusEnabled,
+		Status: model.TenantStatusEnabled,
 	})
+	if err != nil {
+		return nil, code.GetError(code.AuthLoginError)
+	}
+	if tenant == nil || tenant.ID == 0 {
+		return nil, code.GetError(code.AuthOrgNotFoundError)
+	}
+
+	orgEntity, err := dao.NewOrganizationDao().GetByID(ctx, tenant.OrgID)
 	if err != nil {
 		return nil, code.GetError(code.AuthLoginError)
 	}

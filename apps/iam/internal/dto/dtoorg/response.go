@@ -78,12 +78,11 @@ type ConfigGroupResp struct {
 }
 
 type GetOrgConfigResp struct {
-	OrgID   uint               `json:"orgId"`   // 组织ID
-	OrgName string             `json:"orgName"` // 组织名称
-	Domain  string             `json:"domain"`  // 域名
-	Logo    string             `json:"logo"`    // Logo
-	Status  model.OrgStatus    `json:"status"`  // 状态
-	Configs []ConfigGroupResp  `json:"configs"` // 配置信息
+	OrgID   uint              `json:"orgId"`   // 组织ID
+	OrgName string            `json:"orgName"` // 组织名称
+	Logo    string            `json:"logo"`    // Logo
+	Status  model.OrgStatus   `json:"status"`  // 状态
+	Configs []ConfigGroupResp `json:"configs"` // 配置信息
 }
 
 type OrgDetailResp struct {

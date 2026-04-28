@@ -8,6 +8,7 @@ USE ark_iam;
 
 -- 定义常量
 SET @platform_org_code = 'PLATFORM';
+SET @platform_display_code = 'PLATFORM';
 SET @platform_tenant_code = 'PLATFORM';
 SET @platform_dept_code = 'PLATFORM';
 SET @platform_admin_username = 'platform_admin';
@@ -16,16 +17,16 @@ SET @platform_admin_email = 'admin@platform.com';
 SET @platform_admin_real_name = '平台管理员';
 
 -- 检查是否已存在平台组织
-SET @org_exists = (SELECT COUNT(*) FROM iam_organization WHERE org_code = @platform_org_code);
+SET @org_exists = (SELECT COUNT(*) FROM iam_organization WHERE code = @platform_org_code);
 
 -- 1. 创建平台组织
 INSERT INTO iam_organization
-(org_code, org_name, description, status, created_at, updated_at)
-SELECT @platform_org_code, '平台管理组织', '平台系统管理专用组织', 'enabled', NOW(), NOW()
+(code, display_code, org_name, description, status, created_at, updated_at)
+SELECT @platform_org_code, @platform_display_code, '平台管理组织', '平台系统管理专用组织', 'enabled', NOW(), NOW()
 FROM DUAL WHERE @org_exists = 0;
 
 -- 获取平台组织ID
-SET @org_id = (SELECT id FROM iam_organization WHERE org_code = @platform_org_code LIMIT 1);
+SET @org_id = (SELECT id FROM iam_organization WHERE code = @platform_org_code LIMIT 1);
 
 -- 检查是否已存在平台租户
 SET @tenant_exists = (SELECT COUNT(*) FROM iam_tenant WHERE tenant_code = @platform_tenant_code);

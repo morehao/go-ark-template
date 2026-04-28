@@ -68,10 +68,10 @@ CREATE TABLE IF NOT EXISTS iam_tenant_application (
 -- 组织表(最高层级)
 CREATE TABLE IF NOT EXISTS iam_organization (
     id BIGINT AUTO_INCREMENT COMMENT '组织ID',
-    org_code VARCHAR(32) UNIQUE NOT NULL COMMENT '组织编码',
+    code VARCHAR(32) NOT NULL COMMENT '系统内部唯一标识',
+    display_code VARCHAR(32) UNIQUE NOT NULL COMMENT '组织编码(对外展示)',
     org_name VARCHAR(64) NOT NULL COMMENT '组织名称',
     description VARCHAR(255) COMMENT '组织描述',
-    domain VARCHAR(255) COMMENT '组织域名',
     logo VARCHAR(255) COMMENT '组织Logo',
     sequence INT DEFAULT 0 COMMENT '排序',
     status VARCHAR(16) DEFAULT 'enabled' COMMENT '状态: enabled-启用 disabled-停用',
@@ -82,7 +82,8 @@ CREATE TABLE IF NOT EXISTS iam_organization (
     updated_by BIGINT NOT NULL DEFAULT 0 COMMENT '更新人ID',
     deleted_by BIGINT NOT NULL DEFAULT 0 COMMENT '删除人ID',
     PRIMARY KEY (`id`),
-    UNIQUE KEY uk_org_code (org_code),
+    UNIQUE KEY uk_code (code),
+    UNIQUE KEY uk_display_code (display_code),
     INDEX idx_created_at (created_at),
     INDEX idx_deleted_at (deleted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='组织表';

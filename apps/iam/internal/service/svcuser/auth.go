@@ -548,12 +548,21 @@ func (svc *authSvc) getCurrentOrg(ctx *gin.Context) (*model.OrganizationEntity, 
 		return nil, code.GetError(code.AuthOrgNotFoundError)
 	}
 
-	orgEntity, err := dao.NewOrganizationDao().GetByCond(ctx, &dao.OrganizationCond{
+	tenant, err := dao.NewTenantDao().GetByCond(ctx, &dao.TenantCond{
 		Domain: domain,
-		Status: model.OrgStatusEnabled,
+		Status: model.TenantStatusEnabled,
 	})
 	if err != nil {
-		glog.Errorf(ctx, "[svcuser.getCurrentOrg] daoOrg GetByCond fail, err:%v, domain:%s", err, domain)
+		glog.Errorf(ctx, "[svcuser.getCurrentOrg] daoTenant GetByCond fail, err:%v, domain:%s", err, domain)
+		return nil, code.GetError(code.AuthLoginError)
+	}
+	if tenant == nil || tenant.ID == 0 {
+		return nil, code.GetError(code.AuthOrgNotFoundError)
+	}
+
+	orgEntity, err := dao.NewOrganizationDao().GetByID(ctx, tenant.OrgID)
+	if err != nil {
+		glog.Errorf(ctx, "[svcuser.getCurrentOrg] daoOrg GetByID fail, err:%v, orgID:%d", err, tenant.OrgID)
 		return nil, code.GetError(code.AuthLoginError)
 	}
 	if orgEntity == nil || orgEntity.ID == 0 {

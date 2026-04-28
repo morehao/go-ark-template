@@ -196,8 +196,30 @@ func (svc *tenantSvc) Delete(ctx *gin.Context, req *dtoorg.TenantDeleteReq) erro
 		return code.GetError(code.TenantNotExistError)
 	}
 
-	if err = dao.NewTenantDao().Delete(ctx, req.TenantID, userID); err != nil {
-		glog.Errorf(ctx, "[svcorg.Delete] daoTenant Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+	txErr := dbclient.IamDB(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("tenant_id = ?", req.TenantID).Delete(&model.TenantApplicationEntity{}).Error; err != nil {
+			glog.Errorf(ctx, "[svcorg.Delete] Delete tenantApps fail, err:%v, tenantID:%d", err, req.TenantID)
+			return err
+		}
+
+		if err := tx.Where("tenant_id = ?", req.TenantID).Delete(&model.DepartmentEntity{}).Error; err != nil {
+			glog.Errorf(ctx, "[svcorg.Delete] Delete departments fail, err:%v, tenantID:%d", err, req.TenantID)
+			return err
+		}
+
+		if err := tx.Where("tenant_id = ?", req.TenantID).Delete(&model.PersonEntity{}).Error; err != nil {
+			glog.Errorf(ctx, "[svcorg.Delete] Delete persons fail, err:%v, tenantID:%d", err, req.TenantID)
+			return err
+		}
+
+		if err := dao.NewTenantDao().WithTx(tx).Delete(ctx, req.TenantID, userID); err != nil {
+			glog.Errorf(ctx, "[svcorg.Delete] daoTenant Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+			return err
+		}
+		return nil
+	})
+	if txErr != nil {
+		glog.Errorf(ctx, "[svcorg.Delete] Transaction fail, err:%v, req:%s", txErr, gutil.ToJsonString(req))
 		return code.GetError(code.TenantDeleteError)
 	}
 	return nil
@@ -205,6 +227,9 @@ func (svc *tenantSvc) Delete(ctx *gin.Context, req *dtoorg.TenantDeleteReq) erro
 
 func (svc *tenantSvc) Update(ctx *gin.Context, req *dtoorg.TenantUpdateReq) error {
 	operatorID := gincontext.GetUserID(ctx)
+	tenantID := gincontext.GetTenantID(ctx)
+	isPlatformAdmin := gincontext.GetUserType(ctx) == "platform_admin"
+
 	tenantEntity, err := dao.NewTenantDao().GetByID(ctx, req.TenantID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.TenantUpdate] daoTenant GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
@@ -212,6 +237,10 @@ func (svc *tenantSvc) Update(ctx *gin.Context, req *dtoorg.TenantUpdateReq) erro
 	}
 	if tenantEntity == nil || tenantEntity.ID == 0 {
 		return code.GetError(code.TenantNotExistError)
+	}
+
+	if !isPlatformAdmin && tenantEntity.ID != tenantID {
+		return code.GetError(code.TenantScopeForbiddenError)
 	}
 
 	if len(req.AppIDs) > 0 {
@@ -237,16 +266,15 @@ func (svc *tenantSvc) Update(ctx *gin.Context, req *dtoorg.TenantUpdateReq) erro
 	updateMap := map[string]any{
 		"address":                    req.Address,
 		"contact_email":              req.ContactEmail,
-		"contact_phone":              req.ContactPhone,
-		"legal_person":               req.LegalPerson,
-		"logo":                       req.Logo,
-		"org_id":                     req.OrgID,
-		"short_name":                 req.ShortName,
-		"status":                     req.Status,
-		"tenant_code":                req.TenantCode,
-		"tenant_name":                req.TenantName,
+		"contact_phone":             req.ContactPhone,
+		"legal_person":              req.LegalPerson,
+		"logo":                      req.Logo,
+		"short_name":                req.ShortName,
+		"status":                    req.Status,
+		"tenant_code":               req.TenantCode,
+		"tenant_name":               req.TenantName,
 		"unified_social_credit_code": req.UnifiedSocialCreditCode,
-		"updated_by":                 operatorID,
+		"updated_by":                operatorID,
 	}
 
 	if req.ParentID != tenantEntity.ParentID {
@@ -256,7 +284,7 @@ func (svc *tenantSvc) Update(ctx *gin.Context, req *dtoorg.TenantUpdateReq) erro
 				glog.Errorf(ctx, "[svcorg.TenantUpdate] parent tenant not found, parentID:%d", req.ParentID)
 				return code.GetError(code.TenantNotExistError)
 			}
-			if parentTenant.OrgID != req.OrgID {
+			if parentTenant.OrgID != tenantEntity.OrgID {
 				return code.GetError(code.TenantScopeForbiddenError)
 			}
 			updateMap["parent_id"] = req.ParentID

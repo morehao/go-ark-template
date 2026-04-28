@@ -46,9 +46,8 @@ func (ctr *departmentCtr) Create(ctx *gin.Context) {
 	if err != nil {
 		gincontext.Fail(ctx, err)
 		return
-	} else {
-		gincontext.Success(ctx, res)
 	}
+	gincontext.Success(ctx, res)
 }
 
 // Delete 删除部门管理
@@ -69,9 +68,8 @@ func (ctr *departmentCtr) Delete(ctx *gin.Context) {
 	if err := ctr.departmentSvc.Delete(ctx, &req); err != nil {
 		gincontext.Fail(ctx, err)
 		return
-	} else {
-		gincontext.Success(ctx, "删除成功")
 	}
+	gincontext.Success(ctx, "删除成功")
 }
 
 // Update 修改部门管理
@@ -91,9 +89,8 @@ func (ctr *departmentCtr) Update(ctx *gin.Context) {
 	if err := ctr.departmentSvc.Update(ctx, &req); err != nil {
 		gincontext.Fail(ctx, err)
 		return
-	} else {
-		gincontext.Success(ctx, "修改成功")
 	}
+	gincontext.Success(ctx, "修改成功")
 }
 
 // Detail 部门管理详情
@@ -114,9 +111,8 @@ func (ctr *departmentCtr) Detail(ctx *gin.Context) {
 	if err != nil {
 		gincontext.Fail(ctx, err)
 		return
-	} else {
-		gincontext.Success(ctx, res)
 	}
+	gincontext.Success(ctx, res)
 }
 
 // PageList 部门管理列表
@@ -137,9 +133,8 @@ func (ctr *departmentCtr) PageList(ctx *gin.Context) {
 	if err != nil {
 		gincontext.Fail(ctx, err)
 		return
-	} else {
-		gincontext.Success(ctx, res)
 	}
+	gincontext.Success(ctx, res)
 }
 
 // Tree 获取部门树
@@ -160,7 +155,6 @@ func (ctr *departmentCtr) Tree(ctx *gin.Context) {
 	if err != nil {
 		gincontext.Fail(ctx, err)
 		return
-	} else {
-		gincontext.Success(ctx, res)
 	}
+	gincontext.Success(ctx, res)
 }

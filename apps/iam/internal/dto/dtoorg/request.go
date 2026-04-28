@@ -78,7 +78,7 @@ type OrgDetailReq struct {
 }
 
 type GetOrganizationConfigsReq struct {
-	Domain string `json:"domain" form:"domain" label:"组织域名"` // 组织域名
+	DisplayCode string `json:"displayCode" form:"displayCode" label:"组织编码"` // 组织编码
 }
 
 type OrgPageListReq struct {
