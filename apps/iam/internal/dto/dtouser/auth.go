@@ -1,6 +1,6 @@
 package dtouser
 
-import "github.com/morehao/goark/apps/iam/model"
+import "github.com/morehao/goark/iam/model"
 
 type LoginByPasswordReq struct {
 	Account  string `json:"account" validate:"required" label:"登录账号"`

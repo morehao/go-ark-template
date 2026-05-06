@@ -2,8 +2,8 @@ package ctrapplication
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam/internal/dto/dtoapplication"
-	"github.com/morehao/goark/apps/iam/internal/service/svcapplication"
+	"github.com/morehao/goark/iam/internal/dto/dtoapplication"
+	"github.com/morehao/goark/iam/internal/service/svcapplication"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
 )
 

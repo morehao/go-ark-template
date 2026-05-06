@@ -1,4 +1,4 @@
-module github.com/morehao/goark/apps/iam
+module github.com/morehao/goark/iam
 
 go 1.26.1
 

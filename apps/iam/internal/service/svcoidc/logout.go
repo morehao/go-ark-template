@@ -5,7 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 
-	"github.com/morehao/goark/apps/iam/dao"
+	"github.com/morehao/goark/iam/dao"
 	"github.com/morehao/golib/glog"
 )
 

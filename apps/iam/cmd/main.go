@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam"
-	"github.com/morehao/goark/apps/iam/config"
+	"github.com/morehao/goark/iam"
+	"github.com/morehao/goark/iam/config"
 	"github.com/morehao/golib/glog"
 )
 

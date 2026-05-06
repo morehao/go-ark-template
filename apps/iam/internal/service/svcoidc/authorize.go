@@ -7,9 +7,9 @@ import (
 	"errors"
 	"time"
 
-	"github.com/morehao/goark/apps/iam/dao"
-	"github.com/morehao/goark/apps/iam/internal/dto/dtooidc"
-	"github.com/morehao/goark/apps/iam/model"
+	"github.com/morehao/goark/iam/dao"
+	"github.com/morehao/goark/iam/internal/dto/dtooidc"
+	"github.com/morehao/goark/iam/model"
 	"github.com/morehao/goark/pkg/code"
 	"github.com/morehao/golib/glog"
 )

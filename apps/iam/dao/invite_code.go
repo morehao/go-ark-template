@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/morehao/goark/apps/iam/model"
+	"github.com/morehao/goark/iam/model"
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/biz/genericdao"
 	"gorm.io/gorm"

@@ -1,6 +1,6 @@
 package objpermission
 
-import "github.com/morehao/goark/apps/iam/model"
+import "github.com/morehao/goark/iam/model"
 
 type MenuBaseInfo struct {
 	CacheType      model.MenuCacheType            `json:"cacheType" form:"cacheType"`           // 缓存类型: enabled-启用 disabled-禁用

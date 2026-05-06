@@ -2,8 +2,8 @@ package org
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam/dao"
-	"github.com/morehao/goark/apps/iam/model"
+	"github.com/morehao/goark/iam/dao"
+	"github.com/morehao/goark/iam/model"
 	"github.com/morehao/golib/glog"
 )
 

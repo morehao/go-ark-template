@@ -2,8 +2,8 @@ package ctrorg
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam/internal/dto/dtoorg"
-	"github.com/morehao/goark/apps/iam/internal/service/svcorg"
+	"github.com/morehao/goark/iam/internal/dto/dtoorg"
+	"github.com/morehao/goark/iam/internal/service/svcorg"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
 )
 

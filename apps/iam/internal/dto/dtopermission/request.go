@@ -1,7 +1,7 @@
 package dtopermission
 
 import (
-	"github.com/morehao/goark/apps/iam/object/objpermission"
+	"github.com/morehao/goark/iam/object/objpermission"
 	"github.com/morehao/golib/biz/gobject"
 )
 

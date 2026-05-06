@@ -1,4 +1,4 @@
-module github.com/morehao/goark/apps/demo
+module github.com/morehao/goark/demo
 
 go 1.26.1
 

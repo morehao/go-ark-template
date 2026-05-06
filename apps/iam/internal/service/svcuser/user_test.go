@@ -3,7 +3,7 @@ package svcuser
 import (
 	"testing"
 
-	"github.com/morehao/goark/apps/iam/internal/dto/dtouser"
+	"github.com/morehao/goark/iam/internal/dto/dtouser"
 	"github.com/morehao/goark/pkg/testsetup"
 	"github.com/morehao/golib/gcrypto"
 	"github.com/morehao/golib/gutil"

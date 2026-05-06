@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/morehao/goark/apps/iam/model"
+	"github.com/morehao/goark/iam/model"
 	"github.com/morehao/goark/pkg/dbclient"
 	"gorm.io/gorm"
 )

@@ -1,7 +1,7 @@
 package dao
 
 import (
-	"github.com/morehao/goark/apps/demo/model"
+	"github.com/morehao/goark/demo/model"
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/biz/genericdao"
 	"gorm.io/gorm"

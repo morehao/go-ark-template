@@ -2,10 +2,10 @@ package demo
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/demo/config"
-	_ "github.com/morehao/goark/apps/demo/docs"
-	"github.com/morehao/goark/apps/demo/internal/middleware"
-	"github.com/morehao/goark/apps/demo/internal/router"
+	"github.com/morehao/goark/demo/config"
+	_ "github.com/morehao/goark/demo/docs"
+	"github.com/morehao/goark/demo/internal/middleware"
+	"github.com/morehao/goark/demo/internal/router"
 	"github.com/morehao/golib/biz/gconstant"
 	"github.com/morehao/golib/biz/gserver/gindocs"
 	"github.com/morehao/golib/biz/gserver/ginserver"

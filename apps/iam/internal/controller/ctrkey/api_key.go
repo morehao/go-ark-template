@@ -2,8 +2,8 @@ package ctrkey
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam/internal/dto/dtoapikey"
-	"github.com/morehao/goark/apps/iam/internal/service/svcapikey"
+	"github.com/morehao/goark/iam/internal/dto/dtoapikey"
+	"github.com/morehao/goark/iam/internal/service/svcapikey"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
 )
 

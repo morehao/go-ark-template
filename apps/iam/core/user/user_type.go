@@ -1,7 +1,7 @@
 package user
 
 import (
-	"github.com/morehao/goark/apps/iam/model"
+	"github.com/morehao/goark/iam/model"
 )
 
 type CreatePersonResult struct {

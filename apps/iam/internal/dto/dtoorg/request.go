@@ -1,7 +1,7 @@
 package dtoorg
 
 import (
-	"github.com/morehao/goark/apps/iam/object/objorg"
+	"github.com/morehao/goark/iam/object/objorg"
 	"github.com/morehao/golib/biz/gobject"
 )
 

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/morehao/goark/apps/iam/dao"
-	"github.com/morehao/goark/apps/iam/internal/dto/dtooidc"
+	"github.com/morehao/goark/iam/dao"
+	"github.com/morehao/goark/iam/internal/dto/dtooidc"
 	"github.com/morehao/goark/pkg/code"
 	"github.com/morehao/golib/glog"
 )

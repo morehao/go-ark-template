@@ -1,6 +1,6 @@
 package objpermission
 
-import "github.com/morehao/goark/apps/iam/model"
+import "github.com/morehao/goark/iam/model"
 
 type RoleBaseInfo struct {
 	TenantID    uint                   `json:"tenantID" form:"tenantID"`       // 所属租户ID

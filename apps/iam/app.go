@@ -2,9 +2,9 @@ package iam
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam/config"
-	_ "github.com/morehao/goark/apps/iam/docs"
-	"github.com/morehao/goark/apps/iam/internal/router"
+	"github.com/morehao/goark/iam/config"
+	_ "github.com/morehao/goark/iam/docs"
+	"github.com/morehao/goark/iam/internal/router"
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/biz/gconstant"
 	"github.com/morehao/golib/biz/gmiddleware/ginmiddleware"

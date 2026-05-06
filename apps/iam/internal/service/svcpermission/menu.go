@@ -2,10 +2,10 @@ package svcpermission
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam/dao"
-	"github.com/morehao/goark/apps/iam/internal/dto/dtopermission"
-	"github.com/morehao/goark/apps/iam/model"
-	"github.com/morehao/goark/apps/iam/object/objpermission"
+	"github.com/morehao/goark/iam/dao"
+	"github.com/morehao/goark/iam/internal/dto/dtopermission"
+	"github.com/morehao/goark/iam/model"
+	"github.com/morehao/goark/iam/object/objpermission"
 	"github.com/morehao/goark/pkg/code"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
 	"github.com/morehao/golib/biz/genericdao"

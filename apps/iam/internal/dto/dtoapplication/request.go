@@ -1,7 +1,7 @@
 package dtoapplication
 
 import (
-	"github.com/morehao/goark/apps/iam/object/objapplication"
+	"github.com/morehao/goark/iam/object/objapplication"
 	"github.com/morehao/golib/biz/gobject"
 )
 
