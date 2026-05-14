@@ -35,3 +35,14 @@ type DocumentUploadReq struct {
 	Type            string `json:"type" validate:"required" label:"文档类型"`
 	Location        string `json:"location" validate:"required" label:"文档位置"`
 }
+
+type DocumentListReq struct {
+	Page            int    `form:"page" validate:"required" label:"页码"`
+	PageSize        int    `form:"pageSize" validate:"required" label:"每页数量"`
+	KnowledgeBaseID uint   `form:"knowledgeBaseID" label:"知识库id"`
+	Name            string `form:"name" label:"文档名称"`
+}
+
+type DocumentDeleteReq struct {
+	ID uint `json:"id" validate:"required" label:"数据自增id"`
+}
