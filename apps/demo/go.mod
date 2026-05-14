@@ -5,7 +5,7 @@ go 1.26.1
 require (
 	github.com/gin-gonic/gin v1.12.0
 	github.com/morehao/goark/pkg v0.0.0
-	github.com/morehao/golib v0.0.0
+	github.com/morehao/golib v1.26.2
 	github.com/stretchr/testify v1.11.1
 	github.com/swaggo/swag v1.16.6
 	gorm.io/gorm v1.31.1
