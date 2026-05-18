@@ -1,7 +1,7 @@
 package dtouser
 
 import (
-	"github.com/morehao/goark/apps/iam/object/objuser"
+	"github.com/morehao/goark/iam/object/objuser"
 	"github.com/morehao/golib/biz/gobject"
 )
 
@@ -10,17 +10,19 @@ type UserCreateReq struct {
 	Mobile           string `json:"mobile" form:"mobile"`                     // 手机号
 	Email            string `json:"email" form:"email"`                       // 邮箱
 	RealName         string `json:"realName" form:"realName"`                 // 真实姓名
-	PrimaryDeptID    uint   `json:"primaryDeptID" form:"primaryDeptID"`       // 主部门ID，未传入时自动使用租户顶级部门
+	PrimaryDeptID    uint   `json:"primaryDeptID" form:"primaryDeptID"`         // 主部门ID，未传入时自动使用租户顶级部门
 	SecondaryDeptIDs []uint `json:"secondaryDeptIDs" form:"secondaryDeptIDs"` // 其他关联部门ID列表（第二部门）
+	Password         string `json:"password"`                                 // 可选，管理员指定密码
+	SendNotify       bool   `json:"sendNotify"`                                // 是否发送通知
 }
 
 type UserUpdateReq struct {
-	ID uint `json:"id" validate:"required" label:"数据自增id"` // 数据自增 ID
+	UserID uint `json:"userID" validate:"required" label:"数据自增id"` // 数据自增 ID
 	objuser.UserBaseInfo
 }
 
 type UserDetailReq struct {
-	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增 ID
+	UserID uint `json:"userID" form:"userID" validate:"required" label:"数据自增id"` // 数据自增 ID
 }
 
 type UserPageListReq struct {
@@ -28,7 +30,7 @@ type UserPageListReq struct {
 }
 
 type UserDeleteReq struct {
-	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增 ID
+	UserID uint `json:"userID" form:"userID" validate:"required" label:"数据自增id"` // 数据自增 ID
 }
 
 type UserDepartmentsAssignReq struct {
@@ -48,4 +50,43 @@ type UserAssignRolesReq struct {
 
 type UserRolesReq struct {
 	UserID uint `json:"userId" form:"userId" validate:"required" label:"用户ID"` // 用户ID
+}
+
+type UpdateProfileReq struct {
+	Email    string `json:"email"`    // 邮箱
+	Phone    string `json:"phone"`    // 手机号
+	Avatar   string `json:"avatar"`   // 头像
+	Nickname string `json:"nickname"` // 昵称
+}
+
+type ChangePasswordReq struct {
+	OldPassword string `json:"oldPassword" validate:"required"` // 旧密码
+	NewPassword string `json:"newPassword" validate:"required"`   // 新密码
+}
+
+type LoginHistoryReq struct {
+	gobject.PageQuery
+	StartTime string `json:"startTime"` // 开始时间
+	EndTime   string `json:"endTime"`   // 结束时间
+}
+
+type PendingListReq struct {
+	gobject.PageQuery
+}
+
+type PendingListResp struct {
+	List  []PendingListItem `json:"list"`
+	Total int64             `json:"total"`
+}
+
+type PendingListItem struct {
+	UserID     uint   `json:"userId"`
+	Username   string `json:"username"`
+	Status     string `json:"status"`
+	TenantID   uint   `json:"tenantId"`
+	DeptID     uint   `json:"deptId"`
+	EmployeeNo string `json:"employeeNo"`
+	Position   string `json:"position"`
+	JobLevel   string `json:"jobLevel"`
+	EntryDate  int64  `json:"entryDate"`
 }

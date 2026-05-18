@@ -4,16 +4,18 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam/dao"
-	"github.com/morehao/goark/apps/iam/internal/dto/dtoorg"
-	"github.com/morehao/goark/apps/iam/model"
-	"github.com/morehao/goark/apps/iam/object/objorg"
+	"github.com/morehao/goark/iam/dao"
+	"github.com/morehao/goark/iam/internal/dto/dtoorg"
+	"github.com/morehao/goark/iam/model"
+	"github.com/morehao/goark/iam/object/objorg"
 	"github.com/morehao/goark/pkg/code"
+	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
 	"github.com/morehao/golib/biz/genericdao"
 	"github.com/morehao/golib/biz/gobject"
 	"github.com/morehao/golib/glog"
 	"github.com/morehao/golib/gutil"
+	"gorm.io/gorm"
 )
 
 type DepartmentSvc interface {
@@ -41,7 +43,7 @@ func (svc *departmentSvc) Create(ctx *gin.Context, req *dtoorg.DepartmentCreateR
 	tenantID := gincontext.GetTenantID(ctx)
 
 	var deptLevel int32 = 1
-	var deptPath string = "/"
+	var deptPath string
 
 	if req.ParentID > 0 {
 		parentDept, err := dao.NewDepartmentDao().GetByID(ctx, req.ParentID)
@@ -66,33 +68,42 @@ func (svc *departmentSvc) Create(ctx *gin.Context, req *dtoorg.DepartmentCreateR
 		DeptPath:  deptPath,
 		LeaderID:  req.LeaderID,
 		ParentID:  req.ParentID,
-		SortOrder: req.SortOrder,
+		Sequence:  req.Sequence,
 		Status:    model.DeptStatus(req.Status),
 		CreatedBy: operatorID,
 		UpdatedBy: operatorID,
 	}
 
-	if err := dao.NewDepartmentDao().Insert(ctx, insertEntity); err != nil {
-		glog.Errorf(ctx, "[svcorg.DepartmentCreate] daoDepartment Create fail, err:%v, req:%s", err, gutil.ToJsonString(req))
-		return nil, code.GetError(code.DepartmentCreateError)
-	}
+	var deptID uint
+	txErr := dbclient.IamDB(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := dao.NewDepartmentDao().WithTx(tx).Insert(ctx, insertEntity); err != nil {
+			glog.Errorf(ctx, "[svcorg.DepartmentCreate] daoDepartment Insert fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+			return code.GetError(code.DepartmentCreateError)
+		}
+		deptID = insertEntity.ID
 
-	updatePathMap := map[string]any{
-		"dept_path": fmt.Sprintf("/%d/", insertEntity.ID),
-	}
-	if err := dao.NewDepartmentDao().UpdateMap(ctx, insertEntity.ID, updatePathMap); err != nil {
-		glog.Errorf(ctx, "[svcorg.DepartmentCreate] update dept_path fail, err:%v", err)
+		updatePathMap := map[string]any{
+			"dept_path": fmt.Sprintf("/%d/", insertEntity.ID),
+		}
+		if err := dao.NewDepartmentDao().WithTx(tx).UpdateMap(ctx, insertEntity.ID, updatePathMap); err != nil {
+			glog.Errorf(ctx, "[svcorg.DepartmentCreate] UpdateMap dept_path fail, err:%v", err)
+			return code.GetError(code.DepartmentCreateError)
+		}
+		return nil
+	})
+	if txErr != nil {
+		return nil, txErr
 	}
 
 	return &dtoorg.DepartmentCreateResp{
-		ID: insertEntity.ID,
+		DeptID: deptID,
 	}, nil
 }
 
 // Delete 删除部门管理
 func (svc *departmentSvc) Delete(ctx *gin.Context, req *dtoorg.DepartmentDeleteReq) error {
 	userID := gincontext.GetUserID(ctx)
-	departmentEntity, err := dao.NewDepartmentDao().GetByID(ctx, req.ID)
+	departmentEntity, err := dao.NewDepartmentDao().GetByID(ctx, req.DeptID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.Delete] daoDepartment GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.DepartmentDeleteError)
@@ -101,7 +112,7 @@ func (svc *departmentSvc) Delete(ctx *gin.Context, req *dtoorg.DepartmentDeleteR
 		return code.GetError(code.DepartmentNotExistError)
 	}
 
-	if err = dao.NewDepartmentDao().Delete(ctx, req.ID, userID); err != nil {
+	if err = dao.NewDepartmentDao().Delete(ctx, req.DeptID, userID); err != nil {
 		glog.Errorf(ctx, "[svcorg.Delete] daoDepartment Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.DepartmentDeleteError)
 	}
@@ -110,25 +121,30 @@ func (svc *departmentSvc) Delete(ctx *gin.Context, req *dtoorg.DepartmentDeleteR
 
 // Update 更新部门管理
 func (svc *departmentSvc) Update(ctx *gin.Context, req *dtoorg.DepartmentUpdateReq) error {
-	departmentEntity, err := dao.NewDepartmentDao().GetByID(ctx, req.ID)
+	operatorID := gincontext.GetUserID(ctx)
+	tenantID := gincontext.GetTenantID(ctx)
+
+	departmentEntity, err := dao.NewDepartmentDao().GetByID(ctx, req.DeptID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.DepartmentUpdate] daoDepartment GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.DepartmentUpdateError)
 	}
 	if departmentEntity == nil || departmentEntity.ID == 0 {
-		return code.GetError(code.DepartmentUpdateError)
+		return code.GetError(code.DepartmentNotExistError)
 	}
+	if departmentEntity.TenantID != tenantID {
+		return code.GetError(code.TenantScopeForbiddenError)
+	}
+
 	updateMap := map[string]any{
-		"dept_code":  req.DeptCode,
-		"dept_level": req.DeptLevel,
-		"dept_name":  req.DeptName,
-		"dept_path":  req.DeptPath,
-		"leader_id":  req.LeaderID,
-		"parent_id":  req.ParentID,
-		"sort_order": req.SortOrder,
-		"status":     req.Status,
+		"dept_code": req.DeptCode,
+		"dept_name": req.DeptName,
+		"leader_id": req.LeaderID,
+		"sequence":  req.Sequence,
+		"status":    req.Status,
+		"updated_by": operatorID,
 	}
-	if err = dao.NewDepartmentDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
+	if err = dao.NewDepartmentDao().UpdateMap(ctx, req.DeptID, updateMap); err != nil {
 		glog.Errorf(ctx, "[svcorg.DepartmentUpdate] daoDepartment UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.DepartmentUpdateError)
 	}
@@ -137,7 +153,7 @@ func (svc *departmentSvc) Update(ctx *gin.Context, req *dtoorg.DepartmentUpdateR
 
 // Detail 根据id获取部门管理
 func (svc *departmentSvc) Detail(ctx *gin.Context, req *dtoorg.DepartmentDetailReq) (*dtoorg.DepartmentDetailResp, error) {
-	departmentEntity, err := dao.NewDepartmentDao().GetByID(ctx, req.ID)
+	departmentEntity, err := dao.NewDepartmentDao().GetByID(ctx, req.DeptID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.DepartmentDetail] daoDepartment GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.DepartmentGetDetailError)
@@ -147,7 +163,7 @@ func (svc *departmentSvc) Detail(ctx *gin.Context, req *dtoorg.DepartmentDetailR
 		return nil, code.GetError(code.DepartmentNotExistError)
 	}
 	resp := &dtoorg.DepartmentDetailResp{
-		ID: departmentEntity.ID,
+		DeptID: departmentEntity.ID,
 		DepartmentBaseInfo: objorg.DepartmentBaseInfo{
 			TenantID:  departmentEntity.TenantID,
 			DeptCode:  departmentEntity.DeptCode,
@@ -156,7 +172,7 @@ func (svc *departmentSvc) Detail(ctx *gin.Context, req *dtoorg.DepartmentDetailR
 			DeptPath:  departmentEntity.DeptPath,
 			LeaderID:  departmentEntity.LeaderID,
 			ParentID:  departmentEntity.ParentID,
-			SortOrder: departmentEntity.SortOrder,
+			Sequence: departmentEntity.Sequence,
 			Status:    string(departmentEntity.Status),
 		},
 		OperatorBaseInfo: gobject.OperatorBaseInfo{
@@ -186,7 +202,7 @@ func (svc *departmentSvc) PageList(ctx *gin.Context, req *dtoorg.DepartmentPageL
 	list := make([]dtoorg.DepartmentPageListItem, 0, len(departmentEntityList))
 	for _, v := range departmentEntityList {
 		list = append(list, dtoorg.DepartmentPageListItem{
-			ID: v.ID,
+			DeptID: v.ID,
 			DepartmentBaseInfo: objorg.DepartmentBaseInfo{
 				TenantID:  v.TenantID,
 				DeptCode:  v.DeptCode,
@@ -195,7 +211,7 @@ func (svc *departmentSvc) PageList(ctx *gin.Context, req *dtoorg.DepartmentPageL
 				DeptPath:  v.DeptPath,
 				LeaderID:  v.LeaderID,
 				ParentID:  v.ParentID,
-				SortOrder: v.SortOrder,
+				Sequence: v.Sequence,
 				Status:    string(v.Status),
 			},
 			OperatorBaseInfo: gobject.OperatorBaseInfo{
@@ -240,7 +256,7 @@ func (svc *departmentSvc) Tree(ctx *gin.Context, req *dtoorg.DepartmentTreeReq) 
 		}
 		for _, dept := range children {
 			node := dtoorg.DepartmentTreeNode{
-				ID: dept.ID,
+				DeptID: dept.ID,
 				DepartmentBaseInfo: objorg.DepartmentBaseInfo{
 					TenantID:  dept.TenantID,
 					DeptCode:  dept.DeptCode,
@@ -249,7 +265,7 @@ func (svc *departmentSvc) Tree(ctx *gin.Context, req *dtoorg.DepartmentTreeReq) 
 					DeptPath:  dept.DeptPath,
 					LeaderID:  dept.LeaderID,
 					ParentID:  dept.ParentID,
-					SortOrder: dept.SortOrder,
+					Sequence: dept.Sequence,
 					Status:    string(dept.Status),
 				},
 				OperatorBaseInfo: gobject.OperatorBaseInfo{

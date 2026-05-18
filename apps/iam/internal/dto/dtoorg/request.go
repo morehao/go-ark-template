@@ -1,22 +1,24 @@
 package dtoorg
 
 import (
-	"github.com/morehao/goark/apps/iam/object/objorg"
+	"github.com/morehao/goark/iam/object/objorg"
 	"github.com/morehao/golib/biz/gobject"
 )
 
 type TenantCreateReq struct {
 	objorg.TenantBaseInfo
 	AdminInfo *objorg.TenantAdminInfo `json:"adminInfo" validate:"required" label:"管理员信息"` // 管理员信息
+	AppIDs    []uint                 `json:"appIDs" label:"应用ID列表"`                    // 应用ID列表
 }
 
 type TenantUpdateReq struct {
-	ID uint `json:"id" validate:"required" label:"数据自增id"` // 数据自增id
+	TenantID uint `json:"tenantID" validate:"required" label:"数据自增id"` // 数据自增id
 	objorg.TenantBaseInfo
+	AppIDs []uint `json:"appIDs" label:"应用ID列表"` // 应用ID列表
 }
 
 type TenantDetailReq struct {
-	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增id
+	TenantID uint `json:"tenantID" form:"tenantID" validate:"required" label:"数据自增id"` // 数据自增id
 }
 
 type TenantPageListReq struct {
@@ -24,7 +26,7 @@ type TenantPageListReq struct {
 }
 
 type TenantDeleteReq struct {
-	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增id
+	TenantID uint `json:"tenantID" form:"tenantID" validate:"required" label:"数据自增id"` // 数据自增id
 }
 
 type DepartmentCreateReq struct {
@@ -32,12 +34,12 @@ type DepartmentCreateReq struct {
 }
 
 type DepartmentUpdateReq struct {
-	ID uint `json:"id" validate:"required" label:"数据自增id"` // 数据自增id
+	DeptID uint `json:"deptID" validate:"required" label:"数据自增id"` // 数据自增id
 	objorg.DepartmentBaseInfo
 }
 
 type DepartmentDetailReq struct {
-	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增id
+	DeptID uint `json:"deptID" form:"deptID" validate:"required" label:"数据自增id"` // 数据自增id
 }
 
 type DepartmentPageListReq struct {
@@ -49,7 +51,7 @@ type DepartmentTreeReq struct {
 }
 
 type DepartmentDeleteReq struct {
-	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增id
+	DeptID uint `json:"deptID" form:"deptID" validate:"required" label:"数据自增id"` // 数据自增id
 }
 
 type OrgConfigItem struct {
@@ -61,20 +63,22 @@ type OrgCreateReq struct {
 	objorg.OrgBaseInfo
 	Admin   *objorg.OrgAdminInfo `json:"admin" validate:"required" label:"管理员信息"` // 管理员信息
 	Configs []OrgConfigItem      `json:"configs" label:"初始化配置"`                   // 初始化配置
+	AppIDs  []uint               `json:"appIDs" label:"应用ID列表"`                    // 应用ID列表
 }
 
 type OrgUpdateReq struct {
-	ID      uint            `json:"id" validate:"required" label:"数据自增id"` // 数据自增id
-	Configs []OrgConfigItem `json:"configs" label:"配置信息"`                  // 配置信息
+	OrgID   uint            `json:"orgID" validate:"required" label:"数据自增id"` // 数据自增id
+	Configs []OrgConfigItem `json:"configs" label:"配置信息"`                   // 配置信息
+	AppIDs  []uint          `json:"appIDs" label:"应用ID列表"`                   // 应用ID列表
 	objorg.OrgBaseInfo
 }
 
 type OrgDetailReq struct {
-	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增id
+	OrgID uint `json:"orgID" form:"orgID" validate:"required" label:"数据自增id"` // 数据自增id
 }
 
 type GetOrganizationConfigsReq struct {
-	Domain string `json:"domain" form:"domain" label:"组织域名"` // 组织域名
+	DisplayCode string `json:"displayCode" form:"displayCode" label:"组织编码"` // 组织编码
 }
 
 type OrgPageListReq struct {
@@ -83,5 +87,5 @@ type OrgPageListReq struct {
 }
 
 type OrgDeleteReq struct {
-	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增id
+	OrgID uint `json:"orgID" form:"orgID" validate:"required" label:"数据自增id"` // 数据自增id
 }

@@ -1,7 +1,7 @@
 package dao
 
 import (
-	"github.com/morehao/goark/apps/iam/model"
+	"github.com/morehao/goark/iam/model"
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/biz/genericdao"
 	"gorm.io/gorm"
@@ -19,13 +19,13 @@ func (c *PersonCond) BuildCondition(db *gorm.DB, tableName string) {
 		c.BaseCond.BuildCondition(db, tableName)
 	}
 	if c.Mobile != "" {
-		db.Where("mobile = ?", c.Mobile)
+		db.Where(tableName+".mobile = ?", c.Mobile)
 	}
 	if c.Email != "" {
-		db.Where("email = ?", c.Email)
+		db.Where(tableName+".email = ?", c.Email)
 	}
 	if c.RealName != "" {
-		db.Where("real_name = ?", c.RealName)
+		db.Where(tableName+".real_name = ?", c.RealName)
 	}
 }
 

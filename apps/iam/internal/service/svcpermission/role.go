@@ -2,10 +2,10 @@ package svcpermission
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam/dao"
-	"github.com/morehao/goark/apps/iam/internal/dto/dtopermission"
-	"github.com/morehao/goark/apps/iam/model"
-	"github.com/morehao/goark/apps/iam/object/objpermission"
+	"github.com/morehao/goark/iam/dao"
+	"github.com/morehao/goark/iam/internal/dto/dtopermission"
+	"github.com/morehao/goark/iam/model"
+	"github.com/morehao/goark/iam/object/objpermission"
 	"github.com/morehao/goark/pkg/code"
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
@@ -37,14 +37,20 @@ func NewRoleSvc() RoleSvc {
 
 // Create 创建角色管理
 func (svc *roleSvc) Create(ctx *gin.Context, req *dtopermission.RoleCreateReq) (*dtopermission.RoleCreateResp, error) {
+	tenantID := gincontext.GetTenantID(ctx)
+	operatorID := gincontext.GetUserID(ctx)
+
 	insertEntity := &model.RoleEntity{
-		DataScope:   model.RoleDataScope(req.DataScope),
+		TenantID:   tenantID,
+		DataScope:  model.RoleDataScope(req.DataScope),
 		Description: req.Description,
 		RoleCode:    req.RoleCode,
 		RoleName:    req.RoleName,
 		RoleType:    model.RoleType(req.RoleType),
-		SortOrder:   req.SortOrder,
+		Sequence:   req.Sequence,
 		Status:      model.RoleStatus(req.Status),
+		CreatedBy:   operatorID,
+		UpdatedBy:   operatorID,
 	}
 
 	if err := dao.NewRoleDao().Insert(ctx, insertEntity); err != nil {
@@ -52,14 +58,14 @@ func (svc *roleSvc) Create(ctx *gin.Context, req *dtopermission.RoleCreateReq) (
 		return nil, code.GetError(code.RoleCreateError)
 	}
 	return &dtopermission.RoleCreateResp{
-		ID: insertEntity.ID,
+		RoleID: insertEntity.ID,
 	}, nil
 }
 
 // Delete 删除角色管理
 func (svc *roleSvc) Delete(ctx *gin.Context, req *dtopermission.RoleDeleteReq) error {
 	userID := gincontext.GetUserID(ctx)
-	roleEntity, err := dao.NewRoleDao().GetByID(ctx, req.ID)
+	roleEntity, err := dao.NewRoleDao().GetByID(ctx, req.RoleID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcpermission.Delete] daoRole GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.RoleDeleteError)
@@ -68,7 +74,7 @@ func (svc *roleSvc) Delete(ctx *gin.Context, req *dtopermission.RoleDeleteReq) e
 		return code.GetError(code.RoleNotExistError)
 	}
 
-	if err = dao.NewRoleDao().Delete(ctx, req.ID, userID); err != nil {
+	if err = dao.NewRoleDao().Delete(ctx, req.RoleID, userID); err != nil {
 		glog.Errorf(ctx, "[svcpermission.Delete] daoRole Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.RoleDeleteError)
 	}
@@ -77,7 +83,7 @@ func (svc *roleSvc) Delete(ctx *gin.Context, req *dtopermission.RoleDeleteReq) e
 
 // Update 更新角色管理
 func (svc *roleSvc) Update(ctx *gin.Context, req *dtopermission.RoleUpdateReq) error {
-	roleEntity, err := dao.NewRoleDao().GetByID(ctx, req.ID)
+	roleEntity, err := dao.NewRoleDao().GetByID(ctx, req.RoleID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcpermission.RoleUpdate] daoRole GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.RoleUpdateError)
@@ -91,10 +97,10 @@ func (svc *roleSvc) Update(ctx *gin.Context, req *dtopermission.RoleUpdateReq) e
 		"role_code":   req.RoleCode,
 		"role_name":   req.RoleName,
 		"role_type":   req.RoleType,
-		"sort_order":  req.SortOrder,
+		"sequence":  req.Sequence,
 		"status":      req.Status,
 	}
-	if err = dao.NewRoleDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
+	if err = dao.NewRoleDao().UpdateMap(ctx, req.RoleID, updateMap); err != nil {
 		glog.Errorf(ctx, "[svcpermission.RoleUpdate] daoRole UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.RoleUpdateError)
 	}
@@ -103,7 +109,7 @@ func (svc *roleSvc) Update(ctx *gin.Context, req *dtopermission.RoleUpdateReq) e
 
 // Detail 根据id获取角色管理
 func (svc *roleSvc) Detail(ctx *gin.Context, req *dtopermission.RoleDetailReq) (*dtopermission.RoleDetailResp, error) {
-	roleEntity, err := dao.NewRoleDao().GetByID(ctx, req.ID)
+	roleEntity, err := dao.NewRoleDao().GetByID(ctx, req.RoleID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcpermission.RoleDetail] daoRole GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.RoleGetDetailError)
@@ -113,7 +119,7 @@ func (svc *roleSvc) Detail(ctx *gin.Context, req *dtopermission.RoleDetailReq) (
 		return nil, code.GetError(code.RoleNotExistError)
 	}
 	resp := &dtopermission.RoleDetailResp{
-		ID: roleEntity.ID,
+		RoleID: roleEntity.ID,
 		RoleBaseInfo: objpermission.RoleBaseInfo{
 			TenantID:    roleEntity.TenantID,
 			DataScope:   roleEntity.DataScope,
@@ -121,7 +127,7 @@ func (svc *roleSvc) Detail(ctx *gin.Context, req *dtopermission.RoleDetailReq) (
 			RoleCode:    roleEntity.RoleCode,
 			RoleName:    roleEntity.RoleName,
 			RoleType:    roleEntity.RoleType,
-			SortOrder:   roleEntity.SortOrder,
+			Sequence:   roleEntity.Sequence,
 			Status:      roleEntity.Status,
 		},
 		OperatorBaseInfo: gobject.OperatorBaseInfo{
@@ -148,7 +154,7 @@ func (svc *roleSvc) PageList(ctx *gin.Context, req *dtopermission.RolePageListRe
 	list := make([]dtopermission.RolePageListItem, 0, len(roleEntityList))
 	for _, v := range roleEntityList {
 		list = append(list, dtopermission.RolePageListItem{
-			ID: v.ID,
+			RoleID: v.ID,
 			RoleBaseInfo: objpermission.RoleBaseInfo{
 				TenantID:    v.TenantID,
 				DataScope:   v.DataScope,
@@ -156,7 +162,7 @@ func (svc *roleSvc) PageList(ctx *gin.Context, req *dtopermission.RolePageListRe
 				RoleCode:    v.RoleCode,
 				RoleName:    v.RoleName,
 				RoleType:    v.RoleType,
-				SortOrder:   v.SortOrder,
+				Sequence:   v.Sequence,
 				Status:      v.Status,
 			},
 			OperatorBaseInfo: gobject.OperatorBaseInfo{
@@ -255,7 +261,7 @@ func (svc *roleSvc) ListMenus(ctx *gin.Context, req *dtopermission.RoleListMenus
 			continue
 		}
 		list = append(list, dtopermission.RoleMenuListItem{
-			ID: menuEntity.ID,
+			MenuID: menuEntity.ID,
 			MenuBaseInfo: objpermission.MenuBaseInfo{
 				CacheType:     menuEntity.CacheType,
 				TenantID:      menuEntity.TenantID,
@@ -268,7 +274,7 @@ func (svc *roleSvc) ListMenus(ctx *gin.Context, req *dtopermission.RoleListMenus
 				ParentID:      menuEntity.ParentID,
 				Permission:    menuEntity.Permission,
 				RoutePath:     menuEntity.RoutePath,
-				SortOrder:     menuEntity.SortOrder,
+				Sequence:     menuEntity.Sequence,
 				Status:        menuEntity.Status,
 				Visibility:    menuEntity.Visibility,
 			},

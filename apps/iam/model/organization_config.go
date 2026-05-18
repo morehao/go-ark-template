@@ -9,10 +9,10 @@ type OrganizationConfigEntity struct {
 	gorm.Model
 	ConfigGroup string `gorm:"column:config_group;type:varchar(32);;default general;comment: 配置分组: general-通用/auth-认证/theme-主题等"`
 	ConfigKey   string `gorm:"column:config_key;type:varchar(100);not null;default '';comment: 配置键"`
-	ConfigType  string `gorm:"column:config_type;type:varchar(32);;default string;comment: 配置类型: string/json/boolean/number"`
+	ValueType  string `gorm:"column:value_type;type:varchar(32);;default string;comment: 配置类型: string/json/boolean/number"`
 	ConfigValue string `gorm:"column:config_value;type:text;;default '';comment: 配置值(支持JSON)"`
 	Description string `gorm:"column:description;type:varchar(255);not null;default '';comment: 配置说明"`
-	SortOrder   int32  `gorm:"column:sort_order;type:int;;default 0;comment: 排序"`
+	Sequence   int32  `gorm:"column:sequence;type:int;;default 0;comment: 排序"`
 	OrgID       uint   `gorm:"column:org_id;type:bigint;not null;default 0;comment: 组织ID"`
 }
 
@@ -46,9 +46,25 @@ const (
 )
 
 const (
-	OrgConfigKeyRegisterEnabled         = "auth.register.enabled"
-	OrgConfigKeyRegisterRequireApproval = "auth.register.requireApproval"
-	OrgConfigKeyRegisterIdentityType    = "auth.register.identityType"
+	OrgConfigKeyRegisterEnabled            = "auth.register.enabled"
+	OrgConfigKeyRegisterRequireApproval    = "auth.register.requireApproval"
+	OrgConfigKeyRegisterIdentityType       = "auth.register.identityType"
+	OrgConfigKeyRegisterWay                = "auth.register.way"
+	OrgConfigKeyRegisterOpenTenantID        = "auth.register.openTenantId"
+	OrgConfigKeyRegisterSSODefaultTenantID  = "auth.register.ssoDefaultTenantId"
+	OrgConfigKeyRegisterCodeExpireHours    = "auth.register.codeExpireHours"
+	OrgConfigKeyRegisterCodeMaxUse         = "auth.register.codeMaxUse"
+	OrgConfigKeyRegisterVerifyEnabled      = "auth.register.verifyEnabled"
+	OrgConfigKeyRegisterDefaultRoles       = "auth.register.defaultRoles"
+	OrgConfigKeyRegisterDefaultDepts       = "auth.register.defaultDepts"
+	OrgConfigKeyLoginCaptchaEnabled        = "auth.login.captchaEnabled"
+	OrgConfigKeyPasswordMinLength          = "auth.password.minLength"
+	OrgConfigKeyPasswordRequireUppercase   = "auth.password.requireUppercase"
+	OrgConfigKeyPasswordRequireLowercase   = "auth.password.requireLowercase"
+	OrgConfigKeyPasswordRequireNumber      = "auth.password.requireNumber"
+	OrgConfigKeyPasswordRequireSpecial    = "auth.password.requireSpecial"
+	OrgConfigKeyLoginMaxFailCount          = "auth.login.maxFailCount"
+	OrgConfigKeyLoginLockDuration          = "auth.login.lockDuration"
 )
 
 type RegisterIdentityType string
@@ -99,6 +115,124 @@ var OrgConfigMetaList = []OrgConfigMeta{
 			{Value: string(RegisterIdentityTypeEmail), Description: "邮箱注册"},
 			{Value: string(RegisterIdentityTypeBoth), Description: "手机号或邮箱注册"},
 		},
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyRegisterWay,
+		Type:         OrgConfigTypeString,
+		DefaultValue: "domain",
+		Description:  "注册策略",
+		Options: []OrgConfigOption{
+			{Value: "open", Description: "开放型"},
+			{Value: "domain", Description: "域名驱动"},
+			{Value: "invite", Description: "邀请制"},
+			{Value: "sso", Description: "SSO"},
+		},
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyRegisterOpenTenantID,
+		Type:         OrgConfigTypeString,
+		DefaultValue: "",
+		Description:  "开放型注册指定租户ID",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyRegisterSSODefaultTenantID,
+		Type:         OrgConfigTypeString,
+		DefaultValue: "",
+		Description:  "SSO默认租户ID",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyRegisterCodeExpireHours,
+		Type:         OrgConfigTypeNumber,
+		DefaultValue: "72",
+		Description:  "邀请码过期小时数",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyRegisterCodeMaxUse,
+		Type:         OrgConfigTypeNumber,
+		DefaultValue: "0",
+		Description:  "邀请码最大使用次数，0表示不限制",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyRegisterVerifyEnabled,
+		Type:         OrgConfigTypeBoolean,
+		DefaultValue: "false",
+		Description:  "注册验证码开关",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyRegisterDefaultRoles,
+		Type:         OrgConfigTypeJSON,
+		DefaultValue: "[]",
+		Description:  "注册后默认角色ID列表",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyRegisterDefaultDepts,
+		Type:         OrgConfigTypeJSON,
+		DefaultValue: "[]",
+		Description:  "注册后默认部门ID列表",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyLoginCaptchaEnabled,
+		Type:         OrgConfigTypeBoolean,
+		DefaultValue: "false",
+		Description:  "登录验证码开关",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyPasswordMinLength,
+		Type:         OrgConfigTypeNumber,
+		DefaultValue: "8",
+		Description:  "密码最小长度",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyPasswordRequireUppercase,
+		Type:         OrgConfigTypeBoolean,
+		DefaultValue: "true",
+		Description:  "密码必须包含大写字母",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyPasswordRequireLowercase,
+		Type:         OrgConfigTypeBoolean,
+		DefaultValue: "true",
+		Description:  "密码必须包含小写字母",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyPasswordRequireNumber,
+		Type:         OrgConfigTypeBoolean,
+		DefaultValue: "true",
+		Description:  "密码必须包含数字",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyPasswordRequireSpecial,
+		Type:         OrgConfigTypeBoolean,
+		DefaultValue: "false",
+		Description:  "密码必须包含特殊字符",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyLoginMaxFailCount,
+		Type:         OrgConfigTypeNumber,
+		DefaultValue: "5",
+		Description:  "登录失败最大次数",
+	},
+	{
+		Group:        OrgConfigGroupAuth,
+		Key:          OrgConfigKeyLoginLockDuration,
+		Type:         OrgConfigTypeNumber,
+		DefaultValue: "300",
+		Description:  "登录锁定时长(秒)",
 	},
 }
 

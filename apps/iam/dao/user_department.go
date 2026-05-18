@@ -1,7 +1,7 @@
 package dao
 
 import (
-	"github.com/morehao/goark/apps/iam/model"
+	"github.com/morehao/goark/iam/model"
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/biz/genericdao"
 	"gorm.io/gorm"
@@ -20,16 +20,16 @@ func (c *UserDepartmentCond) BuildCondition(db *gorm.DB, tableName string) {
 		c.BaseCond.BuildCondition(db, tableName)
 	}
 	if c.UserID > 0 {
-		db.Where("user_id = ?", c.UserID)
+		db.Where(tableName+".user_id = ?", c.UserID)
 	}
 	if c.DeptID > 0 {
-		db.Where("dept_id = ?", c.DeptID)
+		db.Where(tableName+".dept_id = ?", c.DeptID)
 	}
 	if c.TenantID > 0 {
-		db.Where("tenant_id = ?", c.TenantID)
+		db.Where(tableName+".tenant_id = ?", c.TenantID)
 	}
 	if c.DeptType != "" {
-		db.Where("dept_type = ?", c.DeptType)
+		db.Where(tableName+".dept_type = ?", c.DeptType)
 	}
 }
 

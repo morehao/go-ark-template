@@ -1,7 +1,7 @@
 package dtopermission
 
 import (
-	"github.com/morehao/goark/apps/iam/object/objpermission"
+	"github.com/morehao/goark/iam/object/objpermission"
 	"github.com/morehao/golib/biz/gobject"
 )
 
@@ -10,12 +10,12 @@ type MenuCreateReq struct {
 }
 
 type MenuUpdateReq struct {
-	ID uint `json:"id" validate:"required" label:"数据自增id"` // 数据自增 ID
+	MenuID uint `json:"menuID" validate:"required" label:"数据自增id"` // 数据自增 ID
 	objpermission.MenuBaseInfo
 }
 
 type MenuDetailReq struct {
-	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增 ID
+	MenuID uint `json:"menuID" form:"menuID" validate:"required" label:"数据自增id"` // 数据自增 ID
 }
 
 type MenuPageListReq struct {
@@ -23,7 +23,7 @@ type MenuPageListReq struct {
 }
 
 type MenuDeleteReq struct {
-	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增 ID
+	MenuID uint `json:"menuID" form:"menuID" validate:"required" label:"数据自增id"` // 数据自增 ID
 }
 
 type RoleCreateReq struct {
@@ -31,12 +31,12 @@ type RoleCreateReq struct {
 }
 
 type RoleUpdateReq struct {
-	ID uint `json:"id" validate:"required" label:"数据自增id"` // 数据自增 ID
+	RoleID uint `json:"roleID" validate:"required" label:"数据自增id"` // 数据自增 ID
 	objpermission.RoleBaseInfo
 }
 
 type RoleDetailReq struct {
-	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增 ID
+	RoleID uint `json:"roleID" form:"roleID" validate:"required" label:"数据自增id"` // 数据自增 ID
 }
 
 type RolePageListReq struct {
@@ -44,16 +44,16 @@ type RolePageListReq struct {
 }
 
 type RoleDeleteReq struct {
-	ID uint `json:"id" form:"id" validate:"required" label:"数据自增id"` // 数据自增 ID
+	RoleID uint `json:"roleID" form:"roleID" validate:"required" label:"数据自增id"` // 数据自增 ID
 }
 
 type RoleAssignMenusReq struct {
-	RoleID  uint   `json:"roleId" validate:"required" label:"角色ID"`    // 角色ID
-	MenuIDs []uint `json:"menuIds" validate:"required" label:"菜单ID列表"` // 菜单ID列表
+	RoleID  uint   `json:"roleID" validate:"required" label:"角色ID"`     // 角色ID
+	MenuIDs []uint `json:"menuIDs" validate:"required" label:"菜单ID列表"`  // 菜单ID列表
 }
 
 type RoleListMenusReq struct {
-	RoleID uint `json:"roleId" form:"roleId" validate:"required" label:"角色ID"` // 角色ID
+	RoleID uint `json:"roleID" form:"roleID" validate:"required" label:"角色ID"` // 角色ID
 }
 
 type MenuTreeReq struct {

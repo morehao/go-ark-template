@@ -1,19 +1,23 @@
 package svcuser
 
 import (
+	"math/rand"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam/core/user"
-	"github.com/morehao/goark/apps/iam/dao"
-	"github.com/morehao/goark/apps/iam/internal/dto/dtouser"
-	"github.com/morehao/goark/apps/iam/model"
-	"github.com/morehao/goark/apps/iam/object/objuser"
+	"github.com/morehao/goark/iam/core/user"
+	"github.com/morehao/goark/iam/dao"
+	"github.com/morehao/goark/iam/internal/dto/dtouser"
+	"github.com/morehao/goark/iam/model"
+	"github.com/morehao/goark/iam/object/objuser"
 	"github.com/morehao/goark/pkg/code"
 	"github.com/morehao/goark/pkg/dbclient"
+	"github.com/morehao/goark/pkg/token"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
 	"github.com/morehao/golib/biz/genericdao"
 	"github.com/morehao/golib/biz/gobject"
+	"github.com/morehao/golib/gcrypto"
 	"github.com/morehao/golib/glog"
 	"github.com/morehao/golib/gutil"
 	"gorm.io/gorm"
@@ -29,6 +33,13 @@ type UserSvc interface {
 	ListDepartments(ctx *gin.Context, req *dtouser.UserDepartmentsReq) (*dtouser.UserDepartmentsResp, error)
 	AssignRoles(ctx *gin.Context, req *dtouser.UserAssignRolesReq) error
 	ListRoles(ctx *gin.Context, req *dtouser.UserRolesReq) (*dtouser.UserRolesResp, error)
+	GetCurrentUserInfo(ctx *gin.Context) (*dtouser.UserInfoResp, error)
+	UpdateProfile(ctx *gin.Context, req *dtouser.UpdateProfileReq) error
+	ChangePassword(ctx *gin.Context, req *dtouser.ChangePasswordReq) error
+	LoginHistory(ctx *gin.Context, req *dtouser.LoginHistoryReq) (*dtouser.LoginHistoryResp, error)
+	Logout(ctx *gin.Context) error
+	PendingList(ctx *gin.Context, req *dtouser.PendingListReq) (*dtouser.PendingListResp, error)
+Approve(ctx *gin.Context, req *dtouser.ApproveReq) error
 }
 
 type userSvc struct {
@@ -44,6 +55,7 @@ func NewUserSvc() UserSvc {
 func (svc *userSvc) Create(ctx *gin.Context, req *dtouser.UserCreateReq) (*dtouser.UserCreateResp, error) {
 	tenantID := gincontext.GetTenantID(ctx)
 	operatorID := gincontext.GetUserID(ctx)
+	orgID := gincontext.GetOrgID(ctx)
 
 	primaryDeptID, err := svc.getOrCreatePrimaryDeptID(ctx, tenantID, req.PrimaryDeptID)
 	if err != nil {
@@ -54,21 +66,47 @@ func (svc *userSvc) Create(ctx *gin.Context, req *dtouser.UserCreateReq) (*dtous
 		return nil, err
 	}
 
+	var password string
+	var passwordHash string
+	if req.Password != "" {
+		passwordSvc := NewPasswordSvc()
+		if err := passwordSvc.ValidatePasswordComplexity(ctx, orgID, req.Password); err != nil {
+			glog.Errorf(ctx, "[svcuser.Create] ValidatePasswordComplexity fail, err:%v", err)
+			return nil, code.GetError(code.PasswordComplexityError)
+		}
+		password = req.Password
+		hash, err := gcrypto.GeneratePasswordHash(password)
+		if err != nil {
+			glog.Errorf(ctx, "[svcuser.Create] GeneratePasswordHash fail, err:%v", err)
+			return nil, code.GetError(code.UserCreateError)
+		}
+		passwordHash = hash
+	} else {
+		password = svc.generateRandomPassword()
+		hash, err := gcrypto.GeneratePasswordHash(password)
+		if err != nil {
+			glog.Errorf(ctx, "[svcuser.Create] GeneratePasswordHash fail, err:%v", err)
+			return nil, code.GetError(code.UserCreateError)
+		}
+		passwordHash = hash
+	}
+
 	params := &user.CreatePersonParams{
-		Mobile:      strings.TrimSpace(req.Mobile),
-		Email:       strings.TrimSpace(req.Email),
-		RealName:    req.RealName,
-		OperatorID:  operatorID,
-		TenantID:    tenantID,
-		DeptID:      primaryDeptID,
-		Username:    req.Username,
-		UserType:    model.UserType(req.UserType),
-		Status:      model.UserStatus(req.Status),
-		EmployeeNo:  req.EmployeeNo,
-		JobLevel:    req.JobLevel,
-		Position:    req.Position,
-		LastLoginIp: req.LastLoginIp,
-		LoginCount:  req.LoginCount,
+		Mobile:       strings.TrimSpace(req.Mobile),
+		Email:        strings.TrimSpace(req.Email),
+		RealName:     req.RealName,
+		OperatorID:   operatorID,
+		TenantID:     tenantID,
+		DeptID:       primaryDeptID,
+		Username:     req.Username,
+		UserType:     model.UserType(req.UserType),
+		Status:       model.UserStatus(req.Status),
+		EmployeeNo:   req.EmployeeNo,
+		JobLevel:     req.JobLevel,
+		Position:     req.Position,
+		LastLoginIp:  req.LastLoginIp,
+		LoginCount:   int(req.LoginCount),
+		PasswordHash: passwordHash,
 	}
 
 	var result *user.CreatePersonResult
@@ -91,13 +129,14 @@ func (svc *userSvc) Create(ctx *gin.Context, req *dtouser.UserCreateReq) (*dtous
 	return &dtouser.UserCreateResp{
 		UserID:   result.UserID,
 		PersonID: result.PersonID,
+		Password: password,
 	}, nil
 }
 
 // Delete 删除用户管理
 func (svc *userSvc) Delete(ctx *gin.Context, req *dtouser.UserDeleteReq) error {
 	userID := gincontext.GetUserID(ctx)
-	userEntity, err := dao.NewUserDao().GetByID(ctx, req.ID)
+	userEntity, err := dao.NewUserDao().GetByID(ctx, req.UserID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcuser.Delete] daoUser GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.UserDeleteError)
@@ -106,7 +145,7 @@ func (svc *userSvc) Delete(ctx *gin.Context, req *dtouser.UserDeleteReq) error {
 		return code.GetError(code.UserNotExistError)
 	}
 
-	if err = dao.NewUserDao().Delete(ctx, req.ID, userID); err != nil {
+	if err = dao.NewUserDao().Delete(ctx, req.UserID, userID); err != nil {
 		glog.Errorf(ctx, "[svcuser.Delete] daoUser Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.UserDeleteError)
 	}
@@ -115,7 +154,7 @@ func (svc *userSvc) Delete(ctx *gin.Context, req *dtouser.UserDeleteReq) error {
 
 // Update 更新用户管理
 func (svc *userSvc) Update(ctx *gin.Context, req *dtouser.UserUpdateReq) error {
-	userEntity, err := dao.NewUserDao().GetByID(ctx, req.ID)
+	userEntity, err := dao.NewUserDao().GetByID(ctx, req.UserID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcuser.UserUpdate] daoUser GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.UserUpdateError)
@@ -135,7 +174,7 @@ func (svc *userSvc) Update(ctx *gin.Context, req *dtouser.UserUpdateReq) error {
 		"user_type":     req.UserType,
 		"username":      req.Username,
 	}
-	if err = dao.NewUserDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
+	if err = dao.NewUserDao().UpdateMap(ctx, req.UserID, updateMap); err != nil {
 		glog.Errorf(ctx, "[svcuser.UserUpdate] daoUser UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.UserUpdateError)
 	}
@@ -144,7 +183,7 @@ func (svc *userSvc) Update(ctx *gin.Context, req *dtouser.UserUpdateReq) error {
 
 // Detail 根据id获取用户管理
 func (svc *userSvc) Detail(ctx *gin.Context, req *dtouser.UserDetailReq) (*dtouser.UserDetailResp, error) {
-	userEntity, err := dao.NewUserDao().GetByID(ctx, req.ID)
+	userEntity, err := dao.NewUserDao().GetByID(ctx, req.UserID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcuser.UserDetail] daoUser GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.UserGetDetailError)
@@ -154,7 +193,7 @@ func (svc *userSvc) Detail(ctx *gin.Context, req *dtouser.UserDetailReq) (*dtous
 		return nil, code.GetError(code.UserNotExistError)
 	}
 	resp := &dtouser.UserDetailResp{
-		ID: userEntity.ID,
+		UserID: userEntity.ID,
 		UserBaseInfo: objuser.UserBaseInfo{
 			TenantID:    userEntity.TenantID,
 			DeptID:      userEntity.DeptID,
@@ -163,7 +202,7 @@ func (svc *userSvc) Detail(ctx *gin.Context, req *dtouser.UserDetailReq) (*dtous
 			JobLevel:    userEntity.JobLevel,
 			LastLoginAt: userEntity.LastLoginAt.Unix(),
 			LastLoginIp: userEntity.LastLoginIp,
-			LoginCount:  userEntity.LoginCount,
+			LoginCount:  int32(userEntity.LoginCount),
 			PersonID:    userEntity.PersonID,
 			Position:    userEntity.Position,
 			Status:      string(userEntity.Status),
@@ -180,6 +219,7 @@ func (svc *userSvc) Detail(ctx *gin.Context, req *dtouser.UserDetailReq) (*dtous
 
 // PageList 分页获取用户管理列表
 func (svc *userSvc) PageList(ctx *gin.Context, req *dtouser.UserPageListReq) (*dtouser.UserPageListResp, error) {
+	glog.Infof(ctx, "[svcuser.UserPageList] req:%s", gutil.ToJsonString(req))
 	cond := &dao.UserCond{
 		BaseCond: &genericdao.BaseCond{
 			Page:     req.Page,
@@ -194,7 +234,7 @@ func (svc *userSvc) PageList(ctx *gin.Context, req *dtouser.UserPageListReq) (*d
 	list := make([]dtouser.UserPageListItem, 0, len(userEntityList))
 	for _, v := range userEntityList {
 		list = append(list, dtouser.UserPageListItem{
-			ID: v.ID,
+			UserID: v.ID,
 			UserBaseInfo: objuser.UserBaseInfo{
 				TenantID:    v.TenantID,
 				DeptID:      v.DeptID,
@@ -203,7 +243,7 @@ func (svc *userSvc) PageList(ctx *gin.Context, req *dtouser.UserPageListReq) (*d
 				JobLevel:    v.JobLevel,
 				LastLoginAt: v.LastLoginAt.Unix(),
 				LastLoginIp: v.LastLoginIp,
-				LoginCount:  v.LoginCount,
+				LoginCount:  int32(v.LoginCount),
 				PersonID:    v.PersonID,
 				Position:    v.Position,
 				Status:      string(v.Status),
@@ -505,4 +545,282 @@ func (svc *userSvc) ListRoles(ctx *gin.Context, req *dtouser.UserRolesReq) (*dto
 	return &dtouser.UserRolesResp{
 		List: list,
 	}, nil
+}
+
+func (svc *userSvc) GetCurrentUserInfo(ctx *gin.Context) (*dtouser.UserInfoResp, error) {
+	userID := gincontext.GetUserID(ctx)
+	tenantID := gincontext.GetTenantID(ctx)
+
+	userEntity, err := dao.NewUserDao().GetByID(ctx, userID)
+	if err != nil || userEntity == nil || userEntity.ID == 0 {
+		return nil, code.GetError(code.UserNotExistError)
+	}
+
+	personEntity, err := dao.NewPersonDao().GetByID(ctx, userEntity.PersonID)
+	if err != nil || personEntity == nil {
+		return nil, code.GetError(code.UserNotExistError)
+	}
+
+	tenantName, orgID, orgName := "", uint(0), ""
+	if userEntity.TenantID > 0 {
+		tenantEntity, _ := dao.NewTenantDao().GetByID(ctx, userEntity.TenantID)
+		if tenantEntity != nil {
+			tenantName = tenantEntity.TenantName
+			orgID = tenantEntity.OrgID
+			orgEntity, _ := dao.NewOrganizationDao().GetByID(ctx, orgID)
+			if orgEntity != nil {
+				orgName = orgEntity.OrgName
+			}
+		}
+	}
+
+	roleIDs, roleNames := svc.getUserRoles(ctx, userID, tenantID)
+	deptIDs, deptNames := svc.getUserDepts(ctx, userID, tenantID)
+
+	return &dtouser.UserInfoResp{
+		UserID:     userEntity.ID,
+		Username:   userEntity.Username,
+		PersonID:   userEntity.PersonID,
+		Email:      personEntity.Email,
+		Phone:      personEntity.Mobile,
+		Avatar:     personEntity.AvatarUrl,
+		Nickname:   personEntity.RealName,
+		Status:     string(userEntity.Status),
+		UserType:   string(userEntity.UserType),
+		TenantID:   userEntity.TenantID,
+		TenantName: tenantName,
+		OrgID:      orgID,
+		OrgName:    orgName,
+		RoleIDs:    roleIDs,
+		RoleNames:  roleNames,
+		DeptIDs:    deptIDs,
+		DeptNames:  deptNames,
+	}, nil
+}
+
+func (svc *userSvc) getUserRoles(ctx *gin.Context, userID, tenantID uint) ([]uint, []string) {
+	roleIDs := make([]uint, 0)
+	roleNames := make([]string, 0)
+	userRoleList, _ := dao.NewUserRoleDao().GetListByCond(ctx, &dao.UserRoleCond{
+		UserID:   userID,
+		TenantID: tenantID,
+	})
+	for _, ur := range userRoleList {
+		roleEntity, _ := dao.NewRoleDao().GetByID(ctx, ur.RoleID)
+		if roleEntity != nil && roleEntity.ID > 0 {
+			roleIDs = append(roleIDs, roleEntity.ID)
+			roleNames = append(roleNames, roleEntity.RoleName)
+		}
+	}
+	return roleIDs, roleNames
+}
+
+func (svc *userSvc) getUserDepts(ctx *gin.Context, userID, tenantID uint) ([]uint, []string) {
+	deptIDs := make([]uint, 0)
+	deptNames := make([]string, 0)
+	userDeptList, _ := dao.NewUserDepartmentDao().GetListByCond(ctx, &dao.UserDepartmentCond{
+		UserID:   userID,
+		TenantID: tenantID,
+	})
+	for _, ud := range userDeptList {
+		deptEntity, _ := dao.NewDepartmentDao().GetByID(ctx, ud.DeptID)
+		if deptEntity != nil && deptEntity.ID > 0 {
+			deptIDs = append(deptIDs, deptEntity.ID)
+			deptNames = append(deptNames, deptEntity.DeptName)
+		}
+	}
+	return deptIDs, deptNames
+}
+
+func (svc *userSvc) UpdateProfile(ctx *gin.Context, req *dtouser.UpdateProfileReq) error {
+	userID := gincontext.GetUserID(ctx)
+
+	userEntity, err := dao.NewUserDao().GetByID(ctx, userID)
+	if err != nil || userEntity == nil || userEntity.ID == 0 {
+		return code.GetError(code.UserNotExistError)
+	}
+
+	personEntity, err := dao.NewPersonDao().GetByID(ctx, userEntity.PersonID)
+	if err != nil || personEntity == nil {
+		return code.GetError(code.UserNotExistError)
+	}
+
+	updateMap := map[string]any{}
+	if req.Email != "" {
+		updateMap["email"] = req.Email
+	}
+	if req.Phone != "" {
+		updateMap["mobile"] = req.Phone
+	}
+	if req.Avatar != "" {
+		updateMap["avatar_url"] = req.Avatar
+	}
+	if req.Nickname != "" {
+		updateMap["real_name"] = req.Nickname
+	}
+
+	if len(updateMap) > 0 {
+		if err := dao.NewPersonDao().UpdateMap(ctx, personEntity.ID, updateMap); err != nil {
+			glog.Errorf(ctx, "[svcuser.UpdateProfile] UpdateMap fail, err:%v, personID:%d", err, personEntity.ID)
+			return code.GetError(code.UserUpdateError)
+		}
+	}
+
+	return nil
+}
+
+func (svc *userSvc) ChangePassword(ctx *gin.Context, req *dtouser.ChangePasswordReq) error {
+	userID := gincontext.GetUserID(ctx)
+
+	userEntity, err := dao.NewUserDao().GetByID(ctx, userID)
+	if err != nil || userEntity == nil || userEntity.ID == 0 {
+		return code.GetError(code.UserNotExistError)
+	}
+
+	personEntity, err := dao.NewPersonDao().GetByID(ctx, userEntity.PersonID)
+	if err != nil || personEntity == nil {
+		return code.GetError(code.UserNotExistError)
+	}
+
+	if err := gcrypto.ComparePasswordHash(personEntity.PasswordHash, req.OldPassword); err != nil {
+		return code.GetError(code.AuthPasswordError)
+	}
+
+	newHash, err := gcrypto.GeneratePasswordHash(req.NewPassword)
+	if err != nil {
+		glog.Errorf(ctx, "[svcuser.ChangePassword] GeneratePasswordHash fail, err:%v", err)
+		return code.GetError(code.UserUpdateError)
+	}
+
+	updateMap := map[string]any{
+		"password_hash": newHash,
+	}
+	if err := dao.NewPersonDao().UpdateMap(ctx, personEntity.ID, updateMap); err != nil {
+		glog.Errorf(ctx, "[svcuser.ChangePassword] UpdateMap fail, err:%v, personID:%d", err, personEntity.ID)
+		return code.GetError(code.UserUpdateError)
+	}
+
+	return nil
+}
+
+func (svc *userSvc) LoginHistory(ctx *gin.Context, req *dtouser.LoginHistoryReq) (*dtouser.LoginHistoryResp, error) {
+	userID := gincontext.GetUserID(ctx)
+	tenantID := gincontext.GetTenantID(ctx)
+
+	cond := dao.LoginLogCond{
+		BaseCond: &genericdao.BaseCond{
+			Page:     req.Page,
+			PageSize: req.PageSize,
+		},
+		UserID:   userID,
+		TenantID: tenantID,
+	}
+
+	loginLogList, total, err := dao.NewLoginLogDao().GetPageListByCond(ctx, &cond)
+	if err != nil {
+		glog.Errorf(ctx, "[svcuser.LoginHistory] GetPageListByCond fail, err:%v", err)
+		return nil, code.GetError(code.UserGetDetailError)
+	}
+
+	list := make([]dtouser.LoginHistoryItem, 0, len(loginLogList))
+	for _, log := range loginLogList {
+		list = append(list, dtouser.LoginHistoryItem{
+			ID:           log.ID,
+			LoginType:    log.LoginType,
+			LoginStatus:  log.LoginStatus,
+			LoginMessage: log.LoginMessage,
+			IPAddress:    log.IPAddress,
+			Location:     log.Location,
+			Browser:      log.Browser,
+			OS:           log.OS,
+			CreatedAt:    log.CreatedAt,
+		})
+	}
+
+	return &dtouser.LoginHistoryResp{
+		List:  list,
+		Total: total,
+	}, nil
+}
+
+func (svc *userSvc) Logout(ctx *gin.Context) error {
+	authToken := ctx.GetHeader("Authorization")
+	if authToken != "" {
+		if err := token.AddTokenToBlacklist(ctx.Request.Context(), authToken, token.TokenExpireDuration); err != nil {
+			return code.GetError(code.AuthLogoutError)
+		}
+	}
+	return nil
+}
+
+func (svc *userSvc) PendingList(ctx *gin.Context, req *dtouser.PendingListReq) (*dtouser.PendingListResp, error) {
+	tenantID := gincontext.GetTenantID(ctx)
+	glog.Infof(ctx, "[svcuser.PendingList] req:%s", gutil.ToJsonString(req))
+
+	pendingUsers, err := dao.NewUserDao().GetPendingUsers(ctx, tenantID)
+	if err != nil {
+		glog.Errorf(ctx, "[svcuser.PendingList] GetPendingUsers fail, err:%v, tenantID:%d", err, tenantID)
+		return nil, code.GetError(code.UserGetPageListError)
+	}
+
+	list := make([]dtouser.PendingListItem, 0, len(pendingUsers))
+	for _, v := range pendingUsers {
+		list = append(list, dtouser.PendingListItem{
+			UserID:     v.ID,
+			Username:   v.Username,
+			Status:     string(v.Status),
+			TenantID:   v.TenantID,
+			DeptID:     v.DeptID,
+			EmployeeNo: v.EmployeeNo,
+			Position:   v.Position,
+			JobLevel:   v.JobLevel,
+		})
+	}
+
+	return &dtouser.PendingListResp{
+		List:  list,
+		Total: int64(len(pendingUsers)),
+	}, nil
+}
+
+func (svc *userSvc) Approve(ctx *gin.Context, req *dtouser.ApproveReq) error {
+	tenantID := gincontext.GetTenantID(ctx)
+	glog.Infof(ctx, "[svcuser.Approve] req:%s", gutil.ToJsonString(req))
+
+	userEntity, err := dao.NewUserDao().GetByID(ctx, req.UserID)
+	if err != nil || userEntity == nil || userEntity.ID == 0 {
+		glog.Errorf(ctx, "[svcuser.Approve] user not found, userID:%d", req.UserID)
+		return code.GetError(code.UserNotExistError)
+	}
+
+	if userEntity.TenantID != tenantID {
+		return code.GetError(code.TenantScopeForbiddenError)
+	}
+
+	var newStatus model.UserStatus
+	if req.Approved {
+		newStatus = model.UserStatusEnabled
+	} else {
+		newStatus = model.UserStatusDisabled
+	}
+
+	updateMap := map[string]any{
+		"status": newStatus,
+	}
+	if err := dao.NewUserDao().UpdateMap(ctx, req.UserID, updateMap); err != nil {
+		glog.Errorf(ctx, "[svcuser.Approve] UpdateMap fail, err:%v, userID:%d", err, req.UserID)
+		return code.GetError(code.UserUpdateError)
+	}
+
+	return nil
+}
+
+func (svc *userSvc) generateRandomPassword() string {
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*"
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	b := make([]byte, 12)
+	for i := range b {
+		b[i] = charset[r.Intn(len(charset))]
+	}
+	return string(b)
 }

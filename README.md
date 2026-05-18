@@ -80,13 +80,13 @@ Run code generation commands:
 
 ```bash
 # Generate full module based on table
-make codegen MODE=module APP=demo
+make codegen APP=demo COMMAND=module
 
 # Generate only model code
-make codegen MODE=model APP=demo
+make codegen APP=demo COMMAND=model
 
 # Generate API endpoint code
-make codegen MODE=api APP=demo
+make codegen APP=demo COMMAND=api
 ```
 
 See [generate](https://github.com/morehao/gocli?tab=readme-ov-file#generate) for full documentation.

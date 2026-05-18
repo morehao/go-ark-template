@@ -1,6 +1,6 @@
 package objpermission
 
-import "github.com/morehao/goark/apps/iam/model"
+import "github.com/morehao/goark/iam/model"
 
 type RoleBaseInfo struct {
 	TenantID    uint                   `json:"tenantID" form:"tenantID"`       // 所属租户ID
@@ -9,6 +9,6 @@ type RoleBaseInfo struct {
 	RoleCode    string                 `json:"roleCode" form:"roleCode"`       // 角色编码
 	RoleName    string                 `json:"roleName" form:"roleName"`       // 角色名称
 	RoleType    model.RoleType      `json:"roleType" form:"roleType"`       // 角色类型: custom-自定义 system-系统内置
-	SortOrder   int32                  `json:"sortOrder" form:"sortOrder"`     // 排序
+	Sequence   int32                  `json:"sequence" form:"sequence"`     // 排序
 	Status      model.RoleStatus    `json:"status" form:"status"`           // 状态: enabled-启用 disabled-停用
 }

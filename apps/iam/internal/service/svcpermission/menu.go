@@ -2,10 +2,10 @@ package svcpermission
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam/dao"
-	"github.com/morehao/goark/apps/iam/internal/dto/dtopermission"
-	"github.com/morehao/goark/apps/iam/model"
-	"github.com/morehao/goark/apps/iam/object/objpermission"
+	"github.com/morehao/goark/iam/dao"
+	"github.com/morehao/goark/iam/internal/dto/dtopermission"
+	"github.com/morehao/goark/iam/model"
+	"github.com/morehao/goark/iam/object/objpermission"
 	"github.com/morehao/goark/pkg/code"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
 	"github.com/morehao/golib/biz/genericdao"
@@ -33,12 +33,12 @@ func NewMenuSvc() MenuSvc {
 	return &menuSvc{}
 }
 
-type menuSortOrderComparator struct{}
+type menuSequenceComparator struct{}
 
-func (c menuSortOrderComparator) Compare(a, b *dtopermission.MenuTreeNode) int {
-	if a.SortOrder < b.SortOrder {
+func (c menuSequenceComparator) Compare(a, b *dtopermission.MenuTreeNode) int {
+	if a.Sequence < b.Sequence {
 		return -1
-	} else if a.SortOrder > b.SortOrder {
+	} else if a.Sequence > b.Sequence {
 		return 1
 	}
 	return 0
@@ -57,9 +57,10 @@ func (svc *menuSvc) Create(ctx *gin.Context, req *dtopermission.MenuCreateReq) (
 		ParentID:      req.ParentID,
 		Permission:    req.Permission,
 		RoutePath:     req.RoutePath,
-		SortOrder:     req.SortOrder,
+		Sequence:     req.Sequence,
 		Status:        req.Status,
 		Visibility:    req.Visibility,
+		AccessPolicy:  model.AccessPoliciesToMask(req.AccessPolicies),
 	}
 
 	if err := dao.NewMenuDao().Insert(ctx, insertEntity); err != nil {
@@ -67,14 +68,14 @@ func (svc *menuSvc) Create(ctx *gin.Context, req *dtopermission.MenuCreateReq) (
 		return nil, code.GetError(code.MenuCreateError)
 	}
 	return &dtopermission.MenuCreateResp{
-		ID: insertEntity.ID,
+		MenuID: insertEntity.ID,
 	}, nil
 }
 
 // Delete 删除菜单管理
 func (svc *menuSvc) Delete(ctx *gin.Context, req *dtopermission.MenuDeleteReq) error {
 	userID := gincontext.GetUserID(ctx)
-	menuEntity, err := dao.NewMenuDao().GetByID(ctx, req.ID)
+	menuEntity, err := dao.NewMenuDao().GetByID(ctx, req.MenuID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcpermission.Delete] daoMenu GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.MenuDeleteError)
@@ -83,7 +84,7 @@ func (svc *menuSvc) Delete(ctx *gin.Context, req *dtopermission.MenuDeleteReq) e
 		return code.GetError(code.MenuNotExistError)
 	}
 
-	if err = dao.NewMenuDao().Delete(ctx, req.ID, userID); err != nil {
+	if err = dao.NewMenuDao().Delete(ctx, req.MenuID, userID); err != nil {
 		glog.Errorf(ctx, "[svcpermission.Delete] daoMenu Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.MenuDeleteError)
 	}
@@ -92,7 +93,7 @@ func (svc *menuSvc) Delete(ctx *gin.Context, req *dtopermission.MenuDeleteReq) e
 
 // Update 更新菜单管理
 func (svc *menuSvc) Update(ctx *gin.Context, req *dtopermission.MenuUpdateReq) error {
-	menuEntity, err := dao.NewMenuDao().GetByID(ctx, req.ID)
+	menuEntity, err := dao.NewMenuDao().GetByID(ctx, req.MenuID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcpermission.MenuUpdate] daoMenu GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.MenuUpdateError)
@@ -111,11 +112,12 @@ func (svc *menuSvc) Update(ctx *gin.Context, req *dtopermission.MenuUpdateReq) e
 		"parent_id":      req.ParentID,
 		"permission":     req.Permission,
 		"route_path":     req.RoutePath,
-		"sort_order":     req.SortOrder,
+		"sequence":     req.Sequence,
 		"status":         req.Status,
 		"visibility":     req.Visibility,
+		"access_policy":  model.AccessPoliciesToMask(req.AccessPolicies),
 	}
-	if err = dao.NewMenuDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
+	if err = dao.NewMenuDao().UpdateMap(ctx, req.MenuID, updateMap); err != nil {
 		glog.Errorf(ctx, "[svcpermission.MenuUpdate] daoMenu UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.MenuUpdateError)
 	}
@@ -124,7 +126,7 @@ func (svc *menuSvc) Update(ctx *gin.Context, req *dtopermission.MenuUpdateReq) e
 
 // Detail 根据id获取菜单管理
 func (svc *menuSvc) Detail(ctx *gin.Context, req *dtopermission.MenuDetailReq) (*dtopermission.MenuDetailResp, error) {
-	menuEntity, err := dao.NewMenuDao().GetByID(ctx, req.ID)
+	menuEntity, err := dao.NewMenuDao().GetByID(ctx, req.MenuID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcpermission.MenuDetail] daoMenu GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.MenuGetDetailError)
@@ -134,22 +136,23 @@ func (svc *menuSvc) Detail(ctx *gin.Context, req *dtopermission.MenuDetailReq) (
 		return nil, code.GetError(code.MenuNotExistError)
 	}
 	resp := &dtopermission.MenuDetailResp{
-		ID: menuEntity.ID,
+		MenuID: menuEntity.ID,
 		MenuBaseInfo: objpermission.MenuBaseInfo{
-			CacheType:     menuEntity.CacheType,
-			TenantID:      menuEntity.TenantID,
-			ComponentPath: menuEntity.ComponentPath,
-			Icon:          menuEntity.Icon,
-			LinkType:      menuEntity.LinkType,
-			MenuCode:      menuEntity.MenuCode,
-			MenuName:      menuEntity.MenuName,
-			MenuType:      menuEntity.MenuType,
-			ParentID:      menuEntity.ParentID,
-			Permission:    menuEntity.Permission,
-			RoutePath:     menuEntity.RoutePath,
-			SortOrder:     menuEntity.SortOrder,
-			Status:        menuEntity.Status,
-			Visibility:    menuEntity.Visibility,
+			CacheType:      menuEntity.CacheType,
+			TenantID:       menuEntity.TenantID,
+			ComponentPath:  menuEntity.ComponentPath,
+			Icon:           menuEntity.Icon,
+			LinkType:       menuEntity.LinkType,
+			MenuCode:       menuEntity.MenuCode,
+			MenuName:       menuEntity.MenuName,
+			MenuType:       menuEntity.MenuType,
+			ParentID:       menuEntity.ParentID,
+			Permission:     menuEntity.Permission,
+			RoutePath:      menuEntity.RoutePath,
+			Sequence:      menuEntity.Sequence,
+			Status:         menuEntity.Status,
+			Visibility:     menuEntity.Visibility,
+			AccessPolicies: menuEntity.AccessPolicy.ToStrings(),
 		},
 		OperatorBaseInfo: gobject.OperatorBaseInfo{
 			CreatedAt: menuEntity.CreatedAt.Unix(),
@@ -175,22 +178,23 @@ func (svc *menuSvc) PageList(ctx *gin.Context, req *dtopermission.MenuPageListRe
 	list := make([]dtopermission.MenuPageListItem, 0, len(menuEntityList))
 	for _, v := range menuEntityList {
 		list = append(list, dtopermission.MenuPageListItem{
-			ID: v.ID,
+			MenuID: v.ID,
 			MenuBaseInfo: objpermission.MenuBaseInfo{
-				CacheType:     v.CacheType,
-				TenantID:      v.TenantID,
-				ComponentPath: v.ComponentPath,
-				Icon:          v.Icon,
-				LinkType:      v.LinkType,
-				MenuCode:      v.MenuCode,
-				MenuName:      v.MenuName,
-				MenuType:      v.MenuType,
-				ParentID:      v.ParentID,
-				Permission:    v.Permission,
-				RoutePath:     v.RoutePath,
-				SortOrder:     v.SortOrder,
-				Status:        v.Status,
-				Visibility:    v.Visibility,
+				CacheType:      v.CacheType,
+				TenantID:       v.TenantID,
+				ComponentPath:  v.ComponentPath,
+				Icon:           v.Icon,
+				LinkType:       v.LinkType,
+				MenuCode:       v.MenuCode,
+				MenuName:       v.MenuName,
+				MenuType:       v.MenuType,
+				ParentID:       v.ParentID,
+				Permission:     v.Permission,
+				RoutePath:      v.RoutePath,
+				Sequence:      v.Sequence,
+				Status:         v.Status,
+				Visibility:     v.Visibility,
+				AccessPolicies: v.AccessPolicy.ToStrings(),
 			},
 			OperatorBaseInfo: gobject.OperatorBaseInfo{
 				UpdatedAt: v.UpdatedAt.Unix(),
@@ -215,22 +219,23 @@ func (svc *menuSvc) Tree(ctx *gin.Context, req *dtopermission.MenuTreeReq) (*dto
 	nodes := make([]*dtopermission.MenuTreeNode, len(allMenus))
 	for i, menu := range allMenus {
 		nodes[i] = &dtopermission.MenuTreeNode{
-			ID: menu.ID,
+			MenuID: menu.ID,
 			MenuBaseInfo: objpermission.MenuBaseInfo{
-				CacheType:     menu.CacheType,
-				TenantID:      menu.TenantID,
-				ComponentPath: menu.ComponentPath,
-				Icon:          menu.Icon,
-				LinkType:      menu.LinkType,
-				MenuCode:      menu.MenuCode,
-				MenuName:      menu.MenuName,
-				MenuType:      menu.MenuType,
-				ParentID:      menu.ParentID,
-				Permission:    menu.Permission,
-				RoutePath:     menu.RoutePath,
-				SortOrder:     menu.SortOrder,
-				Status:        menu.Status,
-				Visibility:    menu.Visibility,
+				CacheType:      menu.CacheType,
+				TenantID:       menu.TenantID,
+				ComponentPath:  menu.ComponentPath,
+				Icon:           menu.Icon,
+				LinkType:       menu.LinkType,
+				MenuCode:       menu.MenuCode,
+				MenuName:       menu.MenuName,
+				MenuType:       menu.MenuType,
+				ParentID:       menu.ParentID,
+				Permission:     menu.Permission,
+				RoutePath:      menu.RoutePath,
+				Sequence:      menu.Sequence,
+				Status:         menu.Status,
+				Visibility:     menu.Visibility,
+				AccessPolicies: menu.AccessPolicy.ToStrings(),
 			},
 			OperatorBaseInfo: gobject.OperatorBaseInfo{
 				UpdatedAt: menu.UpdatedAt.Unix(),
@@ -239,7 +244,7 @@ func (svc *menuSvc) Tree(ctx *gin.Context, req *dtopermission.MenuTreeReq) (*dto
 	}
 
 	builder := gtree.NewTreeBuilder[uint, *dtopermission.MenuTreeNode](
-		gtree.WithComparator(menuSortOrderComparator{}),
+		gtree.WithComparator(menuSequenceComparator{}),
 	)
 	tree := builder.Build(nodes)
 
@@ -253,7 +258,7 @@ func (svc *menuSvc) Tree(ctx *gin.Context, req *dtopermission.MenuTreeReq) (*dto
 	result := make([]dtopermission.MenuTreeNode, len(roots))
 	for i, root := range roots {
 		result[i] = *root
-		result[i].Children = svc.buildJSONChildren(tree, root.ID)
+		result[i].Children = svc.buildJSONChildren(tree, root.MenuID)
 	}
 
 	return &dtopermission.MenuTreeResp{List: result}, nil
@@ -267,7 +272,7 @@ func (svc *menuSvc) buildJSONChildren(tree *gtree.Tree[uint, *dtopermission.Menu
 	result := make([]dtopermission.MenuTreeNode, len(children))
 	for i, child := range children {
 		result[i] = *child
-		result[i].Children = svc.buildJSONChildren(tree, child.ID)
+		result[i].Children = svc.buildJSONChildren(tree, child.MenuID)
 	}
 	return result
 }

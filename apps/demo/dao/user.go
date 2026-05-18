@@ -1,7 +1,7 @@
 package dao
 
 import (
-	"github.com/morehao/goark/apps/demo/model"
+	"github.com/morehao/goark/demo/model"
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/biz/genericdao"
 	"gorm.io/gorm"
@@ -22,22 +22,22 @@ func (c *UserCond) BuildCondition(db *gorm.DB, tableName string) {
 		c.BaseCond.BuildCondition(db, tableName)
 	}
 	if c.CompanyID > 0 {
-		db.Where("company_id = ?", c.CompanyID)
+		db.Where(tableName+".company_id = ?", c.CompanyID)
 	}
 	if c.CreatedBy > 0 {
-		db.Where("created_by = ?", c.CreatedBy)
+		db.Where(tableName+".created_by = ?", c.CreatedBy)
 	}
 	if c.DeletedBy > 0 {
-		db.Where("deleted_by = ?", c.DeletedBy)
+		db.Where(tableName+".deleted_by = ?", c.DeletedBy)
 	}
 	if c.DepartmentID > 0 {
-		db.Where("department_id = ?", c.DepartmentID)
+		db.Where(tableName+".department_id = ?", c.DepartmentID)
 	}
 	if c.Name != "" {
-		db.Where("name = ?", c.Name)
+		db.Where(tableName+".name = ?", c.Name)
 	}
 	if c.UpdatedBy > 0 {
-		db.Where("updated_by = ?", c.UpdatedBy)
+		db.Where(tableName+".updated_by = ?", c.UpdatedBy)
 	}
 }
 

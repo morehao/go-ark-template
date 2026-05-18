@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/morehao/goark/apps/iam"
-	"github.com/morehao/goark/apps/iam/config"
+	"github.com/morehao/goark/iam"
+	"github.com/morehao/goark/iam/config"
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/glog"
 	"github.com/morehao/golib/gtrace"

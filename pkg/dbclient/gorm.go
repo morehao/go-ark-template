@@ -26,19 +26,23 @@ func InitMultiDB(configs []dbgorm.GormConfig, logConfig *glog.LogConfig) error {
 		return fmt.Errorf("mysql config is empty")
 	}
 
-	tenantPlugin := gormplugin.NewPlugin(
+	var skipTables = []string{
 		"iam_tenant",
 		"iam_org",
 		"iam_org_config",
 		"iam_menu",
 		"iam_role",
 		"iam_role_menu",
+	}
+	tenantPlugin := gormplugin.New(
+		gormplugin.WithSkipTables(skipTables),
 	)
 
 	var opts []dbgorm.Option
 	if logConfig != nil {
 		opts = append(opts, dbgorm.WithLogConfig(logConfig))
 	}
+	opts = append(opts, dbgorm.WithCallerSkip(9))
 	for _, cfg := range configs {
 		client, err := dbgorm.New(&cfg, opts...)
 		if err != nil {

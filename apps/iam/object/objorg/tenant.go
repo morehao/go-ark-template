@@ -7,10 +7,13 @@ type TenantBaseInfo struct {
 	LegalPerson             string `json:"legalPerson" form:"legalPerson"`                         // 法人
 	Logo                    string `json:"logo" form:"logo"`                                       // Logo
 	OrgID                   uint   `json:"orgID" form:"orgID"`                                     // 组织ID
+	ParentID                uint   `json:"parentID" form:"parentID"`                               // 父租户ID
 	ShortName               string `json:"shortName" form:"shortName"`                             // 简称
 	Status                  string `json:"status" form:"status"`                                   // 状态
 	TenantCode              string `json:"tenantCode" form:"tenantCode"`                           // 租户编码
+	TenantLevel             int32  `json:"tenantLevel" form:"tenantLevel"`                         // 租户层级
 	TenantName              string `json:"tenantName" form:"tenantName"`                           // 租户名称
+	TenantPath              string `json:"tenantPath" form:"tenantPath"`                           // 租户路径: /1/2/3/
 	UnifiedSocialCreditCode string `json:"unifiedSocialCreditCode" form:"unifiedSocialCreditCode"` // 统一社会信用代码
 }
 

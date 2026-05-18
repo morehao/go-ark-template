@@ -2,8 +2,8 @@ package ctrorg
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam/internal/dto/dtoorg"
-	"github.com/morehao/goark/apps/iam/internal/service/svcorg"
+	"github.com/morehao/goark/iam/internal/dto/dtoorg"
+	"github.com/morehao/goark/iam/internal/service/svcorg"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
 )
 
@@ -37,9 +37,8 @@ func (ctr *tenantCtr) Create(ctx *gin.Context) {
 	if err != nil {
 		gincontext.Fail(ctx, err)
 		return
-	} else {
-		gincontext.Success(ctx, res)
 	}
+	gincontext.Success(ctx, res)
 }
 
 func (ctr *tenantCtr) Delete(ctx *gin.Context) {
@@ -52,9 +51,8 @@ func (ctr *tenantCtr) Delete(ctx *gin.Context) {
 	if err := ctr.tenantSvc.Delete(ctx, &req); err != nil {
 		gincontext.Fail(ctx, err)
 		return
-	} else {
-		gincontext.Success(ctx, "删除成功")
 	}
+	gincontext.Success(ctx, "删除成功")
 }
 
 func (ctr *tenantCtr) Update(ctx *gin.Context) {
@@ -66,9 +64,8 @@ func (ctr *tenantCtr) Update(ctx *gin.Context) {
 	if err := ctr.tenantSvc.Update(ctx, &req); err != nil {
 		gincontext.Fail(ctx, err)
 		return
-	} else {
-		gincontext.Success(ctx, "修改成功")
 	}
+	gincontext.Success(ctx, "修改成功")
 }
 
 func (ctr *tenantCtr) Detail(ctx *gin.Context) {
@@ -81,9 +78,8 @@ func (ctr *tenantCtr) Detail(ctx *gin.Context) {
 	if err != nil {
 		gincontext.Fail(ctx, err)
 		return
-	} else {
-		gincontext.Success(ctx, res)
 	}
+	gincontext.Success(ctx, res)
 }
 
 func (ctr *tenantCtr) PageList(ctx *gin.Context) {
@@ -96,7 +92,6 @@ func (ctr *tenantCtr) PageList(ctx *gin.Context) {
 	if err != nil {
 		gincontext.Fail(ctx, err)
 		return
-	} else {
-		gincontext.Success(ctx, res)
 	}
+	gincontext.Success(ctx, res)
 }

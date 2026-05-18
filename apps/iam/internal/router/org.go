@@ -1,7 +1,7 @@
 package router
 
 import (
-	"github.com/morehao/goark/apps/iam/internal/controller/ctrorg"
+	"github.com/morehao/goark/iam/internal/controller/ctrorg"
 	"github.com/morehao/golib/biz/gconstant"
 	"github.com/morehao/golib/biz/gserver/ginserver"
 )
@@ -15,8 +15,8 @@ func orgRouter(groups *ginserver.RouterGroups) {
 	v1RouterGroup.POST("/organization/update", orgCtr.Update)
 	v1RouterGroup.GET("/organization/detail", orgCtr.Detail)
 	v1RouterGroup.POST("/organization/pageList", orgCtr.PageList)
-	v1RouterGroup.GET("/organization/getConfigs", orgCtr.GetConfigs)
-	v1RouterGroup.GET("/organization/listConfig", orgCtr.ListConfig)
+	v1RouterGroup.GET("/organization/getOrgConfig", orgCtr.GetOrgConfig)
+	v1RouterGroup.GET("/organization/listConfigDefinitions", orgCtr.ListConfigDefinitions)
 }
 
 func tenantRouter(groups *ginserver.RouterGroups) {

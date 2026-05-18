@@ -5,11 +5,11 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam/core/user"
-	"github.com/morehao/goark/apps/iam/dao"
-	"github.com/morehao/goark/apps/iam/internal/dto/dtoorg"
-	"github.com/morehao/goark/apps/iam/model"
-	"github.com/morehao/goark/apps/iam/object/objorg"
+	"github.com/morehao/goark/iam/core/user"
+	"github.com/morehao/goark/iam/dao"
+	"github.com/morehao/goark/iam/internal/dto/dtoorg"
+	"github.com/morehao/goark/iam/model"
+	"github.com/morehao/goark/iam/object/objorg"
 	"github.com/morehao/goark/pkg/code"
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
@@ -39,6 +39,45 @@ func NewTenantSvc() TenantSvc {
 
 func (svc *tenantSvc) Create(ctx *gin.Context, req *dtoorg.TenantCreateReq) (*dtoorg.TenantCreateResp, error) {
 	operatorID := gincontext.GetUserID(ctx)
+
+	if len(req.AppIDs) > 0 {
+		orgApps, err := dao.NewOrganizationApplicationDao().GetListByCond(ctx, &dao.OrganizationApplicationCond{
+			OrgID: req.OrgID,
+		})
+		if err != nil {
+			glog.Errorf(ctx, "[svcorg.TenantCreate] GetListByCond orgApps fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+			return nil, code.GetError(code.TenantCreateError)
+		}
+		orgAppMap := make(map[uint]bool)
+		for _, orgApp := range orgApps {
+			orgAppMap[orgApp.AppID] = true
+		}
+		for _, appID := range req.AppIDs {
+			if !orgAppMap[appID] {
+				glog.Errorf(ctx, "[svcorg.TenantCreate] app not in org scope, appID:%d, req:%s", appID, gutil.ToJsonString(req))
+				return nil, code.GetError(code.ApplicationInvalidError)
+			}
+		}
+	}
+
+	var tenantLevel int32 = 1
+	var tenantPath string
+
+	if req.ParentID > 0 {
+		parentTenant, err := dao.NewTenantDao().GetByID(ctx, req.ParentID)
+		if err != nil || parentTenant == nil || parentTenant.ID == 0 {
+			glog.Errorf(ctx, "[svcorg.TenantCreate] parent tenant not found, parentID:%d", req.ParentID)
+			return nil, code.GetError(code.TenantNotExistError)
+		}
+		if parentTenant.OrgID != req.OrgID {
+			return nil, code.GetError(code.TenantScopeForbiddenError)
+		}
+		tenantLevel = parentTenant.TenantLevel + 1
+		tenantPath = fmt.Sprintf("%s%d/", parentTenant.TenantPath, parentTenant.ID)
+	} else {
+		tenantPath = fmt.Sprintf("/%d/", 0)
+	}
+
 	insertEntity := &model.TenantEntity{
 		Address:                 req.Address,
 		ContactEmail:            req.ContactEmail,
@@ -46,10 +85,13 @@ func (svc *tenantSvc) Create(ctx *gin.Context, req *dtoorg.TenantCreateReq) (*dt
 		LegalPerson:             req.LegalPerson,
 		Logo:                    req.Logo,
 		OrgID:                   req.OrgID,
+		ParentID:                req.ParentID,
 		ShortName:               req.ShortName,
 		Status:                  model.TenantStatus(req.Status),
 		TenantCode:              req.TenantCode,
+		TenantLevel:             tenantLevel,
 		TenantName:              req.TenantName,
+		TenantPath:              tenantPath,
 		UnifiedSocialCreditCode: req.UnifiedSocialCreditCode,
 		CreatedBy:               operatorID,
 		UpdatedBy:               operatorID,
@@ -67,6 +109,13 @@ func (svc *tenantSvc) Create(ctx *gin.Context, req *dtoorg.TenantCreateReq) (*dt
 			return err
 		}
 		tenantID = insertEntity.ID
+
+		updatePathMap := map[string]any{
+			"tenant_path": fmt.Sprintf("/%d/", insertEntity.ID),
+		}
+		if err := dao.NewTenantDao().WithTx(tx).UpdateMap(ctx, insertEntity.ID, updatePathMap); err != nil {
+			return err
+		}
 
 		deptEntity := &model.DepartmentEntity{
 			TenantID:  tenantID,
@@ -107,6 +156,20 @@ func (svc *tenantSvc) Create(ctx *gin.Context, req *dtoorg.TenantCreateReq) (*dt
 			return err
 		}
 
+		if len(req.AppIDs) > 0 {
+			for _, appID := range req.AppIDs {
+				tenantAppEntity := &model.TenantApplicationEntity{
+					TenantID:  tenantID,
+					AppID:     appID,
+					CreatedBy: operatorID,
+				}
+				if err := dao.NewTenantApplicationDao().WithTx(tx).Insert(ctx, tenantAppEntity); err != nil {
+					glog.Errorf(ctx, "[svcorg.TenantCreate] Insert tenantApp fail, err:%v, appID:%d", err, appID)
+					return err
+				}
+			}
+		}
+
 		return nil
 	})
 
@@ -116,7 +179,7 @@ func (svc *tenantSvc) Create(ctx *gin.Context, req *dtoorg.TenantCreateReq) (*dt
 	}
 
 	return &dtoorg.TenantCreateResp{
-		ID:       tenantID,
+		TenantID: tenantID,
 		AdminID:  result.UserID,
 		PersonID: result.PersonID,
 	}, nil
@@ -124,7 +187,7 @@ func (svc *tenantSvc) Create(ctx *gin.Context, req *dtoorg.TenantCreateReq) (*dt
 
 func (svc *tenantSvc) Delete(ctx *gin.Context, req *dtoorg.TenantDeleteReq) error {
 	userID := gincontext.GetUserID(ctx)
-	tenantEntity, err := dao.NewTenantDao().GetByID(ctx, req.ID)
+	tenantEntity, err := dao.NewTenantDao().GetByID(ctx, req.TenantID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.Delete] daoTenant GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.TenantDeleteError)
@@ -133,15 +196,41 @@ func (svc *tenantSvc) Delete(ctx *gin.Context, req *dtoorg.TenantDeleteReq) erro
 		return code.GetError(code.TenantNotExistError)
 	}
 
-	if err = dao.NewTenantDao().Delete(ctx, req.ID, userID); err != nil {
-		glog.Errorf(ctx, "[svcorg.Delete] daoTenant Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+	txErr := dbclient.IamDB(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("tenant_id = ?", req.TenantID).Delete(&model.TenantApplicationEntity{}).Error; err != nil {
+			glog.Errorf(ctx, "[svcorg.Delete] Delete tenantApps fail, err:%v, tenantID:%d", err, req.TenantID)
+			return err
+		}
+
+		if err := tx.Where("tenant_id = ?", req.TenantID).Delete(&model.DepartmentEntity{}).Error; err != nil {
+			glog.Errorf(ctx, "[svcorg.Delete] Delete departments fail, err:%v, tenantID:%d", err, req.TenantID)
+			return err
+		}
+
+		if err := tx.Where("tenant_id = ?", req.TenantID).Delete(&model.PersonEntity{}).Error; err != nil {
+			glog.Errorf(ctx, "[svcorg.Delete] Delete persons fail, err:%v, tenantID:%d", err, req.TenantID)
+			return err
+		}
+
+		if err := dao.NewTenantDao().WithTx(tx).Delete(ctx, req.TenantID, userID); err != nil {
+			glog.Errorf(ctx, "[svcorg.Delete] daoTenant Delete fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+			return err
+		}
+		return nil
+	})
+	if txErr != nil {
+		glog.Errorf(ctx, "[svcorg.Delete] Transaction fail, err:%v, req:%s", txErr, gutil.ToJsonString(req))
 		return code.GetError(code.TenantDeleteError)
 	}
 	return nil
 }
 
 func (svc *tenantSvc) Update(ctx *gin.Context, req *dtoorg.TenantUpdateReq) error {
-	tenantEntity, err := dao.NewTenantDao().GetByID(ctx, req.ID)
+	operatorID := gincontext.GetUserID(ctx)
+	tenantID := gincontext.GetTenantID(ctx)
+	isPlatformAdmin := gincontext.GetUserType(ctx) == "platform_admin"
+
+	tenantEntity, err := dao.NewTenantDao().GetByID(ctx, req.TenantID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.TenantUpdate] daoTenant GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return code.GetError(code.TenantUpdateError)
@@ -149,28 +238,133 @@ func (svc *tenantSvc) Update(ctx *gin.Context, req *dtoorg.TenantUpdateReq) erro
 	if tenantEntity == nil || tenantEntity.ID == 0 {
 		return code.GetError(code.TenantNotExistError)
 	}
+
+	if !isPlatformAdmin && tenantEntity.ID != tenantID {
+		return code.GetError(code.TenantScopeForbiddenError)
+	}
+
+	if len(req.AppIDs) > 0 {
+		orgApps, err := dao.NewOrganizationApplicationDao().GetListByCond(ctx, &dao.OrganizationApplicationCond{
+			OrgID: tenantEntity.OrgID,
+		})
+		if err != nil {
+			glog.Errorf(ctx, "[svcorg.TenantUpdate] GetListByCond orgApps fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+			return code.GetError(code.TenantUpdateError)
+		}
+		orgAppMap := make(map[uint]bool)
+		for _, orgApp := range orgApps {
+			orgAppMap[orgApp.AppID] = true
+		}
+		for _, appID := range req.AppIDs {
+			if !orgAppMap[appID] {
+				glog.Errorf(ctx, "[svcorg.TenantUpdate] app not in org scope, appID:%d, req:%s", appID, gutil.ToJsonString(req))
+				return code.GetError(code.ApplicationInvalidError)
+			}
+		}
+	}
+
 	updateMap := map[string]any{
 		"address":                    req.Address,
 		"contact_email":              req.ContactEmail,
-		"contact_phone":              req.ContactPhone,
-		"legal_person":               req.LegalPerson,
-		"logo":                       req.Logo,
-		"org_id":                     req.OrgID,
-		"short_name":                 req.ShortName,
-		"status":                     req.Status,
-		"tenant_code":                req.TenantCode,
-		"tenant_name":                req.TenantName,
+		"contact_phone":             req.ContactPhone,
+		"legal_person":              req.LegalPerson,
+		"logo":                      req.Logo,
+		"short_name":                req.ShortName,
+		"status":                    req.Status,
+		"tenant_code":               req.TenantCode,
+		"tenant_name":               req.TenantName,
 		"unified_social_credit_code": req.UnifiedSocialCreditCode,
+		"updated_by":                operatorID,
 	}
-	if err = dao.NewTenantDao().UpdateMap(ctx, req.ID, updateMap); err != nil {
-		glog.Errorf(ctx, "[svcorg.TenantUpdate] daoTenant UpdateMap fail, err:%v, req:%s", err, gutil.ToJsonString(req))
+
+	if req.ParentID != tenantEntity.ParentID {
+		if req.ParentID > 0 {
+			parentTenant, err := dao.NewTenantDao().GetByID(ctx, req.ParentID)
+			if err != nil || parentTenant == nil || parentTenant.ID == 0 {
+				glog.Errorf(ctx, "[svcorg.TenantUpdate] parent tenant not found, parentID:%d", req.ParentID)
+				return code.GetError(code.TenantNotExistError)
+			}
+			if parentTenant.OrgID != tenantEntity.OrgID {
+				return code.GetError(code.TenantScopeForbiddenError)
+			}
+			updateMap["parent_id"] = req.ParentID
+			updateMap["tenant_level"] = parentTenant.TenantLevel + 1
+			updateMap["tenant_path"] = fmt.Sprintf("%s%d/", parentTenant.TenantPath, parentTenant.ID)
+		} else {
+			updateMap["parent_id"] = 0
+			updateMap["tenant_level"] = 1
+			updateMap["tenant_path"] = fmt.Sprintf("/%d/", 0)
+		}
+	}
+
+	txErr := dbclient.IamDB(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := dao.NewTenantDao().WithTx(tx).UpdateMap(ctx, req.TenantID, updateMap); err != nil {
+			return err
+		}
+
+		if req.ParentID != tenantEntity.ParentID {
+			if err := svc.updateChildrenTenantPath(ctx, tx, req.TenantID, updateMap["tenant_path"].(string), updateMap["tenant_level"].(int32)); err != nil {
+				return err
+			}
+		}
+
+		if len(req.AppIDs) > 0 {
+			if err := tx.Where("tenant_id = ?", req.TenantID).Delete(&model.TenantApplicationEntity{}).Error; err != nil {
+				glog.Errorf(ctx, "[svcorg.TenantUpdate] Delete tenantApps fail, err:%v, tenantID:%d", err, req.TenantID)
+				return err
+			}
+			for _, appID := range req.AppIDs {
+				tenantAppEntity := &model.TenantApplicationEntity{
+					TenantID:  req.TenantID,
+					AppID:     appID,
+					CreatedBy: operatorID,
+				}
+				if err := dao.NewTenantApplicationDao().WithTx(tx).Insert(ctx, tenantAppEntity); err != nil {
+					glog.Errorf(ctx, "[svcorg.TenantUpdate] Insert tenantApp fail, err:%v, appID:%d", err, appID)
+					return err
+				}
+			}
+		}
+
+		return nil
+	})
+
+	if txErr != nil {
+		glog.Errorf(ctx, "[svcorg.TenantUpdate] Transaction fail, err:%v, req:%s", txErr, gutil.ToJsonString(req))
 		return code.GetError(code.TenantUpdateError)
 	}
 	return nil
 }
 
+func (svc *tenantSvc) updateChildrenTenantPath(ctx *gin.Context, tx *gorm.DB, parentID uint, parentPath string, parentLevel int32) error {
+	childrenCond := &dao.TenantCond{
+		ParentID: parentID,
+	}
+	children, _, err := dao.NewTenantDao().WithTx(tx).GetPageListByCond(ctx, childrenCond)
+	if err != nil {
+		return err
+	}
+
+	for _, child := range children {
+		newPath := fmt.Sprintf("%s%d/", parentPath, child.ID)
+		newLevel := parentLevel + 1
+		childUpdateMap := map[string]any{
+			"tenant_path":  newPath,
+			"tenant_level": newLevel,
+			"updated_by":   gincontext.GetUserID(ctx),
+		}
+		if err := dao.NewTenantDao().WithTx(tx).UpdateMap(ctx, child.ID, childUpdateMap); err != nil {
+			return err
+		}
+		if err := svc.updateChildrenTenantPath(ctx, tx, child.ID, newPath, newLevel); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (svc *tenantSvc) Detail(ctx *gin.Context, req *dtoorg.TenantDetailReq) (*dtoorg.TenantDetailResp, error) {
-	tenantEntity, err := dao.NewTenantDao().GetByID(ctx, req.ID)
+	tenantEntity, err := dao.NewTenantDao().GetByID(ctx, req.TenantID)
 	if err != nil {
 		glog.Errorf(ctx, "[svcorg.TenantDetail] daoTenant GetByID fail, err:%v, req:%s", err, gutil.ToJsonString(req))
 		return nil, code.GetError(code.TenantGetDetailError)
@@ -178,8 +372,40 @@ func (svc *tenantSvc) Detail(ctx *gin.Context, req *dtoorg.TenantDetailReq) (*dt
 	if tenantEntity == nil || tenantEntity.ID == 0 {
 		return nil, code.GetError(code.TenantNotExistError)
 	}
+	var apps []dtoorg.AppInfo
+	tenantAppList, err := dao.NewTenantApplicationDao().GetListByCond(ctx, &dao.TenantApplicationCond{
+		TenantID: tenantEntity.ID,
+	})
+	if err != nil {
+		glog.Errorf(ctx, "[svcorg.TenantDetail] GetListByCond tenantApps fail, err:%v, tenantID:%d", err, tenantEntity.ID)
+		return nil, code.GetError(code.TenantGetDetailError)
+	}
+	if len(tenantAppList) > 0 {
+		appIDs := make([]uint, 0, len(tenantAppList))
+		for _, tenantApp := range tenantAppList {
+			appIDs = append(appIDs, tenantApp.AppID)
+		}
+		appEntities, err := dao.NewApplicationDao().GetListByCond(ctx, &dao.ApplicationCond{
+			BaseCond: &genericdao.BaseCond{IDs: appIDs},
+		})
+		if err != nil {
+			glog.Errorf(ctx, "[svcorg.TenantDetail] GetListByCond apps fail, err:%v, tenantID:%d", err, tenantEntity.ID)
+			return nil, code.GetError(code.TenantGetDetailError)
+		}
+		appMap := appEntities.ToMap()
+		for _, tenantApp := range tenantAppList {
+			if app, ok := appMap[tenantApp.AppID]; ok {
+				apps = append(apps, dtoorg.AppInfo{
+					AppID:   app.ID,
+					AppName: app.AppName,
+				})
+			}
+		}
+	}
+
 	resp := &dtoorg.TenantDetailResp{
-		ID: tenantEntity.ID,
+		TenantID: tenantEntity.ID,
+		Apps:     apps,
 		TenantBaseInfo: objorg.TenantBaseInfo{
 			Address:                 tenantEntity.Address,
 			ContactEmail:            tenantEntity.ContactEmail,
@@ -187,10 +413,13 @@ func (svc *tenantSvc) Detail(ctx *gin.Context, req *dtoorg.TenantDetailReq) (*dt
 			LegalPerson:             tenantEntity.LegalPerson,
 			Logo:                    tenantEntity.Logo,
 			OrgID:                   tenantEntity.OrgID,
+			ParentID:                tenantEntity.ParentID,
 			ShortName:               tenantEntity.ShortName,
 			Status:                  string(tenantEntity.Status),
 			TenantCode:              tenantEntity.TenantCode,
+			TenantLevel:             tenantEntity.TenantLevel,
 			TenantName:              tenantEntity.TenantName,
+			TenantPath:              tenantEntity.TenantPath,
 			UnifiedSocialCreditCode: tenantEntity.UnifiedSocialCreditCode,
 		},
 		OperatorBaseInfo: gobject.OperatorBaseInfo{
@@ -225,7 +454,7 @@ func (svc *tenantSvc) PageList(ctx *gin.Context, req *dtoorg.TenantPageListReq) 
 	list := make([]dtoorg.TenantPageListItem, 0, len(tenantEntityList))
 	for _, v := range tenantEntityList {
 		list = append(list, dtoorg.TenantPageListItem{
-			ID: v.ID,
+			TenantID: v.ID,
 			TenantBaseInfo: objorg.TenantBaseInfo{
 				Address:                 v.Address,
 				ContactEmail:            v.ContactEmail,
@@ -233,10 +462,13 @@ func (svc *tenantSvc) PageList(ctx *gin.Context, req *dtoorg.TenantPageListReq) 
 				LegalPerson:             v.LegalPerson,
 				Logo:                    v.Logo,
 				OrgID:                   v.OrgID,
+				ParentID:                v.ParentID,
 				ShortName:               v.ShortName,
 				Status:                  string(v.Status),
 				TenantCode:              v.TenantCode,
+				TenantLevel:             v.TenantLevel,
 				TenantName:              v.TenantName,
+				TenantPath:              v.TenantPath,
 				UnifiedSocialCreditCode: v.UnifiedSocialCreditCode,
 			},
 			OperatorBaseInfo: gobject.OperatorBaseInfo{

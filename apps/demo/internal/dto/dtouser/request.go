@@ -1,7 +1,7 @@
 package dtouser
 
 import (
-	"github.com/morehao/goark/apps/demo/object/objuser"
+	"github.com/morehao/goark/demo/object/objuser"
 	"github.com/morehao/golib/biz/gobject"
 )
 

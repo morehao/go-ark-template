@@ -2,10 +2,10 @@ package svcuser
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/demo/dao"
-	"github.com/morehao/goark/apps/demo/internal/dto/dtouser"
-	"github.com/morehao/goark/apps/demo/model"
-	"github.com/morehao/goark/apps/demo/object/objuser"
+	"github.com/morehao/goark/demo/dao"
+	"github.com/morehao/goark/demo/internal/dto/dtouser"
+	"github.com/morehao/goark/demo/model"
+	"github.com/morehao/goark/demo/object/objuser"
 	"github.com/morehao/goark/pkg/code"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
 	"github.com/morehao/golib/biz/genericdao"

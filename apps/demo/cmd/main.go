@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/demo"
-	"github.com/morehao/goark/apps/demo/config"
+	"github.com/morehao/goark/demo"
+	"github.com/morehao/goark/demo/config"
 	"github.com/morehao/golib/glog"
 )
 
@@ -18,7 +18,11 @@ func main() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	defer shutdownTraceProvider()
-	defer glog.Close()
+	defer func() {
+		if err := glog.Close(); err != nil {
+			fmt.Printf("failed to close logger: %v\n", err)
+		}
+	}()
 
 	engine := gin.New()
 	engine.Use(gin.Recovery())

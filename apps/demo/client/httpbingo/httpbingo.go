@@ -12,7 +12,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/demo/config"
+	"github.com/morehao/goark/demo/config"
 
 	"github.com/morehao/golib/protocol/ghttp"
 )

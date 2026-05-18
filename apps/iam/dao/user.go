@@ -1,7 +1,9 @@
 package dao
 
 import (
-	"github.com/morehao/goark/apps/iam/model"
+	"context"
+
+	"github.com/morehao/goark/iam/model"
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/biz/genericdao"
 	"gorm.io/gorm"
@@ -20,16 +22,16 @@ func (c *UserCond) BuildCondition(db *gorm.DB, tableName string) {
 		c.BaseCond.BuildCondition(db, tableName)
 	}
 	if c.Username != "" {
-		db.Where("username = ?", c.Username)
+		db.Where(tableName+".username = ?", c.Username)
 	}
 	if c.TenantID > 0 {
-		db.Where("tenant_id = ?", c.TenantID)
+		db.Where(tableName+".tenant_id = ?", c.TenantID)
 	}
 	if c.PersonID > 0 {
-		db.Where("person_id = ?", c.PersonID)
+		db.Where(tableName+".person_id = ?", c.PersonID)
 	}
 	if c.Status != "" {
-		db.Where("status = ?", c.Status)
+		db.Where(tableName+".status = ?", c.Status)
 	}
 }
 
@@ -44,4 +46,12 @@ func NewUserDao() *UserDao {
 			dbclient.IamDB,
 		),
 	}
+}
+
+func (dao *UserDao) GetPendingUsers(ctx context.Context, tenantID uint) (model.UserEntityList, error) {
+	result, err := dao.GetListByCond(ctx, &UserCond{
+		TenantID: tenantID,
+		Status:   model.UserStatusPending,
+	})
+	return result, err
 }

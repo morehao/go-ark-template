@@ -2,9 +2,9 @@ package user
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/morehao/goark/apps/iam/config"
-	"github.com/morehao/goark/apps/iam/dao"
-	"github.com/morehao/goark/apps/iam/model"
+	"github.com/morehao/goark/iam/config"
+	"github.com/morehao/goark/iam/dao"
+	"github.com/morehao/goark/iam/model"
 	"github.com/morehao/goark/pkg/code"
 	"github.com/morehao/golib/gcrypto"
 	"github.com/morehao/golib/glog"
@@ -15,10 +15,16 @@ func CreatePersonWithUser(ctx *gin.Context, tx *gorm.DB, params *CreatePersonPar
 	mobile := params.Mobile
 	email := params.Email
 
-	passwordHash, err := GeneratePassword(mobile, email)
-	if err != nil {
-		glog.Errorf(ctx, "[user.CreatePersonWithUser] GeneratePassword fail, err:%v, mobile:%s, email:%s", err, mobile, email)
-		return nil, code.GetError(code.PersonCreateError)
+	var passwordHash string
+	if params.PasswordHash != "" {
+		passwordHash = params.PasswordHash
+	} else {
+		var err error
+		passwordHash, err = GeneratePassword(mobile, email)
+		if err != nil {
+			glog.Errorf(ctx, "[user.CreatePersonWithUser] GeneratePassword fail, err:%v, mobile:%s, email:%s", err, mobile, email)
+			return nil, code.GetError(code.PersonCreateError)
+		}
 	}
 
 	personCreateEntity := &model.PersonEntity{
@@ -48,6 +54,21 @@ func CreatePersonWithUser(ctx *gin.Context, tx *gorm.DB, params *CreatePersonPar
 			return nil, code.GetError(code.PersonCreateError)
 		}
 		personID = personCreateEntity.ID
+	}
+
+	if params.Username != "" {
+		existingUser, err := dao.NewUserDao().GetByCond(ctx, &dao.UserCond{
+			TenantID: params.TenantID,
+			Username: params.Username,
+		})
+		if err != nil {
+			glog.Errorf(ctx, "[user.CreatePersonWithUser] GetByCond for username check fail, err:%v, tenantID:%d, username:%s", err, params.TenantID, params.Username)
+			return nil, code.GetError(code.UserCreateError)
+		}
+		if existingUser != nil && existingUser.ID != 0 {
+			glog.Errorf(ctx, "[user.CreatePersonWithUser] username already exists, tenantID:%d, username:%s", params.TenantID, params.Username)
+			return nil, code.GetError(code.UsernameDuplicateError)
+		}
 	}
 
 	userEntity := &model.UserEntity{

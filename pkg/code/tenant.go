@@ -12,6 +12,7 @@ const (
 	TenantContextMissingError = 100206
 	TenantScopeForbiddenError = 100207
 	TenantJoinUnsafeError     = 100208
+	TenantDisabledError       = 100209
 )
 
 var tenantErrorMsgMap = gerror.CodeMsgMap{
@@ -24,4 +25,5 @@ var tenantErrorMsgMap = gerror.CodeMsgMap{
 	TenantContextMissingError: "缺少租户上下文",
 	TenantScopeForbiddenError: "租户数据越权访问",
 	TenantJoinUnsafeError:     "存在不安全的连表查询，请使用结构化Join",
+	TenantDisabledError:       "租户已停用",
 }

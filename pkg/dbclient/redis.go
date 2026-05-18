@@ -15,6 +15,7 @@ func InitRedis(config dbredis.RedisConfig, logConfig *glog.LogConfig) error {
 	if logConfig != nil {
 		opts = append(opts, dbredis.WithLogConfig(logConfig))
 	}
+	opts = append(opts, dbredis.WithCallerSkip(9))
 	client, err := dbredis.New(&config, opts...)
 	if err != nil {
 		return err

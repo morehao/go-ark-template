@@ -1,7 +1,7 @@
 package router
 
 import (
-	"github.com/morehao/goark/apps/demo/internal/controller/ctrexample"
+	"github.com/morehao/goark/demo/internal/controller/ctrexample"
 	"github.com/morehao/golib/biz/gconstant"
 	"github.com/morehao/golib/biz/gserver/ginserver"
 )

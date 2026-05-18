@@ -327,13 +327,13 @@ func TestGeneratePassword(t *testing.T) {
 
 ```bash
 # 生成 API 路由和控制器
-make codegen APP=demo MODE=api
+make codegen APP=demo COMMAND=api
 
 # 生成模块代码
-make codegen APP=demo MODE=module
+make codegen APP=demo COMMAND=module
 
 # 生成模型代码
-make codegen APP=demo MODE=model
+make codegen APP=demo COMMAND=model
 ```
 
 ### Docker 支持
