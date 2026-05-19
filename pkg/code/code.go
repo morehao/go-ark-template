@@ -47,4 +47,5 @@ func init() {
 	registerError(loginLogErrorMsgMap)
 	registerError(apiKeyErrorMsgMap)
 	registerError(oidcErrorMsgMap)
+	registerError(ragforgeErrorMsgMap)
 }
