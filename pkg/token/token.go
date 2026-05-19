@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	TokenBlacklistKeyPrefix        = "iam:token:blacklist:"
-	RefreshTokenBlacklistKeyPrefix = "iam:refreshToken:blacklist:"
+	TokenBlacklistKeyPrefix        = "token:blacklist:"
+	RefreshTokenBlacklistKeyPrefix = "refreshToken:blacklist:"
 	TokenExpireDuration            = 24 * time.Hour
 	RefreshTokenExpireDuration     = 7 * 24 * time.Hour
 )
