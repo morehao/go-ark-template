@@ -9,8 +9,8 @@ import (
 	"github.com/morehao/goark/ragforge/internal/retriever"
 	"github.com/morehao/goark/ragforge/model"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
-	"github.com/morehao/golib/biz/genericdao"
 	"github.com/morehao/golib/biz/gobject"
+	"github.com/morehao/golib/dbaccess/gormdao"
 	"github.com/morehao/golib/glog"
 	"github.com/morehao/golib/gutil"
 )
@@ -34,7 +34,7 @@ func NewChunkSvc() ChunkSvc {
 
 func (svc *chunkSvc) PageList(ctx *gin.Context, req *dtochunk.ChunkPageListReq) (*dtochunk.ChunkPageListResp, error) {
 	cond := &dao.ChunkCond{
-		BaseCond: &genericdao.BaseCond{
+		BaseCond: &gormdao.BaseCond{
 			Page:     req.Page,
 			PageSize: req.PageSize,
 		},

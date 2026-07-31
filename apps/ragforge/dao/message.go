@@ -3,12 +3,12 @@ package dao
 import (
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/goark/ragforge/model"
-	"github.com/morehao/golib/biz/genericdao"
+	"github.com/morehao/golib/dbaccess/gormdao"
 	"gorm.io/gorm"
 )
 
 type MessageCond struct {
-	*genericdao.BaseCond
+	*gormdao.BaseCond
 	SessionID uint
 	TenantID  uint
 	Role      model.MessageRole
@@ -34,12 +34,12 @@ func (c *MessageCond) BuildCondition(db *gorm.DB, tableName string) {
 }
 
 type MessageDao struct {
-	*genericdao.GenericDao[model.MessageEntity, model.MessageEntityList]
+	*gormdao.Dao[model.MessageEntity, model.MessageEntityList]
 }
 
 func NewMessageDao() *MessageDao {
 	return &MessageDao{
-		GenericDao: genericdao.NewGenericDao[model.MessageEntity, model.MessageEntityList](
+		Dao: gormdao.NewDao[model.MessageEntity, model.MessageEntityList](
 			model.TableNameMessage, "MessageDao",
 			dbclient.RagForgeDB,
 		),

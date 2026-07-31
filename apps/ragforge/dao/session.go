@@ -3,12 +3,12 @@ package dao
 import (
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/goark/ragforge/model"
-	"github.com/morehao/golib/biz/genericdao"
+	"github.com/morehao/golib/dbaccess/gormdao"
 	"gorm.io/gorm"
 )
 
 type SessionCond struct {
-	*genericdao.BaseCond
+	*gormdao.BaseCond
 	TenantID uint
 	UserID   uint
 	KbID     uint
@@ -30,12 +30,12 @@ func (c *SessionCond) BuildCondition(db *gorm.DB, tableName string) {
 }
 
 type SessionDao struct {
-	*genericdao.GenericDao[model.SessionEntity, model.SessionEntityList]
+	*gormdao.Dao[model.SessionEntity, model.SessionEntityList]
 }
 
 func NewSessionDao() *SessionDao {
 	return &SessionDao{
-		GenericDao: genericdao.NewGenericDao[model.SessionEntity, model.SessionEntityList](
+		Dao: gormdao.NewDao[model.SessionEntity, model.SessionEntityList](
 			model.TableNameSession, "SessionDao",
 			dbclient.RagForgeDB,
 		),

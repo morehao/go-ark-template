@@ -3,12 +3,12 @@ package dao
 import (
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/goark/ragforge/model"
-	"github.com/morehao/golib/biz/genericdao"
+	"github.com/morehao/golib/dbaccess/gormdao"
 	"gorm.io/gorm"
 )
 
 type TagCond struct {
-	*genericdao.BaseCond
+	*gormdao.BaseCond
 	KbID     uint
 	TenantID uint
 }
@@ -26,12 +26,12 @@ func (c *TagCond) BuildCondition(db *gorm.DB, tableName string) {
 }
 
 type TagDao struct {
-	*genericdao.GenericDao[model.TagEntity, model.TagEntityList]
+	*gormdao.Dao[model.TagEntity, model.TagEntityList]
 }
 
 func NewTagDao() *TagDao {
 	return &TagDao{
-		GenericDao: genericdao.NewGenericDao[model.TagEntity, model.TagEntityList](
+		Dao: gormdao.NewDao[model.TagEntity, model.TagEntityList](
 			model.TableNameTag, "TagDao",
 			dbclient.RagForgeDB,
 		),

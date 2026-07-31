@@ -2,13 +2,12 @@ package router
 
 import (
 	"github.com/morehao/goark/ragforge/internal/controller/ctrkb"
-	"github.com/morehao/golib/biz/gconstant"
 	"github.com/morehao/golib/biz/gserver/ginserver"
 )
 
 func kbRouter(groups *ginserver.RouterGroups) {
 	ctr := ctrkb.NewKBCtr()
-	v1RouterGroup := groups.MustGetGroup(gconstant.ApiVersionV1)
+	v1RouterGroup := groups.MustGetGroup(ginserver.ApiVersionV1)
 
 	v1RouterGroup.POST("/kb/create", ctr.Create)
 	v1RouterGroup.POST("/kb/delete", ctr.Delete)

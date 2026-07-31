@@ -2,19 +2,18 @@ package router
 
 import (
 	"github.com/morehao/goark/demo/internal/controller/ctrexample"
-	"github.com/morehao/golib/biz/gconstant"
 	"github.com/morehao/golib/biz/gserver/ginserver"
 )
 
 func formatRouter(groups *ginserver.RouterGroups) {
 	formatCtr := ctrexample.NewFormatCtr()
-	v1RouterGroup := groups.MustGetGroup(gconstant.ApiVersionV1)
+	v1RouterGroup := groups.MustGetGroup(ginserver.ApiVersionV1)
 	v1RouterGroup.GET("/format/formatResponse", formatCtr.FormatResponse)
 }
 
 func sseRouter(groups *ginserver.RouterGroups) {
 	sseCtr := ctrexample.NewSSECtr()
-	v1RouterGroup := groups.MustGetGroup(gconstant.ApiVersionV1)
+	v1RouterGroup := groups.MustGetGroup(ginserver.ApiVersionV1)
 	v1RouterGroup.GET("/sse/time", sseCtr.Time)
 	v1RouterGroup.GET("/sse/timeRaw", sseCtr.TimeRaw)
 	v1RouterGroup.GET("/sse/process", sseCtr.Process)
@@ -24,6 +23,6 @@ func sseRouter(groups *ginserver.RouterGroups) {
 
 func clientRouter(groups *ginserver.RouterGroups) {
 	clientCtr := ctrexample.NewClientCtr()
-	v1RouterGroup := groups.MustGetGroup(gconstant.ApiVersionV1)
+	v1RouterGroup := groups.MustGetGroup(ginserver.ApiVersionV1)
 	v1RouterGroup.GET("/client/callGetHttpbingo", clientCtr.CallGetHttpbingo)
 }

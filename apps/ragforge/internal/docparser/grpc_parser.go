@@ -60,9 +60,9 @@ func (p *GRPCDocumentReader) connect(addr string) error {
 	resolver.SetDefaultScheme("dns")
 
 	start := time.Now()
-	conn, err := grpc.Dial(addr, opts...)
+	conn, err := grpc.NewClient(addr, opts...)
 	if err != nil {
-		return fmt.Errorf("failed to connect to docreader: %w", err)
+		return fmt.Errorf("failed to create docreader client: %w", err)
 	}
 	glog.Infof(context.Background(), "Connected to docreader in %v", time.Since(start))
 

@@ -3,12 +3,12 @@ package dao
 import (
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/goark/ragforge/model"
-	"github.com/morehao/golib/biz/genericdao"
+	"github.com/morehao/golib/dbaccess/gormdao"
 	"gorm.io/gorm"
 )
 
 type ChunkCond struct {
-	*genericdao.BaseCond
+	*gormdao.BaseCond
 	KnowledgeID uint
 	KbID        uint
 	TenantID    uint
@@ -30,12 +30,12 @@ func (c *ChunkCond) BuildCondition(db *gorm.DB, tableName string) {
 }
 
 type ChunkDao struct {
-	*genericdao.GenericDao[model.ChunkEntity, model.ChunkEntityList]
+	*gormdao.Dao[model.ChunkEntity, model.ChunkEntityList]
 }
 
 func NewChunkDao() *ChunkDao {
 	return &ChunkDao{
-		GenericDao: genericdao.NewGenericDao[model.ChunkEntity, model.ChunkEntityList](
+		Dao: gormdao.NewDao[model.ChunkEntity, model.ChunkEntityList](
 			model.TableNameChunk, "ChunkDao",
 			dbclient.RagForgeDB,
 		),

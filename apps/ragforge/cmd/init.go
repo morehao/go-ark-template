@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/goark/ragforge/config"
 	"github.com/morehao/goark/ragforge/internal/database"
 	"github.com/morehao/goark/ragforge/internal/engine"
 	"github.com/morehao/goark/ragforge/internal/retriever"
-	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/glog"
+	_ "github.com/morehao/golib/glog/driver/slog"
 )
 
 func serverInit() error {

@@ -59,9 +59,9 @@ func NewClientWithAuth(addr string, authConfig *AuthConfig) (*Client, error) {
 	resolver.SetDefaultScheme("dns")
 
 	startTime := time.Now()
-	conn, err := grpc.Dial(addr, opts...)
+	conn, err := grpc.NewClient(addr, opts...)
 	if err != nil {
-		Logger.Printf("ERROR: Failed to connect to DocReader service: %v", err)
+		Logger.Printf("ERROR: Failed to create DocReader client: %v", err)
 		return nil, err
 	}
 	Logger.Printf("INFO: Successfully connected to DocReader service in %v", time.Since(startTime))

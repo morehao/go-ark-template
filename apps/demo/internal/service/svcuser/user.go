@@ -8,8 +8,8 @@ import (
 	"github.com/morehao/goark/demo/object/objuser"
 	"github.com/morehao/goark/pkg/code"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
-	"github.com/morehao/golib/biz/genericdao"
 	"github.com/morehao/golib/biz/gobject"
+	"github.com/morehao/golib/dbaccess/gormdao"
 	"github.com/morehao/golib/glog"
 	"github.com/morehao/golib/gutil"
 )
@@ -104,7 +104,7 @@ func (svc *userSvc) Detail(ctx *gin.Context, req *dtouser.UserDetailReq) (*dtous
 // PageList 分页获取用户管理列表
 func (svc *userSvc) PageList(ctx *gin.Context, req *dtouser.UserPageListReq) (*dtouser.UserPageListResp, error) {
 	cond := &dao.UserCond{
-		BaseCond: &genericdao.BaseCond{
+		BaseCond: &gormdao.BaseCond{
 			Page:     req.Page,
 			PageSize: req.PageSize,
 		},

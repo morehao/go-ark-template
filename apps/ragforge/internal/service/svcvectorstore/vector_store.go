@@ -9,8 +9,8 @@ import (
 	"github.com/morehao/goark/ragforge/internal/dto/dtovectorstore"
 	"github.com/morehao/goark/ragforge/model"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
-	"github.com/morehao/golib/biz/genericdao"
 	"github.com/morehao/golib/biz/gobject"
+	"github.com/morehao/golib/dbaccess/gormdao"
 	"github.com/morehao/golib/glog"
 	"github.com/morehao/golib/gutil"
 )
@@ -117,7 +117,7 @@ func (svc *vectorStoreSvc) Detail(ctx *gin.Context, req *dtovectorstore.VectorSt
 func (svc *vectorStoreSvc) PageList(ctx *gin.Context, req *dtovectorstore.VectorStorePageListReq) (*dtovectorstore.VectorStorePageListResp, error) {
 	tenantID := gincontext.GetTenantID(ctx)
 	cond := &dao.VectorStoreCond{
-		BaseCond: &genericdao.BaseCond{
+		BaseCond: &gormdao.BaseCond{
 			Page:     req.Page,
 			PageSize: req.PageSize,
 		},

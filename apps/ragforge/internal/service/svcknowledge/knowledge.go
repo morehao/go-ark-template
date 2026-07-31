@@ -14,8 +14,8 @@ import (
 	"github.com/morehao/goark/ragforge/internal/pipeline"
 	"github.com/morehao/goark/ragforge/model"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
-	"github.com/morehao/golib/biz/genericdao"
 	"github.com/morehao/golib/biz/gobject"
+	"github.com/morehao/golib/dbaccess/gormdao"
 	"github.com/morehao/golib/glog"
 	"github.com/morehao/golib/gutil"
 )
@@ -32,7 +32,7 @@ type KnowledgeSvc interface {
 }
 
 type knowledgeSvc struct {
-	fileSvc   storage.FileService
+	fileSvc    storage.FileService
 	httpClient *http.Client
 }
 
@@ -45,7 +45,7 @@ func NewKnowledgeSvc() KnowledgeSvc {
 		fileSvc = storage.NewLocalFileService(basePath)
 	}
 	return &knowledgeSvc{
-		fileSvc:   fileSvc,
+		fileSvc:    fileSvc,
 		httpClient: http.DefaultClient,
 	}
 }
@@ -104,7 +104,6 @@ func (svc *knowledgeSvc) CreateFromFile(ctx *gin.Context, req *dtoknowledge.Know
 		ID: insertEntity.ID,
 	}, nil
 }
-
 
 func (svc *knowledgeSvc) CreateFromURL(ctx *gin.Context, req *dtoknowledge.KnowledgeCreateURLReq) (*dtoknowledge.KnowledgeCreateResp, error) {
 	userID := gincontext.GetUserID(ctx)
@@ -224,7 +223,7 @@ func (svc *knowledgeSvc) Detail(ctx *gin.Context, req *dtoknowledge.KnowledgeDet
 
 func (svc *knowledgeSvc) PageList(ctx *gin.Context, req *dtoknowledge.KnowledgePageListReq) (*dtoknowledge.KnowledgePageListResp, error) {
 	cond := &dao.KnowledgeCond{
-		BaseCond: &genericdao.BaseCond{
+		BaseCond: &gormdao.BaseCond{
 			Page:     req.Page,
 			PageSize: req.PageSize,
 		},

@@ -35,17 +35,13 @@ func (ctr *sseCtr) Time(ctx *gin.Context) {
 
 	clientGone := ctx.Stream(func(w io.Writer) bool {
 		_, err := fmt.Fprintf(w, "data: %s\n\n", time.Now().Format(time.DateTime))
-		if err != nil {
-			return false
-		}
-		return true
+		return err == nil
 	})
 	if clientGone {
 		glog.Infof(ctx, "[sseCtr.Time] Client disconnected during streaming")
 	} else {
 		glog.Infof(ctx, "[sseCtr.Time] Stream completed normally")
 	}
-	return
 }
 
 // TimeRaw Write写入实时时间流示例

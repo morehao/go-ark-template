@@ -1,7 +1,6 @@
 package docparser
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"sort"
@@ -152,14 +151,6 @@ func formatValue(v interface{}) string {
 		b, _ = json.Marshal(v)
 	}
 	return string(b)
-}
-
-func indentJSON(data []byte) (string, error) {
-	var buf bytes.Buffer
-	if err := json.Indent(&buf, data, "", "  "); err != nil {
-		return string(data), err
-	}
-	return buf.String(), nil
 }
 
 func wrapCodeBlock(content string) string {

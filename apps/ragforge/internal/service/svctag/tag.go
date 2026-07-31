@@ -7,8 +7,8 @@ import (
 	"github.com/morehao/goark/ragforge/internal/dto/dtotag"
 	"github.com/morehao/goark/ragforge/model"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
-	"github.com/morehao/golib/biz/genericdao"
 	"github.com/morehao/golib/biz/gobject"
+	"github.com/morehao/golib/dbaccess/gormdao"
 	"github.com/morehao/golib/glog"
 	"github.com/morehao/golib/gutil"
 )
@@ -70,7 +70,7 @@ func (svc *tagSvc) Update(ctx *gin.Context, req *dtotag.TagUpdateReq) error {
 func (svc *tagSvc) List(ctx *gin.Context, req *dtotag.TagListReq) (*dtotag.TagListResp, error) {
 	tenantID := gincontext.GetTenantID(ctx)
 	cond := &dao.TagCond{
-		BaseCond: &genericdao.BaseCond{},
+		BaseCond: &gormdao.BaseCond{},
 		KbID:     req.KbID,
 		TenantID: tenantID,
 	}

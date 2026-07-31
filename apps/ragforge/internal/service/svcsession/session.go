@@ -11,8 +11,8 @@ import (
 	"github.com/morehao/goark/ragforge/internal/engine"
 	"github.com/morehao/goark/ragforge/model"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
-	"github.com/morehao/golib/biz/genericdao"
 	"github.com/morehao/golib/biz/gobject"
+	"github.com/morehao/golib/dbaccess/gormdao"
 	"github.com/morehao/golib/glog"
 	"github.com/morehao/golib/gutil"
 )
@@ -200,7 +200,7 @@ func (svc *sessionSvc) PageList(ctx *gin.Context, req *dtosession.SessionPageLis
 	userID := gincontext.GetUserID(ctx)
 	tenantID := gincontext.GetTenantID(ctx)
 	cond := &dao.SessionCond{
-		BaseCond: &genericdao.BaseCond{
+		BaseCond: &gormdao.BaseCond{
 			Page:     req.Page,
 			PageSize: req.PageSize,
 		},

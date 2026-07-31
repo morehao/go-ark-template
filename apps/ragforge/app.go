@@ -6,7 +6,6 @@ import (
 	_ "github.com/morehao/goark/ragforge/docs"
 	"github.com/morehao/goark/ragforge/internal/middleware"
 	"github.com/morehao/goark/ragforge/internal/router"
-	"github.com/morehao/golib/biz/gconstant"
 	"github.com/morehao/golib/biz/gserver/gindocs"
 	"github.com/morehao/golib/biz/gserver/ginserver"
 )
@@ -14,8 +13,8 @@ import (
 const AppName = "ragforge"
 
 func Routers(engine *gin.Engine) {
-	routerGroups := ginserver.NewRouterGroups(engine, AppName, ginserver.Version{
-		Name: gconstant.ApiVersionV1,
+	routerGroups := ginserver.NewRouterGroups(engine, AppName, ginserver.VersionGroup{
+		Version: ginserver.ApiVersionV1,
 		Middlewares: []gin.HandlerFunc{
 			middleware.Auth(),
 		},

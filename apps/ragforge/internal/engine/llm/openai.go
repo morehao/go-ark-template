@@ -76,7 +76,7 @@ func (p *openAIProvider) ChatCompletionStream(ctx context.Context, req *engine.C
 
 	ch := make(chan string)
 	go func() {
-		defer stream.Close()
+		defer func() { _ = stream.Close() }()
 		defer close(ch)
 		for {
 			resp, err := stream.Recv()

@@ -2,13 +2,12 @@ package router
 
 import (
 	"github.com/morehao/goark/ragforge/internal/controller/ctrknowledge"
-	"github.com/morehao/golib/biz/gconstant"
 	"github.com/morehao/golib/biz/gserver/ginserver"
 )
 
 func knowledgeRouter(groups *ginserver.RouterGroups) {
 	ctr := ctrknowledge.NewKnowledgeCtr()
-	v1RouterGroup := groups.MustGetGroup(gconstant.ApiVersionV1)
+	v1RouterGroup := groups.MustGetGroup(ginserver.ApiVersionV1)
 
 	v1RouterGroup.POST("/knowledge/createFile", ctr.CreateFromFile)
 	v1RouterGroup.POST("/knowledge/createUrl", ctr.CreateFromURL)

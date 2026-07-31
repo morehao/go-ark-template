@@ -2,13 +2,12 @@ package router
 
 import (
 	"github.com/morehao/goark/ragforge/internal/controller/ctrvectorstore"
-	"github.com/morehao/golib/biz/gconstant"
 	"github.com/morehao/golib/biz/gserver/ginserver"
 )
 
 func vectorStoreRouter(groups *ginserver.RouterGroups) {
 	ctr := ctrvectorstore.NewVectorStoreCtr()
-	v1RouterGroup := groups.MustGetGroup(gconstant.ApiVersionV1)
+	v1RouterGroup := groups.MustGetGroup(ginserver.ApiVersionV1)
 
 	v1RouterGroup.POST("/vectorStore/create", ctr.Create)
 	v1RouterGroup.POST("/vectorStore/delete", ctr.Delete)

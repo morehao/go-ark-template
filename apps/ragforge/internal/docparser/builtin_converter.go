@@ -113,47 +113,6 @@ func audioToResult(fileName string, data []byte) *ReadResult {
 	}
 }
 
-func ensureOriginalImageRef(req *ReadRequest, mdContent string, imageRefs []ImageRef) (string, []ImageRef) {
-	ft := strings.ToLower(strings.TrimPrefix(req.FileType, "."))
-	if ft == "" {
-		ft = strings.TrimPrefix(strings.ToLower(filepath.Ext(req.FileName)), ".")
-	}
-	if !imageFormats[ft] {
-		return mdContent, imageRefs
-	}
-	if len(req.FileContent) == 0 {
-		return mdContent, imageRefs
-	}
-
-	fileName := req.FileName
-	if fileName == "" {
-		fileName = "image." + ft
-	}
-	refPath := "images/" + fileName
-
-	if strings.Contains(mdContent, refPath) {
-		return mdContent, imageRefs
-	}
-
-	imgLine := fmt.Sprintf("![%s](%s)", fileName, refPath)
-	if strings.TrimSpace(mdContent) == "" {
-		mdContent = imgLine
-	} else {
-		mdContent = imgLine + "\n\n" + mdContent
-	}
-
-	mime := http.DetectContentType(req.FileContent)
-	imageRefs = append(imageRefs, ImageRef{
-		Filename:    fileName,
-		OriginalRef: refPath,
-		MimeType:    mime,
-		ImageData:   req.FileContent,
-		IsOriginal:  true,
-	})
-
-	return mdContent, imageRefs
-}
-
 func csvToMarkdown(data []byte) (string, error) {
 	reader := csv.NewReader(strings.NewReader(string(data)))
 	reader.LazyQuotes = true

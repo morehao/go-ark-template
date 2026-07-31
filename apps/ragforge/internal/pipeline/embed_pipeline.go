@@ -64,8 +64,11 @@ func ProcessAndEmbedContent(ctx *gin.Context, kbID, knowledgeID, tenantID uint, 
 		return
 	}
 
-	dao.NewKnowledgeDao().UpdateMap(ctx, knowledgeID, map[string]interface{}{
+	if err := dao.NewKnowledgeDao().UpdateMap(ctx, knowledgeID, map[string]interface{}{
 		"parse_status": model.ParseStatusCompleted,
-	})
+	}); err != nil {
+		glog.Errorf(ctx, "[pipeline.ProcessAndEmbedContent] mark parse_status completed fail, err:%v", err)
+		return
+	}
 	glog.Infof(ctx, "[pipeline.ProcessAndEmbedContent] completed for knowledgeID=%d, chunks=%d", knowledgeID, len(chunks))
 }

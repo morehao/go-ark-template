@@ -2,13 +2,12 @@ package router
 
 import (
 	"github.com/morehao/goark/ragforge/internal/controller/ctrfaq"
-	"github.com/morehao/golib/biz/gconstant"
 	"github.com/morehao/golib/biz/gserver/ginserver"
 )
 
 func faqRouter(groups *ginserver.RouterGroups) {
 	ctr := ctrfaq.NewFAQCtr()
-	v1RouterGroup := groups.MustGetGroup(gconstant.ApiVersionV1)
+	v1RouterGroup := groups.MustGetGroup(ginserver.ApiVersionV1)
 
 	v1RouterGroup.POST("/faq/create", ctr.Create)
 	v1RouterGroup.POST("/faq/delete", ctr.Delete)

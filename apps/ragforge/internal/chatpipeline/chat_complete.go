@@ -53,7 +53,7 @@ func buildFallbackAnswer(_ string, results []SearchResult) string {
 		var sb strings.Builder
 		sb.WriteString("基于知识库内容，找到以下相关信息:\n\n")
 		for i, r := range results {
-			sb.WriteString(fmt.Sprintf("%d. %s\n", i+1, r.Content))
+			fmt.Fprintf(&sb, "%d. %s\n", i+1, r.Content)
 		}
 		sb.WriteString("\n(提示: 请配置 LLM 模型以获得更好的回答质量)")
 		return sb.String()

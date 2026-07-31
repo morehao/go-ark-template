@@ -2,13 +2,12 @@ package router
 
 import (
 	"github.com/morehao/goark/ragforge/internal/controller/ctrsession"
-	"github.com/morehao/golib/biz/gconstant"
 	"github.com/morehao/golib/biz/gserver/ginserver"
 )
 
 func sessionRouter(groups *ginserver.RouterGroups) {
 	ctr := ctrsession.NewSessionCtr()
-	v1RouterGroup := groups.MustGetGroup(gconstant.ApiVersionV1)
+	v1RouterGroup := groups.MustGetGroup(ginserver.ApiVersionV1)
 
 	v1RouterGroup.POST("/session/create", ctr.Create)
 	v1RouterGroup.POST("/session/delete", ctr.Delete)

@@ -9,8 +9,8 @@ import (
 	"github.com/morehao/goark/ragforge/internal/dto/dtomodel"
 	"github.com/morehao/goark/ragforge/model"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
-	"github.com/morehao/golib/biz/genericdao"
 	"github.com/morehao/golib/biz/gobject"
+	"github.com/morehao/golib/dbaccess/gormdao"
 	"github.com/morehao/golib/glog"
 	"github.com/morehao/golib/gutil"
 )
@@ -123,7 +123,7 @@ func (svc *modelSvc) Detail(ctx *gin.Context, req *dtomodel.ModelDetailReq) (*dt
 func (svc *modelSvc) PageList(ctx *gin.Context, req *dtomodel.ModelPageListReq) (*dtomodel.ModelPageListResp, error) {
 	tenantID := gincontext.GetTenantID(ctx)
 	cond := &dao.ModelCond{
-		BaseCond: &genericdao.BaseCond{
+		BaseCond: &gormdao.BaseCond{
 			Page:     req.Page,
 			PageSize: req.PageSize,
 		},

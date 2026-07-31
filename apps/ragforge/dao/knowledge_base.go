@@ -3,12 +3,12 @@ package dao
 import (
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/goark/ragforge/model"
-	"github.com/morehao/golib/biz/genericdao"
+	"github.com/morehao/golib/dbaccess/gormdao"
 	"gorm.io/gorm"
 )
 
 type KnowledgeBaseCond struct {
-	*genericdao.BaseCond
+	*gormdao.BaseCond
 	TenantID uint
 	Name     string
 }
@@ -26,12 +26,12 @@ func (c *KnowledgeBaseCond) BuildCondition(db *gorm.DB, tableName string) {
 }
 
 type KnowledgeBaseDao struct {
-	*genericdao.GenericDao[model.KnowledgeBaseEntity, model.KnowledgeBaseEntityList]
+	*gormdao.Dao[model.KnowledgeBaseEntity, model.KnowledgeBaseEntityList]
 }
 
 func NewKnowledgeBaseDao() *KnowledgeBaseDao {
 	return &KnowledgeBaseDao{
-		GenericDao: genericdao.NewGenericDao[model.KnowledgeBaseEntity, model.KnowledgeBaseEntityList](
+		Dao: gormdao.NewDao[model.KnowledgeBaseEntity, model.KnowledgeBaseEntityList](
 			model.TableNameKnowledgeBase, "KnowledgeBaseDao",
 			dbclient.RagForgeDB,
 		),

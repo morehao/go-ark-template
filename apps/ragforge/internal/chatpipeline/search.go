@@ -2,7 +2,6 @@ package chatpipeline
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/morehao/goark/ragforge/internal/engine"
 	"github.com/morehao/goark/ragforge/internal/retriever"
@@ -66,5 +65,5 @@ func (p *PluginSearch) OnEvent(ctx context.Context, _ EventType, cm *ChatManage,
 }
 
 func (p *PluginSearch) String() string {
-	return fmt.Sprintf("PluginSearch")
+	return "PluginSearch"
 }

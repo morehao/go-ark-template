@@ -76,15 +76,10 @@ func (ctr *qaCtr) KnowledgeChatStream(ctx *gin.Context) {
 	ctx.Writer.Header().Set("Connection", "keep-alive")
 	ctx.Writer.WriteHeader(200)
 
-	flusher, ok := ctx.Writer.(gin.ResponseWriter)
-	if !ok {
-		return
-	}
-
 	writeEvent := func(event sseEvent) {
 		data, _ := json.Marshal(event)
-		fmt.Fprintf(ctx.Writer, "data: %s\n\n", data)
-		flusher.Flush()
+		_, _ = fmt.Fprintf(ctx.Writer, "data: %s\n\n", data)
+		ctx.Writer.Flush()
 	}
 
 	err := ctr.qaSvc.KnowledgeChatStream(ctx, &req,

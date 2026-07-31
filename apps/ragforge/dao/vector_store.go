@@ -3,12 +3,12 @@ package dao
 import (
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/goark/ragforge/model"
-	"github.com/morehao/golib/biz/genericdao"
+	"github.com/morehao/golib/dbaccess/gormdao"
 	"gorm.io/gorm"
 )
 
 type VectorStoreCond struct {
-	*genericdao.BaseCond
+	*gormdao.BaseCond
 	TenantID   uint
 	Name       string
 	EngineType model.EngineType
@@ -34,12 +34,12 @@ func (c *VectorStoreCond) BuildCondition(db *gorm.DB, tableName string) {
 }
 
 type VectorStoreDao struct {
-	*genericdao.GenericDao[model.VectorStoreEntity, model.VectorStoreEntityList]
+	*gormdao.Dao[model.VectorStoreEntity, model.VectorStoreEntityList]
 }
 
 func NewVectorStoreDao() *VectorStoreDao {
 	return &VectorStoreDao{
-		GenericDao: genericdao.NewGenericDao[model.VectorStoreEntity, model.VectorStoreEntityList](
+		Dao: gormdao.NewDao[model.VectorStoreEntity, model.VectorStoreEntityList](
 			model.TableNameVectorStore, "VectorStoreDao",
 			dbclient.RagForgeDB,
 		),

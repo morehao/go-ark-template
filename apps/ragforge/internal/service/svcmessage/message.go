@@ -6,7 +6,7 @@ import (
 	"github.com/morehao/goark/ragforge/dao"
 	"github.com/morehao/goark/ragforge/internal/dto/dtomessage"
 	"github.com/morehao/golib/biz/gcontext/gincontext"
-	"github.com/morehao/golib/biz/genericdao"
+	"github.com/morehao/golib/dbaccess/gormdao"
 	"github.com/morehao/golib/glog"
 	"github.com/morehao/golib/gutil"
 )
@@ -61,7 +61,7 @@ func (svc *messageSvc) Search(ctx *gin.Context, req *dtomessage.MessageSearchReq
 		pageSize = 10
 	}
 	cond := &dao.MessageCond{
-		BaseCond: &genericdao.BaseCond{
+		BaseCond: &gormdao.BaseCond{
 			Page:     page,
 			PageSize: pageSize,
 		},
