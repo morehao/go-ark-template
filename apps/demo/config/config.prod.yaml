@@ -15,32 +15,40 @@ log:
     service: demo
     module: default
     level: info
-    writer: file
-    dir: ../../../log
+    writers:
+      - type: console
+      - type: file
+        dir: ../../../log
     extra_keys:
       - requestId
   gorm:
     service: demo
     module: gorm
     level: debug
-    writer: file
-    dir: ../../../log
+    writers:
+      - type: console
+      - type: file
+        dir: ../../../log
     extra_keys:
       - requestId
   redis:
     service: demo
     module: redis
     level: debug
-    writer: file
-    dir: ../../../log
+    writers:
+      - type: console
+      - type: file
+        dir: ../../../log
     extra_keys:
       - requestId
   es:
     service: demo
     module: es
     level: debug
-    writer: file
-    dir: ../../../log
+    writers:
+      - type: console
+      - type: file
+        dir: ../../../log
     extra_keys:
       - requestId
 

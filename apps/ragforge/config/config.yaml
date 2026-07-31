@@ -15,24 +15,30 @@ log:
     service: ragforge
     module: default
     level: info
-    writer: file
-    dir: ../../../log
+    writers:
+      - type: console
+      - type: file
+        dir: ../../../log
     extra_keys:
       - requestId
   gorm:
     service: ragforge
     module: gorm
     level: debug
-    writer: file
-    dir: ../../../log
+    writers:
+      - type: console
+      - type: file
+        dir: ../../../log
     extra_keys:
       - requestId
   redis:
     service: ragforge
     module: redis
     level: debug
-    writer: file
-    dir: ../../../log
+    writers:
+      - type: console
+      - type: file
+        dir: ../../../log
     extra_keys:
       - requestId
 

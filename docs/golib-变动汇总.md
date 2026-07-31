@@ -36,7 +36,79 @@
 
 `NewRouterGroups(engine, appName, versions ...VersionGroup)` 参数类型已变更，字段 `Name` 改为 `Version`。
 
-### 3. 常量位置
+### 3. glog 配置格式（破坏性变更）
+
+`glog.LogConfig` 结构体重构，`Writer` 单字段改为 `Writers` 切片，日志轮转字段下沉到 `WriterConfig`。
+
+#### LogConfig 顶层字段变更
+
+| 旧字段 | 变更 |
+|--------|------|
+| `Writer WriterType` | **删除**，改为 `Writers []WriterConfig` |
+| `Dir string` | **删除**，移入 `WriterConfig.Dir` |
+| `MaxSize int` | **删除**，移入 `WriterConfig.MaxSize` |
+| `MaxBackups int` | **删除**，移入 `WriterConfig.MaxBackups` |
+| `MaxAge int` | **删除**，移入 `WriterConfig.MaxAge` |
+| `Compress bool` | **删除**，移入 `WriterConfig.Compress` |
+| `LoggerType LoggerType` | **新增**，可选 `"slog"`（默认）/ `"zap"` |
+| `Service` / `Module` | 新增 `json` / `yaml` tag |
+
+#### WriterConfig 结构体（新增）
+
+```go
+type WriterConfig struct {
+    Type       WriterType `json:"type" yaml:"type"`            // console / file
+    Level      Level      `json:"level" yaml:"level"`          // 单个 writer 级别（为空则继承全局）
+    FileName   string     `json:"file_name" yaml:"file_name"`  // 日志文件名
+    Dir        string     `json:"dir" yaml:"dir"`              // 目录（默认 "./logs"）
+    MaxSize    int        `json:"max_size" yaml:"max_size"`    // MB（默认 100）
+    MaxBackups int        `json:"max_backups" yaml:"max_backups"` // 默认 10
+    MaxAge     int        `json:"max_age" yaml:"max_age"`      // 天（默认 7）
+    Compress   bool       `json:"compress" yaml:"compress"`
+    WfOnly     bool       `json:"wf_only" yaml:"wf_only"`      // 只输出 warn/fatal
+}
+```
+
+#### YAML 配置迁移示例
+
+**旧格式：**
+```yaml
+log:
+  default:
+    service: demo
+    module: default
+    level: info
+    writer: file
+    dir: ../../../log
+    extra_keys:
+      - requestId
+```
+
+**新格式：**
+```yaml
+log:
+  default:
+    service: demo
+    module: default
+    level: info
+    writers:
+      - type: file
+        dir: ../../../log
+    extra_keys:
+      - requestId
+```
+
+支持多个 writer，例如同时输出控制台和文件：
+```yaml
+    writers:
+      - type: console
+        level: debug
+      - type: file
+        dir: ../../../log
+        level: info
+```
+
+### 4. 常量位置
 
 > `golib/gconstant` 中**没有** `ApiVersionV1` 等版本常量，它们位于 `golib/biz/gserver/ginserver`（如 `ginserver.ApiVersionV1 = "v1"`）。
 
@@ -91,6 +163,7 @@ goark 本次迁移涉及的文件分类：
 - **类型改名**：`dbgorm.GormConfig` → `dbgorm.Config`；`ginserver.Version{Name}` → `ginserver.VersionGroup{Version}`。
 - **符号迁移**：`genericdao.DBErrorMsgMap` → `gconstant.DBErrorMsgMap`；`gconstant.ApiVersionV1` → `ginserver.ApiVersionV1`。
 - **新增 blank import**：`glog/driver/slog`（cmd 与 testsetup 两处）、`dbgorm/driver/mysql`（dbclient）。
+- **glog 配置格式迁移**：`Writer` 单字段 → `Writers` 切片，`Dir` 等字段移入 `WriterConfig`，涉及 `apps/demo/config/config.yaml`、`apps/demo/config/config.prod.yaml`、`apps/ragforge/config/config.yaml`。
 
 ### 附带修复（非迁移引起）
 
