@@ -50,7 +50,7 @@
 | `MaxBackups int` | **删除**，移入 `WriterConfig.MaxBackups` |
 | `MaxAge int` | **删除**，移入 `WriterConfig.MaxAge` |
 | `Compress bool` | **删除**，移入 `WriterConfig.Compress` |
-| `LoggerType LoggerType` | **新增**，可选 `"slog"`（默认）/ `"zap"` |
+| `LoggerType LoggerType` | **新增**，可选 `"zap"`（默认）/ `"slog"` |
 | `Service` / `Module` | 新增 `json` / `yaml` tag |
 
 #### WriterConfig 结构体（新增）
@@ -123,22 +123,54 @@ glog 改为通过 driver 子包的 `init()` 注册 LoggerType 实现：
 func RegisterLoggerType(t LoggerType, factory LoggerFactory)
 
 // 内部依据 cfg.LoggerType 从 registeredFactories 匹配
-// 空值默认为 LoggerTypeSlog；未注册对应 driver 会报错：
+// 空值默认为 LoggerTypeZap（注意：曾为 slog，已改为 zap）
+// 未注册对应 driver 会报错：
 // "unknown LoggerType X, import glog/driver/slog or glog/driver/zap to register"
 ```
 
 升级时**必须** blank import 对应驱动，否则 `glog.InitLogger` / `glog.GetDefaultLogger` 报错：
 
 ```go
-import _ "github.com/morehao/golib/glog/driver/slog"  // 默认 slog
+import _ "github.com/morehao/golib/glog/driver/zap"   // 默认 zap（推荐）
 // 或
-import _ "github.com/morehao/golib/glog/driver/zap"   // zap（配置需设 logger_type: zap）
+import _ "github.com/morehao/golib/glog/driver/slog"  // slog（配置需显式设 logger_type: slog）
 ```
 
 - `InitLogger(cfg *LogConfig, ...)` 接口不变，`LogConfig` 新增 `LoggerType` 字段（yaml 可配 `logger_type`）。
 - **陷阱**：`cmd` 入口 blank import 只覆盖应用进程；**测试初始化的路径（如 testsetup / testkit）也必须 blank import**，否则测试跑 `glog.InitLogger` 时 panic。
 
-### 2. dbgorm 注册机制
+### 2. glog caller 定位语义重构（重点）
+
+glog 的 `WithCallerSkip` 语义已彻底重写，以保证不同 driver（zap / slog）与不同调用方式（包级函数 or 直接调 Logger 方法）下，相同的 skip 都定位到同一处业务代码：
+
+- **删除** `glog.CallerFrame(...)`（此前基于运行时查帧定位调用点的 API）。
+- **新增** `glog.CallerOffsetLogger` 接口，内置驱动实现之：
+  ```go
+  type CallerOffsetLogger interface {
+      LogDepth(ctx context.Context, level Level, msg string, kvs []any, extra int)
+  }
+  ```
+- **包级日志函数**（`glog.Debugf` / `glog.Infow` / ...）不再调用 `Logger` 接口方法，而是改调 `LogDepth(..., pkgEntryFrame=1)`（`pkgEntryFrame` 为包级函数相对"直接调 Logger 方法"多出的固定帧数）。**第三方自定义 driver 未实现 `CallerOffsetLogger` 时**，包级调用退回 `logEntryFallback`，只影响 caller 偏一帧。
+- **`WithCallerSkip` 新语义**：skip 表示相对"调用 glog API 的那一帧"（包级函数或 Logger 方法）再向上额外跳过的帧数。驱动内部封装深度与包级入口帧已由 `glog` 固定常量抵消（driver base：zap=2、slog=3），因此该值**与 driver 无关**。
+- **`glog.GetDefaultLogger` 不再传入默认 skip**（常量 `DefaultLogCallerSkip` 已删除），默认 getter 直接 `newLogger(GetDefaultLogConfig())`。
+- **默认 `LoggerType` 为 zap**：`GetDefaultLogConfig()` 与 `newLogger` 兜底均返回 `LoggerTypeZap`。
+
+#### db 各层 callerSkip 默认值校准
+
+新语义下，各数据库封装层在业务直接调用 db 方法时的 default callerSkip 已重校准：
+
+| 包 | 旧默认 | 新默认 |
+|----|--------|--------|
+| `dbgorm` | 8 | **3** |
+| `dbredis` | 8 | **4** |
+| `dbes` | 9 | **6** |
+
+若业务在 db 调用前又套了额外封装层，才需用对应包的 `WithCallerSkip` 微调；业务直接调用时**建议不传**，直接使用校准默认。
+
+- 新增 `glog.CloneLogConfig(cfg)`：返回配置的浅拷贝（`Writers`、`ExtraKeys` 独立切片）。`dbgorm`/`dbredis`/`dbes` 的 `New` 已改用 `CloneLogConfig(glog.GetLoggerConfig())` 跟随全局 logger 配置。
+- `glog.Logger` 接口本身**未变**（含 `Debug/Debugf/.../With/Close/GetConfig`）。
+
+### 3. dbgorm 注册机制
 
 dbgorm 改为通过 driver 子包的 `init()` 注册 `DialectorFactory`，`New` 依据 URL 前缀匹配已注册的 dialector：
 
@@ -162,7 +194,9 @@ goark 本次迁移涉及的文件分类：
 - **路径迁移**：`biz/genericdao` → `dbaccess/gormdao`、`biz/gconstant` → `golib/gconstant`。
 - **类型改名**：`dbgorm.GormConfig` → `dbgorm.Config`；`ginserver.Version{Name}` → `ginserver.VersionGroup{Version}`。
 - **符号迁移**：`genericdao.DBErrorMsgMap` → `gconstant.DBErrorMsgMap`；`gconstant.ApiVersionV1` → `ginserver.ApiVersionV1`。
-- **新增 blank import**：`glog/driver/slog`（cmd 与 testsetup 两处）、`dbgorm/driver/mysql`（dbclient）。
+- **新增 blank import**：`glog/driver/zap`（cmd 两处与 testsetup）、`dbgorm/driver/mysql`（dbclient）。
+- **glog 默认驱动切换**：默认 `LoggerType` 由 slog 改为 zap，cmd / testsetup 的 blank import 由 `driver/slog` 改为 `driver/zap`，config.yaml / config.prod.yaml 各日志块补齐 `logger_type: zap`。
+- **callerSkip 化繁为简**：移除 `pkg/dbclient` 中 `dbgorm.WithCallerSkip(3)` 与 `dbredis.WithCallerSkip(9)` 的显式覆盖，改为依赖 golib 校准默认（gorm=3 / redis=4 / es=6）。
 - **glog 配置格式迁移**：`Writer` 单字段 → `Writers` 切片，`Dir` 等字段移入 `WriterConfig`，涉及 `apps/demo/config/config.yaml`、`apps/demo/config/config.prod.yaml`、`apps/ragforge/config/config.yaml`。
 
 ### 附带修复（非迁移引起）

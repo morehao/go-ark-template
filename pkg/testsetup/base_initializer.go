@@ -11,7 +11,7 @@ import (
 	"github.com/morehao/golib/dbaccess/dbgorm"
 	"github.com/morehao/golib/dbaccess/dbredis"
 	"github.com/morehao/golib/glog"
-	_ "github.com/morehao/golib/glog/driver/slog"
+	_ "github.com/morehao/golib/glog/driver/zap"
 	"github.com/morehao/golib/gutil"
 )
 

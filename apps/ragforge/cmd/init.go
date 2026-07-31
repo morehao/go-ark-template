@@ -10,7 +10,7 @@ import (
 	"github.com/morehao/goark/ragforge/internal/engine"
 	"github.com/morehao/goark/ragforge/internal/retriever"
 	"github.com/morehao/golib/glog"
-	_ "github.com/morehao/golib/glog/driver/slog"
+	_ "github.com/morehao/golib/glog/driver/zap"
 )
 
 func serverInit() error {

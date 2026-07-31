@@ -12,6 +12,7 @@ client:
 
 log:
   default:
+    logger_type: zap
     service: demo
     module: default
     level: info
@@ -22,6 +23,7 @@ log:
     extra_keys:
       - requestId
   gorm:
+    logger_type: zap
     service: demo
     module: gorm
     level: debug
@@ -32,6 +34,7 @@ log:
     extra_keys:
       - requestId
   redis:
+    logger_type: zap
     service: demo
     module: redis
     level: debug
@@ -42,6 +45,7 @@ log:
     extra_keys:
       - requestId
   es:
+    logger_type: zap
     service: demo
     module: es
     level: debug

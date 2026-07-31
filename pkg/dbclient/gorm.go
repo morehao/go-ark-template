@@ -30,7 +30,8 @@ func InitMultiDB(configs []dbgorm.Config, logConfig *glog.LogConfig) error {
 	if logConfig != nil {
 		opts = append(opts, dbgorm.WithLogConfig(logConfig))
 	}
-	opts = append(opts, dbgorm.WithCallerSkip(9))
+	// 业务层经 gormdao 封装调用，比直接持有 *gorm.DB 多一层栈帧，额外跳过 1 帧使 SQL 日志 caller 定位到 svc 服务层
+	opts = append(opts, dbgorm.WithCallerSkip(4))
 	for _, cfg := range configs {
 		client, err := dbgorm.New(&cfg, opts...)
 		if err != nil {
