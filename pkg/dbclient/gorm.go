@@ -7,6 +7,7 @@ import (
 
 	"github.com/morehao/golib/dbaccess/dbgorm"
 	_ "github.com/morehao/golib/dbaccess/dbgorm/driver/mysql"
+	_ "github.com/morehao/golib/dbaccess/dbgorm/driver/postgres"
 	"github.com/morehao/golib/glog"
 	"gorm.io/gorm"
 )
@@ -31,7 +32,7 @@ func InitMultiDB(configs []dbgorm.Config, logConfig *glog.LogConfig) error {
 		opts = append(opts, dbgorm.WithLogConfig(logConfig))
 	}
 	// 业务层经 gormdao 封装调用，比直接持有 *gorm.DB 多一层栈帧，额外跳过 1 帧使 SQL 日志 caller 定位到 svc 服务层
-	opts = append(opts, dbgorm.WithCallerSkip(4))
+	opts = append(opts, dbgorm.WithCallerSkip(3))
 	for _, cfg := range configs {
 		client, err := dbgorm.New(&cfg, opts...)
 		if err != nil {
