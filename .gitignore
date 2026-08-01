@@ -3,6 +3,7 @@
 !.vscode/launch.json
 .DS_Store
 .history
+__debug_bin*
 
 **/log/**
 output/*

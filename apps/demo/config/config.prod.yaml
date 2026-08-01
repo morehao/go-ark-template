@@ -12,35 +12,47 @@ client:
 
 log:
   default:
+    logger_type: zap
     service: demo
     module: default
     level: info
-    writer: file
-    dir: ../../../log
+    writers:
+      - type: console
+      - type: file
+        dir: ../../../log
     extra_keys:
       - requestId
   gorm:
+    logger_type: zap
     service: demo
     module: gorm
     level: debug
-    writer: file
-    dir: ../../../log
+    writers:
+      - type: console
+      - type: file
+        dir: ../../../log
     extra_keys:
       - requestId
   redis:
+    logger_type: zap
     service: demo
     module: redis
     level: debug
-    writer: file
-    dir: ../../../log
+    writers:
+      - type: console
+      - type: file
+        dir: ../../../log
     extra_keys:
       - requestId
   es:
+    logger_type: zap
     service: demo
     module: es
     level: debug
-    writer: file
-    dir: ../../../log
+    writers:
+      - type: console
+      - type: file
+        dir: ../../../log
     extra_keys:
       - requestId
 

@@ -9,6 +9,7 @@ import (
 	"github.com/morehao/goark/demo/config"
 	"github.com/morehao/goark/pkg/dbclient"
 	"github.com/morehao/golib/glog"
+	_ "github.com/morehao/golib/glog/driver/zap"
 	"github.com/morehao/golib/gtrace"
 	"github.com/morehao/golib/gtrace/otlptracegrpc"
 )

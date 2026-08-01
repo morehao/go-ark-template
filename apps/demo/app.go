@@ -6,7 +6,6 @@ import (
 	_ "github.com/morehao/goark/demo/docs"
 	"github.com/morehao/goark/demo/internal/middleware"
 	"github.com/morehao/goark/demo/internal/router"
-	"github.com/morehao/golib/biz/gconstant"
 	"github.com/morehao/golib/biz/gserver/gindocs"
 	"github.com/morehao/golib/biz/gserver/ginserver"
 )
@@ -14,8 +13,8 @@ import (
 const AppName = "demo"
 
 func Routers(engine *gin.Engine) {
-	routerGroups := ginserver.NewRouterGroups(engine, AppName, ginserver.Version{
-		Name: gconstant.ApiVersionV1,
+	routerGroups := ginserver.NewRouterGroups(engine, AppName, ginserver.VersionGroup{
+		Version: ginserver.ApiVersionV1,
 		Middlewares: []gin.HandlerFunc{
 			middleware.Example(),
 		},

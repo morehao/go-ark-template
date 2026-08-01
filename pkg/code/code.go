@@ -3,8 +3,7 @@ package code
 import (
 	"fmt"
 
-	"github.com/morehao/golib/biz/gconstant"
-	"github.com/morehao/golib/biz/genericdao"
+	"github.com/morehao/golib/gconstant"
 	"github.com/morehao/golib/gerror"
 )
 
@@ -32,7 +31,7 @@ func init() {
 	// 业务错误码规范: 从 1001XX 开始
 	// 模块划分: 1001XX(组织) 1002XX(租户) 1004XX(部门) 1005XX(用户) 1006XX(菜单) 1007XX(角色) 1008XX(日志) 1009XX(API密钥)
 	// 注: 100100-100109 被 application 使用
-	registerError(genericdao.DBErrorMsgMap)
+	registerError(gconstant.DBErrorMsgMap)
 	registerError(gconstant.SystemErrorMsgMap)
 	registerError(gconstant.AuthErrorMsgMap)
 	registerError(organizationErrorMsgMap)
@@ -47,4 +46,5 @@ func init() {
 	registerError(loginLogErrorMsgMap)
 	registerError(apiKeyErrorMsgMap)
 	registerError(oidcErrorMsgMap)
+	registerError(ragforgeErrorMsgMap)
 }

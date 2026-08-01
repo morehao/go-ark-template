@@ -7,4 +7,5 @@ func RegisterRouter(groups *ginserver.RouterGroups, appName string) {
 	sseRouter(groups)
 	clientRouter(groups)
 	userRouter(groups)
+	healthRouter(groups)
 }
