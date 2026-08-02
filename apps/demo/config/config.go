@@ -12,6 +12,7 @@ import (
 	"github.com/morehao/golib/gtrace"
 	"github.com/morehao/golib/gutil"
 	"github.com/morehao/golib/protocol/ghttp"
+	"github.com/morehao/golib/storage"
 )
 
 var Conf *Config
@@ -24,6 +25,7 @@ type Config struct {
 	RedisConfig dbredis.RedisConfig       `yaml:"redis_config"`
 	ESConfigs   []dbes.ESConfig           `yaml:"es_configs"`
 	Client      Client                    `yaml:"client"`
+	FileStorage FileStorage               `yaml:"file_storage"`
 }
 
 type Server struct {
@@ -34,6 +36,13 @@ type Server struct {
 
 type Client struct {
 	HTTPBingo *ghttp.Client `yaml:"httpbingo"`
+}
+
+// FileStorage 文件上传存储配置（对应 golib ginupload / filestore）。
+type FileStorage struct {
+	Driver   storage.DriverType `yaml:"driver"`   // 存储驱动类型
+	Bucket   string             `yaml:"bucket"`   // 存储桶
+	Storage  storage.Config     `yaml:"storage"`  // 驱动通用配置
 }
 
 // InitConf 初始化配置（运行时使用，自动查找配置文件）
