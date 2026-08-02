@@ -6,18 +6,18 @@ import (
 	"github.com/morehao/golib/filestore"
 )
 
-func RegisterRouter(groups *ginserver.RouterGroups, appName string, fileStore *filestore.FileStore) {
+func RegisterRouter(groups *ginserver.RouterGroups, appName string) {
 	formatRouter(groups)
 	sseRouter(groups)
 	clientRouter(groups)
 	userRouter(groups)
 	healthRouter(groups)
-	fileRouter(groups, fileStore)
+	fileRouter(groups)
 }
 
 // fileRouter 注册 golib ginupload 文件上传路由
-func fileRouter(groups *ginserver.RouterGroups, fileStore *filestore.FileStore) {
+func fileRouter(groups *ginserver.RouterGroups) {
 	v1RouterGroup := groups.MustGetGroup(ginserver.ApiVersionV1)
-	ginupload.Register(v1RouterGroup, fileStore)
+	ginupload.Register(v1RouterGroup, filestore.Get())
 }
 

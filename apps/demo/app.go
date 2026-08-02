@@ -32,21 +32,20 @@ func Routers(engine *gin.Engine) {
 		gindocs.Register(engine.Group("/"+AppName), AppName)
 	}
 
-	fileStore, err := initFileStore()
-	if err != nil {
+	if err := initFileStore(); err != nil {
 		panic(fmt.Errorf("demo.Routers: init file store failed: %w", err))
 	}
 
-	router.RegisterRouter(routerGroups, AppName, fileStore)
+	router.RegisterRouter(routerGroups, AppName)
 }
 
-// initFileStore 根据配置初始化文件上传存储（storage 驱动 + filestore）。
-func initFileStore() (*filestore.FileStore, error) {
+// initFileStore 根据配置初始化文件上传存储（storage 驱动 + filestore 单例）。
+func initFileStore() error {
 	cfg := config.Conf.FileStorage
 
 	st, err := storage.New(cfg.Driver, cfg.Storage)
 	if err != nil {
-		return nil, fmt.Errorf("storage.New: %w", err)
+		return fmt.Errorf("storage.New: %w", err)
 	}
 
 	var storeOpts []filestore.StoreOption
@@ -54,10 +53,7 @@ func initFileStore() (*filestore.FileStore, error) {
 		storeOpts = append(storeOpts, filestore.WithSignSecret(cfg.Storage.SignSecret))
 	}
 
-	fs, err := filestore.New(dbclient.DemoDB(context.TODO()), st, cfg.Bucket, storeOpts...)
-	if err != nil {
-		return nil, fmt.Errorf("filestore.New: %w", err)
-	}
-	glog.Infof(context.TODO(), "[demo.initFileStore] filestore init done, driver=%s, bucket=%s, local=%v", cfg.Driver, cfg.Bucket, fs.IsLocal())
-	return fs, nil
+	filestore.Init(dbclient.DemoDB(context.TODO()), st, cfg.Bucket, storeOpts...)
+	glog.Infof(context.TODO(), "[demo.initFileStore] filestore init done, driver=%s, bucket=%s, local=%v", cfg.Driver, cfg.Bucket, filestore.IsLocal())
+	return nil
 }
