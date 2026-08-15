@@ -6,17 +6,17 @@ import (
 )
 
 type UserCreateResp struct {
-	ID uint `json:"id"` // 数据自增 ID
+	UserID uint `json:"userID"` // 自增 ID
 }
 
 type UserDetailResp struct {
-	ID uint `json:"id" validate:"required"` // 数据自增 ID
+	UserID uint `json:"userID" binding:"required"` // 自增 ID
 	objuser.UserBaseInfo
 	gobject.OperatorBaseInfo
 }
 
 type UserPageListItem struct {
-	ID uint `json:"id" validate:"required"` // 数据自增 ID
+	UserID uint `json:"userID" binding:"required"` // 自增 ID
 	objuser.UserBaseInfo
 	gobject.OperatorBaseInfo
 }

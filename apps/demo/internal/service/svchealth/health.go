@@ -29,7 +29,6 @@ func (svc *healthSvc) Check(ctx *gin.Context) *dtohealth.DbCheckResp {
 		MySQL: "ok",
 		Redis: "ok",
 		ES:    "ok",
-		PG:    "ok",
 	}
 	checkCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
@@ -46,12 +45,8 @@ func (svc *healthSvc) Check(ctx *gin.Context) *dtohealth.DbCheckResp {
 		glog.Errorf(ctx, "[svchealth.Check] es ping fail, err:%v", err)
 		resp.ES = err.Error()
 	}
-	if err := pingDB(checkCtx, dbclient.RagForgeDB(checkCtx)); err != nil {
-		glog.Errorf(ctx, "[svchealth.Check] postgres ping fail, err:%v", err)
-		resp.PG = err.Error()
-	}
-	glog.Infof(ctx, "[svchealth.Check] result, mysql:%s, redis:%s, es:%s, pg:%s",
-		resp.MySQL, resp.Redis, resp.ES, resp.PG)
+	glog.Infof(ctx, "[svchealth.Check] result, mysql:%s, redis:%s, es:%s",
+		resp.MySQL, resp.Redis, resp.ES)
 	return resp
 }
 

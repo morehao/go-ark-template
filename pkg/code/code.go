@@ -37,7 +37,6 @@ func init() {
 	registerError(organizationErrorMsgMap)
 	registerError(tenantErrorMsgMap)
 	registerError(departmentErrorMsgMap)
-	registerError(userErrorMsgMap)
 	registerError(menuErrorMsgMap)
 	registerError(roleErrorMsgMap)
 	registerError(authErrorMsgMap)
@@ -46,5 +45,5 @@ func init() {
 	registerError(loginLogErrorMsgMap)
 	registerError(apiKeyErrorMsgMap)
 	registerError(oidcErrorMsgMap)
-	registerError(ragforgeErrorMsgMap)
+	registerError(userErrorMsgMap)
 }

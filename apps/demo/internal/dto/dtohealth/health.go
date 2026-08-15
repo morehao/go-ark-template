@@ -5,5 +5,4 @@ type DbCheckResp struct {
 	MySQL string `json:"mysql"`
 	Redis string `json:"redis"`
 	ES    string `json:"es"`
-	PG    string `json:"pg"`
 }

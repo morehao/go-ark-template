@@ -167,7 +167,8 @@ swag:
 		--instanceName $(APP)
 	@echo "✅ Swagger 文档已生成：apps/$(APP)/docs"
 
-CLI_VERSION := v0.1.12
+# gocli 版本：模板已切换为 RESTful kebab-case 复数资源路由风格（尚未打 tag，跟随 main）
+CLI_VERSION := main
 CLI_PKG     := github.com/morehao/gocli
 
 # 代码生成（API / module / model 等）
@@ -186,7 +187,7 @@ codegen:
 		INSTALLED_VER=$$(go version -m $$(which gocli) 2>/dev/null \
 			| grep -E "^\s+mod\s+$(CLI_PKG)" | awk '{print $$3}' || echo ""); \
 		echo "🔍 已安装的 gocli 版本: $$INSTALLED_VER，目标版本: $(CLI_VERSION)"; \
-		if [ "$$INSTALLED_VER" != "$(CLI_VERSION)" ]; then \
+		if [ "$$INSTALLED_VER" != "$(CLI_VERSION)" ] && [ "$(CLI_VERSION)" != "main" ]; then \
 			echo "⚠️  版本不匹配，重新安装 $(CLI_VERSION)..."; \
 			go install $(CLI_PKG)@$(CLI_VERSION); \
 		else \

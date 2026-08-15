@@ -1,23 +1,22 @@
 # mysql数据库连接字符串
-database_dsn: mysql://root:123456@tcp(127.0.0.1:3306)/ark_demo?charset=utf8mb4&parseTime=True&loc=Local
+database_dsn: mysql://root:123456@tcp(127.0.0.1:3306)/demo?charset=utf8mb4&parseTime=True&loc=Local
 # 也可以使用postgresql，示例如下：
 # database_dsn: postgresql://postgres:123456@localhost:5432/demo?sslmode=disable&TimeZone=Asia/Shanghai
 service_name: demo
 module:
   package_name: user
-  description: 用户登录记录
-  table_name: user_login_log
-  table_prefix: ac_
+  description: 用户管理
+  table_name: user
+  table_prefix: ""
 model:
   package_name: user
-  description: 用户登录记录
-  table_name: user_login_log
-  table_prefix: ac_
+  description: 用户管理
+  table_name: user
+  table_prefix: ""
 api:
   package_name: user
-  target_filename: user_login_log.go
-  function_name: ResetStatusV2
+  target_filename: user.go
+  function_name: ResetStatus
   http_method: POST
-  description: 重置登录记录V2
-  api_doc_tag: 用户登录记录
-
+  description: 重置用户状态
+  api_doc_tag: 用户管理

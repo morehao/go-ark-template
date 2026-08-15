@@ -22,7 +22,7 @@ const (
 //
 //	go test ./pkg/dbclient/ -v -run TestDbcheckVerify
 //
-// 注意：本地需就绪 MySQL(3306)/Redis(6379)/ES(9200)/PG(5432)。
+// 注意：本地需就绪 MySQL(3306)/Redis(6379)/ES(9200)。
 func TestDbcheckVerify(t *testing.T) {
 	testsetup.Initialize(testsetup.AppNameDemo)
 	defer testsetup.Close(testsetup.AppNameDemo)
@@ -67,17 +67,5 @@ func TestDbcheckVerify(t *testing.T) {
 		}
 		defer res.Body.Close()
 		t.Logf("es info status => %d", res.StatusCode)
-	})
-
-	t.Run("Postgres", func(t *testing.T) {
-		db := dbclient.RagForgeDB(ctx)
-		if db == nil {
-			t.Fatal("RagForgeDB is nil")
-		}
-		var val int
-		if err := db.Raw("SELECT 1").Scan(&val).Error; err != nil {
-			t.Fatalf("pg select 1 failed: %v", err)
-		}
-		t.Logf("postgres select 1 => %d", val)
 	})
 }

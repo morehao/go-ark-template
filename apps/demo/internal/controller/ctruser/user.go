@@ -33,8 +33,8 @@ func NewUserCtr() UserCtr {
 // @accept application/json
 // @Produce application/json
 // @Param req body dtouser.UserCreateReq true "创建用户管理"
-// @Success 200 {object} gincontext.DtoRender{data=dtouser.UserCreateResp} "{"code": 0,"data": "ok","msg": "success"}"
-// @Router /v1/demo/user/create [post]
+// @Success 200 {object} gincontext.DtoRender{data=dtouser.UserCreateResp} "{"code": 0, "requestID": "xxx", "data": "ok", "msg": "success"}"
+// @Router /v1/demo/users [post]
 func (ctr *userCtr) Create(ctx *gin.Context) {
 	var req dtouser.UserCreateReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -45,9 +45,8 @@ func (ctr *userCtr) Create(ctx *gin.Context) {
 	if err != nil {
 		gincontext.Fail(ctx, err)
 		return
-	} else {
-		gincontext.Success(ctx, res)
 	}
+	gincontext.Success(ctx, res)
 }
 
 // Delete 删除用户管理
@@ -55,12 +54,12 @@ func (ctr *userCtr) Create(ctx *gin.Context) {
 // @Summary 删除用户管理
 // @accept application/json
 // @Produce application/json
-// @Param req body dtouser.UserDeleteReq true "删除用户管理"
-// @Success 200 {object} gincontext.DtoRender{data=string} "{"code": 0,"data": "ok","msg": "删除成功"}"
-// @Router /v1/demo/user/delete [post]
+// @Param userID path int true "userID"
+// @Success 200 {object} gincontext.DtoRender{data=string} "{"code": 0, "requestID": "xxx", "data": "ok", "msg": "success"}"
+// @Router /v1/demo/users/{userID} [delete]
 func (ctr *userCtr) Delete(ctx *gin.Context) {
 	var req dtouser.UserDeleteReq
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if err := gincontext.BindPathParams(ctx, &req); err != nil {
 		gincontext.Fail(ctx, err)
 		return
 	}
@@ -68,9 +67,8 @@ func (ctr *userCtr) Delete(ctx *gin.Context) {
 	if err := ctr.userSvc.Delete(ctx, &req); err != nil {
 		gincontext.Fail(ctx, err)
 		return
-	} else {
-		gincontext.Success(ctx, "删除成功")
 	}
+	gincontext.Success(ctx, "删除成功")
 }
 
 // Update 修改用户管理
@@ -78,11 +76,16 @@ func (ctr *userCtr) Delete(ctx *gin.Context) {
 // @Summary 修改用户管理
 // @accept application/json
 // @Produce application/json
+// @Param userID path int true "userID"
 // @Param req body dtouser.UserUpdateReq true "修改用户管理"
-// @Success 200 {object} gincontext.DtoRender{data=string} "{"code": 0,"data": "ok","msg": "修改成功"}"
-// @Router /v1/demo/user/update [post]
+// @Success 200 {object} gincontext.DtoRender{data=string} "{"code": 0, "requestID": "xxx", "data": "ok", "msg": "修改成功"}"
+// @Router /v1/demo/users/{userID} [put]
 func (ctr *userCtr) Update(ctx *gin.Context) {
 	var req dtouser.UserUpdateReq
+	if err := gincontext.BindPathParams(ctx, &req); err != nil {
+		gincontext.Fail(ctx, err)
+		return
+	}
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		gincontext.Fail(ctx, err)
 		return
@@ -90,9 +93,8 @@ func (ctr *userCtr) Update(ctx *gin.Context) {
 	if err := ctr.userSvc.Update(ctx, &req); err != nil {
 		gincontext.Fail(ctx, err)
 		return
-	} else {
-		gincontext.Success(ctx, "修改成功")
 	}
+	gincontext.Success(ctx, "修改成功")
 }
 
 // Detail 用户管理详情
@@ -100,12 +102,12 @@ func (ctr *userCtr) Update(ctx *gin.Context) {
 // @Summary 用户管理详情
 // @accept application/json
 // @Produce application/json
-// @Param req query dtouser.UserDetailReq true "用户管理详情"
-// @Success 200 {object} gincontext.DtoRender{data=dtouser.UserDetailResp} "{"code": 0,"data": "ok","msg": "success"}"
-// @Router /v1/demo/user/detail [get]
+// @Param userID path int true "userID"
+// @Success 200 {object} gincontext.DtoRender{data=dtouser.UserDetailResp} "{"code": 0, "requestID": "xxx", "data": "ok", "msg": "success"}"
+// @Router /v1/demo/users/{userID} [get]
 func (ctr *userCtr) Detail(ctx *gin.Context) {
 	var req dtouser.UserDetailReq
-	if err := ctx.ShouldBindQuery(&req); err != nil {
+	if err := gincontext.BindPathParams(ctx, &req); err != nil {
 		gincontext.Fail(ctx, err)
 		return
 	}
@@ -113,9 +115,8 @@ func (ctr *userCtr) Detail(ctx *gin.Context) {
 	if err != nil {
 		gincontext.Fail(ctx, err)
 		return
-	} else {
-		gincontext.Success(ctx, res)
 	}
+	gincontext.Success(ctx, res)
 }
 
 // PageList 用户管理列表
@@ -124,8 +125,8 @@ func (ctr *userCtr) Detail(ctx *gin.Context) {
 // @accept application/json
 // @Produce application/json
 // @Param req query dtouser.UserPageListReq true "用户管理列表"
-// @Success 200 {object} gincontext.DtoRender{data=dtouser.UserPageListResp} "{"code": 0,"data": "ok","msg": "success"}"
-// @Router /v1/demo/user/pageList [post]
+// @Success 200 {object} gincontext.DtoRender{data=dtouser.UserPageListResp} "{"code": 0, "requestID": "xxx", "data": "ok", "msg": "success"}"
+// @Router /v1/demo/users [get]
 func (ctr *userCtr) PageList(ctx *gin.Context) {
 	var req dtouser.UserPageListReq
 	if err := ctx.ShouldBindQuery(&req); err != nil {
@@ -136,7 +137,6 @@ func (ctr *userCtr) PageList(ctx *gin.Context) {
 	if err != nil {
 		gincontext.Fail(ctx, err)
 		return
-	} else {
-		gincontext.Success(ctx, res)
 	}
+	gincontext.Success(ctx, res)
 }

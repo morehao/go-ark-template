@@ -7,12 +7,12 @@ import (
 // UserEntity 用户管理表结构体
 type UserEntity struct {
 	gorm.Model
-	CompanyID    uint   `gorm:"column:company_id;type:bigint unsigned;not null;default 0;comment: 公司id"`
-	CreatedBy    uint   `gorm:"column:created_by;type:bigint unsigned;not null;default 0;comment: 创建人id"`
-	DeletedBy    uint   `gorm:"column:deleted_by;type:bigint unsigned;not null;default 0;comment: 删除人id"`
-	DepartmentID uint   `gorm:"column:department_id;type:bigint unsigned;not null;default 0;comment: 部门id"`
-	Name         string `gorm:"column:name;type:varchar(255);not null;default '';comment: 姓名"`
-	UpdatedBy    uint   `gorm:"column:updated_by;type:bigint unsigned;not null;default 0;comment: 更新人id"`
+	CompanyID    uint   `gorm:"column:company_id;type:bigint unsigned;not null;default 0;comment:公司id"`
+	DepartmentID uint   `gorm:"column:department_id;type:bigint unsigned;not null;default 0;comment:部门id"`
+	Name         string `gorm:"column:name;type:varchar(255);not null;default '';comment:姓名"`
+	CreatedBy    uint   `gorm:"column:created_by;type:bigint unsigned;not null;default 0;comment:创建人id"`
+	UpdatedBy    uint   `gorm:"column:updated_by;type:bigint unsigned;not null;default 0;comment:更新人id"`
+	DeletedBy    uint   `gorm:"column:deleted_by;type:bigint unsigned;not null;default 0;comment:删除人id"`
 }
 
 type UserEntityList []UserEntity

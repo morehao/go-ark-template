@@ -70,8 +70,6 @@ trace:
 db_configs:
   - url: "mysql://root:123456@127.0.0.1:3306/demo?charset=utf8mb4&parseTime=True&loc=Local&timeout=5s&readTimeout=3s&writeTimeout=3s"
     service: demo
-  - url: "postgres://postgres:123456@127.0.0.1:5432/postgres?sslmode=disable"
-    service: ragforge
 
 redis_config:
   service: demo
