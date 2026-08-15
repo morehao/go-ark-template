@@ -167,8 +167,8 @@ swag:
 		--instanceName $(APP)
 	@echo "✅ Swagger 文档已生成：apps/$(APP)/docs"
 
-# gocli 版本：模板已切换为 RESTful kebab-case 复数资源路由风格（尚未打 tag，跟随 main）
-CLI_VERSION := main
+# gocli 版本：模板已切换为 RESTful kebab-case 复数资源路由风格
+CLI_VERSION := v1.32.1
 CLI_PKG     := github.com/morehao/gocli
 
 # 代码生成（API / module / model 等）
