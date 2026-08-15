@@ -15,7 +15,85 @@ const docTemplatedemo = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/v1/demo/user/create": {
+        "/v1/demo/health": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "健康检查"
+                ],
+                "summary": "健康检查",
+                "responses": {
+                    "200": {
+                        "description": "{\"code\": 0,\"data\": \"ok\",\"msg\": \"success\"}",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/gincontext.DtoRender"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dtohealth.DbCheckResp"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/demo/users": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户管理"
+                ],
+                "summary": "用户管理列表分页",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 1000,
+                        "type": "integer",
+                        "description": "每页数据条数",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"code\": 0, \"requestID\": \"xxx\", \"data\": \"ok\", \"msg\": \"success\"}",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/gincontext.DtoRender"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dtouser.UserPageListResp"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
             "post": {
                 "consumes": [
                     "application/json"
@@ -40,7 +118,7 @@ const docTemplatedemo = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "{\"code\": 0,\"data\": \"ok\",\"msg\": \"success\"}",
+                        "description": "{\"code\": 0, \"requestID\": \"xxx\", \"data\": \"ok\", \"msg\": \"success\"}",
                         "schema": {
                             "allOf": [
                                 {
@@ -60,52 +138,7 @@ const docTemplatedemo = `{
                 }
             }
         },
-        "/v1/demo/user/delete": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "用户管理"
-                ],
-                "summary": "删除用户管理",
-                "parameters": [
-                    {
-                        "description": "删除用户管理",
-                        "name": "req",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dtouser.UserDeleteReq"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "{\"code\": 0,\"data\": \"ok\",\"msg\": \"删除成功\"}",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/gincontext.DtoRender"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/demo/user/detail": {
+        "/v1/demo/users/{userID}": {
             "get": {
                 "consumes": [
                     "application/json"
@@ -120,15 +153,15 @@ const docTemplatedemo = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "ID 数据自增 ID",
-                        "name": "id",
-                        "in": "query",
+                        "description": "userID",
+                        "name": "userID",
+                        "in": "path",
                         "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "{\"code\": 0,\"data\": \"ok\",\"msg\": \"success\"}",
+                        "description": "{\"code\": 0, \"requestID\": \"xxx\", \"data\": \"ok\", \"msg\": \"success\"}",
                         "schema": {
                             "allOf": [
                                 {
@@ -146,59 +179,8 @@ const docTemplatedemo = `{
                         }
                     }
                 }
-            }
-        },
-        "/v1/demo/user/pageList": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "用户管理"
-                ],
-                "summary": "用户管理列表分页",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Page 页码",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "maximum": 1000,
-                        "type": "integer",
-                        "description": "PageSize 每页数据条数",
-                        "name": "pageSize",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "{\"code\": 0,\"data\": \"ok\",\"msg\": \"success\"}",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/gincontext.DtoRender"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/dtouser.UserPageListResp"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/demo/user/update": {
-            "post": {
+            },
+            "put": {
                 "consumes": [
                     "application/json"
                 ],
@@ -211,6 +193,13 @@ const docTemplatedemo = `{
                 "summary": "修改用户管理",
                 "parameters": [
                     {
+                        "type": "integer",
+                        "description": "userID",
+                        "name": "userID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
                         "description": "修改用户管理",
                         "name": "req",
                         "in": "body",
@@ -222,7 +211,48 @@ const docTemplatedemo = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "{\"code\": 0,\"data\": \"ok\",\"msg\": \"修改成功\"}",
+                        "description": "{\"code\": 0, \"requestID\": \"xxx\", \"data\": \"ok\", \"msg\": \"修改成功\"}",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/gincontext.DtoRender"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户管理"
+                ],
+                "summary": "删除用户管理",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "userID",
+                        "name": "userID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"code\": 0, \"requestID\": \"xxx\", \"data\": \"ok\", \"msg\": \"success\"}",
                         "schema": {
                             "allOf": [
                                 {
@@ -244,19 +274,33 @@ const docTemplatedemo = `{
         }
     },
     "definitions": {
+        "dtohealth.DbCheckResp": {
+            "type": "object",
+            "properties": {
+                "es": {
+                    "type": "string"
+                },
+                "mysql": {
+                    "type": "string"
+                },
+                "redis": {
+                    "type": "string"
+                }
+            }
+        },
         "dtouser.UserCreateReq": {
             "type": "object",
             "properties": {
                 "companyID": {
-                    "description": "CompanyID 公司id",
+                    "description": "公司id",
                     "type": "integer"
                 },
                 "departmentID": {
-                    "description": "DepartmentID 部门id",
+                    "description": "部门id",
                     "type": "integer"
                 },
                 "name": {
-                    "description": "Name 姓名",
+                    "description": "姓名",
                     "type": "string"
                 }
             }
@@ -264,20 +308,8 @@ const docTemplatedemo = `{
         "dtouser.UserCreateResp": {
             "type": "object",
             "properties": {
-                "id": {
-                    "description": "ID 数据自增 ID",
-                    "type": "integer"
-                }
-            }
-        },
-        "dtouser.UserDeleteReq": {
-            "type": "object",
-            "required": [
-                "id"
-            ],
-            "properties": {
-                "id": {
-                    "description": "ID 数据自增 ID",
+                "userID": {
+                    "description": "自增 ID",
                     "type": "integer"
                 }
             }
@@ -285,39 +317,39 @@ const docTemplatedemo = `{
         "dtouser.UserDetailResp": {
             "type": "object",
             "required": [
-                "id"
+                "userID"
             ],
             "properties": {
                 "companyID": {
-                    "description": "CompanyID 公司id",
+                    "description": "公司id",
                     "type": "integer"
                 },
                 "createdAt": {
-                    "description": "CreatedAt 创建时间",
+                    "description": "创建时间",
                     "type": "integer"
                 },
                 "createdBy": {
-                    "description": "CreatedBy 创建人id",
+                    "description": "创建人id",
                     "type": "integer"
                 },
                 "departmentID": {
-                    "description": "DepartmentID 部门id",
-                    "type": "integer"
-                },
-                "id": {
-                    "description": "ID 数据自增 ID",
+                    "description": "部门id",
                     "type": "integer"
                 },
                 "name": {
-                    "description": "Name 姓名",
+                    "description": "姓名",
                     "type": "string"
                 },
                 "updatedAt": {
-                    "description": "UpdatedAt 更新时间",
+                    "description": "更新时间",
                     "type": "integer"
                 },
                 "updatedBy": {
-                    "description": "UpdatedBy 更新人id",
+                    "description": "更新人id",
+                    "type": "integer"
+                },
+                "userID": {
+                    "description": "自增 ID",
                     "type": "integer"
                 }
             }
@@ -325,39 +357,39 @@ const docTemplatedemo = `{
         "dtouser.UserPageListItem": {
             "type": "object",
             "required": [
-                "id"
+                "userID"
             ],
             "properties": {
                 "companyID": {
-                    "description": "CompanyID 公司id",
+                    "description": "公司id",
                     "type": "integer"
                 },
                 "createdAt": {
-                    "description": "CreatedAt 创建时间",
+                    "description": "创建时间",
                     "type": "integer"
                 },
                 "createdBy": {
-                    "description": "CreatedBy 创建人id",
+                    "description": "创建人id",
                     "type": "integer"
                 },
                 "departmentID": {
-                    "description": "DepartmentID 部门id",
-                    "type": "integer"
-                },
-                "id": {
-                    "description": "ID 数据自增 ID",
+                    "description": "部门id",
                     "type": "integer"
                 },
                 "name": {
-                    "description": "Name 姓名",
+                    "description": "姓名",
                     "type": "string"
                 },
                 "updatedAt": {
-                    "description": "UpdatedAt 更新时间",
+                    "description": "更新时间",
                     "type": "integer"
                 },
                 "updatedBy": {
-                    "description": "UpdatedBy 更新人id",
+                    "description": "更新人id",
+                    "type": "integer"
+                },
+                "userID": {
+                    "description": "自增 ID",
                     "type": "integer"
                 }
             }
@@ -366,38 +398,31 @@ const docTemplatedemo = `{
             "type": "object",
             "properties": {
                 "list": {
-                    "description": "List 数据列表",
+                    "description": "数据列表",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dtouser.UserPageListItem"
                     }
                 },
                 "total": {
-                    "description": "Total 数据总条数",
+                    "description": "数据总条数",
                     "type": "integer"
                 }
             }
         },
         "dtouser.UserUpdateReq": {
             "type": "object",
-            "required": [
-                "id"
-            ],
             "properties": {
                 "companyID": {
-                    "description": "CompanyID 公司id",
+                    "description": "公司id",
                     "type": "integer"
                 },
                 "departmentID": {
-                    "description": "DepartmentID 部门id",
-                    "type": "integer"
-                },
-                "id": {
-                    "description": "ID 数据自增 ID",
+                    "description": "部门id",
                     "type": "integer"
                 },
                 "name": {
-                    "description": "Name 姓名",
+                    "description": "姓名",
                     "type": "string"
                 }
             }
@@ -410,6 +435,9 @@ const docTemplatedemo = `{
                 },
                 "data": {},
                 "msg": {
+                    "type": "string"
+                },
+                "requestID": {
                     "type": "string"
                 }
             }

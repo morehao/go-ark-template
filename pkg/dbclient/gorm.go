@@ -18,8 +18,7 @@ var (
 )
 
 const (
-	dbNameDemo     = "demo"
-	dbNameRagForge = "ragforge"
+	dbNameDemo = "demo"
 )
 
 func InitMultiDB(configs []dbgorm.Config, logConfig *glog.LogConfig) error {
@@ -53,8 +52,4 @@ func GetDB(ctx context.Context, dbName string) *gorm.DB {
 
 func DemoDB(ctx context.Context) *gorm.DB {
 	return GetDB(ctx, dbNameDemo)
-}
-
-func RagForgeDB(ctx context.Context) *gorm.DB {
-	return GetDB(ctx, dbNameRagForge)
 }

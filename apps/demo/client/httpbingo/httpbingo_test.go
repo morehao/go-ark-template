@@ -7,7 +7,7 @@ import (
 
 	"github.com/morehao/goark/demo/config"
 	"github.com/morehao/goark/pkg/testsetup"
-	"github.com/morehao/golib/glog"
+	"github.com/morehao/golib/gutil"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -29,5 +29,5 @@ func TestGet(t *testing.T) {
 		ID: 1,
 	})
 	assert.Nil(t, err)
-	t.Log(glog.ToJsonString(res))
+	t.Log(gutil.ToJsonString(res))
 }

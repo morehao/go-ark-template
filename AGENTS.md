@@ -237,11 +237,11 @@ func (ctr *userCtr) Create(ctx *gin.Context) {
 
 ### API 路由规范
 
-- **路径格式**: `/{版本}/{app}/{模块}/{操作}`，如 `/v1/iam/user/create`
+- **路径格式**: RESTful 资源式，`/{版本}/{app}/{资源复数}` + HTTP 方法，如 `GET /v1/demo/users`
 - **版本号**: 放在路径最前，使用 `/v1/`, `/v2/` 等格式
-- **App 标识**: 用于区分不同应用，如 `iam`, `demo`
-- **模块名**: 对应业务模块，如 `user`, `role`, `menu`
-- **操作名**: 使用驼峰命名，如 `create`, `update`, `detail`, `pageList`, `assignDepartment`
+- **App 标识**: 用于区分不同应用，如 `demo`
+- **资源名**: 复数形式，小写 kebab-case（如 `user` → `users`、`user-info`）；路径参数用 `:xxxID`（如 `:userID`）
+- **HTTP 方法**: 创建 `POST`、列表 `GET`、详情 `GET /:id`、修改 `PUT /:id`、删除 `DELETE /:id`
 
 **路由层级限制为4层**，避免使用多层嵌套路径。
 
@@ -249,29 +249,26 @@ func (ctr *userCtr) Create(ctx *gin.Context) {
 
 | 模块 | 操作 | 完整路径 |
 |------|------|----------|
-| user | 创建 | `/v1/iam/user/create` |
-| user | 分配部门 | `/v1/iam/user/assignDepartment` |
-| role | 列表 | `/v1/iam/role/pageList` |
+| user | 创建 | `POST /v1/demo/users` |
+| user | 列表 | `GET /v1/demo/users` |
+| user | 详情 | `GET /v1/demo/users/:userID` |
+| user | 修改 | `PUT /v1/demo/users/:userID` |
+| user | 删除 | `DELETE /v1/demo/users/:userID` |
 
 #### 路由注册
 
-在 `router/router.go` 中注册路由，先按版本分组，再按应用分组：
+在 `internal/router/*.go` 中注册路由，先按版本分组，再按资源分组：
 
 ```go
-v1AuthGroup := groups.AuthGroup.Group("/v1")
-iamGroup := v1AuthGroup.Group("/iam")
+func userRouter(groups *ginserver.RouterGroups) {
+    userCtr := ctruser.NewUserCtr()
+    v1RouterGroup := groups.MustGetGroup(ginserver.ApiVersionV1)
 
-userRouter(iamGroup)
-roleRouter(iamGroup)
-```
-
-在各个路由文件中使用 gin 的路由注册方法：
-
-```go
-func userRouter(routerGroup *gin.RouterGroup) {
-    routerGroup.POST("/user/create", userCtr.Create)
-    routerGroup.POST("/user/delete", userCtr.Delete)
-    routerGroup.GET("/user/detail", userCtr.Detail)
+    v1RouterGroup.POST("/users", userCtr.Create)
+    v1RouterGroup.GET("/users", userCtr.PageList)
+    v1RouterGroup.GET("/users/:userID", userCtr.Detail)
+    v1RouterGroup.PUT("/users/:userID", userCtr.Update)
+    v1RouterGroup.DELETE("/users/:userID", userCtr.Delete)
 }
 ```
 

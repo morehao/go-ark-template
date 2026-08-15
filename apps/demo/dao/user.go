@@ -10,34 +10,34 @@ import (
 type UserCond struct {
 	*gormdao.BaseCond
 	CompanyID    uint
-	CreatedBy    uint
-	DeletedBy    uint
 	DepartmentID uint
 	Name         string
+	CreatedBy    uint
 	UpdatedBy    uint
+	DeletedBy    uint
 }
 
 func (c *UserCond) BuildCondition(db *gorm.DB, tableName string) {
 	if c.BaseCond != nil {
 		c.BaseCond.BuildCondition(db, tableName)
 	}
-	if c.CompanyID > 0 {
+	if c.CompanyID != 0 {
 		db.Where(tableName+".company_id = ?", c.CompanyID)
 	}
-	if c.CreatedBy > 0 {
-		db.Where(tableName+".created_by = ?", c.CreatedBy)
-	}
-	if c.DeletedBy > 0 {
-		db.Where(tableName+".deleted_by = ?", c.DeletedBy)
-	}
-	if c.DepartmentID > 0 {
+	if c.DepartmentID != 0 {
 		db.Where(tableName+".department_id = ?", c.DepartmentID)
 	}
 	if c.Name != "" {
 		db.Where(tableName+".name = ?", c.Name)
 	}
-	if c.UpdatedBy > 0 {
+	if c.CreatedBy != 0 {
+		db.Where(tableName+".created_by = ?", c.CreatedBy)
+	}
+	if c.UpdatedBy != 0 {
 		db.Where(tableName+".updated_by = ?", c.UpdatedBy)
+	}
+	if c.DeletedBy != 0 {
+		db.Where(tableName+".deleted_by = ?", c.DeletedBy)
 	}
 }
 
@@ -53,9 +53,3 @@ func NewUserDao() *UserDao {
 		),
 	}
 }
-
-// func (d *UserDao) WithTx(db *gorm.DB) *UserDao {
-// 	return &UserDao{
-// 		Dao: d.GenericDao.WithTx(db),
-// 	}
-// }
