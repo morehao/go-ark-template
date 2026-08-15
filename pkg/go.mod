@@ -5,7 +5,7 @@ go 1.26.1
 require (
 	github.com/elastic/go-elasticsearch/v8 v8.19.3
 	github.com/gin-gonic/gin v1.12.0
-	github.com/morehao/golib v1.32.3
+	github.com/morehao/golib v1.32.5
 	github.com/redis/go-redis/v9 v9.18.0
 	gorm.io/gorm v1.31.1
 )
@@ -62,5 +62,3 @@ require (
 	gorm.io/driver/mysql v1.6.0 // indirect
 	gorm.io/driver/postgres v1.6.0 // indirect
 )
-
-replace github.com/morehao/golib => ../../golib
