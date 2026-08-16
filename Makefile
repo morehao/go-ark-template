@@ -6,7 +6,7 @@
 APP        =
 BINARY     = $(APP)
 MAIN_DIR   = ./apps/$(APP)/cmd
-BUILD_DIR  = ./output/build
+BUILD_DIR  = ./backend/output/build
 VERSION    = $(shell date +%Y%m%d%H%M%S)-$(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 
 APP_CONFIG_PATH = /app/config.yaml
@@ -33,7 +33,8 @@ PORT              = 8099
 # ============================================================
 .PHONY: all build build-env clean run lint test swag codegen \
         docker-build docker-run check-image \
-        list-apps deps tidy update-dep help
+        list-apps deps tidy update-dep \
+        dev-frontend stop-frontend help
 
 # ============================================================
 # 通用入口：清理、依赖、构建并运行
@@ -47,13 +48,13 @@ all: clean deps build run
 # 验证 APP 参数是否有效，同时列出可用应用供参考
 define validate_app
 	@if [ -z "$(APP)" ]; then \
-		echo "❌ 请使用 APP=<名称> 指定要操作的应用程序，例如：make build APP=demoapp"; \
-		echo "   可用的应用程序：$$(ls ./apps 2>/dev/null | tr '\n' ' ')"; \
+		echo "❌ 请使用 APP=<名称> 指定要操作的应用程序，例如：make build APP=demo"; \
+		echo "   可用的应用程序：$$(ls ./backend/apps 2>/dev/null | tr '\n' ' ')"; \
 		exit 1; \
 	fi
-	@if [ ! -d "./apps/$(APP)" ]; then \
-		echo "❌ 应用程序 '$(APP)' 不存在于 ./apps 目录下"; \
-		echo "   可用的应用程序：$$(ls ./apps 2>/dev/null | tr '\n' ' ')"; \
+	@if [ ! -d "./backend/apps/$(APP)" ]; then \
+		echo "❌ 应用程序 '$(APP)' 不存在于 ./backend/apps 目录下"; \
+		echo "   可用的应用程序：$$(ls ./backend/apps 2>/dev/null | tr '\n' ' ')"; \
 		exit 1; \
 	fi
 endef
@@ -67,18 +68,18 @@ build:
 	$(call validate_app)
 	@echo "🔨 正在构建应用程序 $(APP)..."
 	@mkdir -p $(BUILD_DIR)
-	@go work sync
-	@go build -ldflags="-X 'main.BuildVersion=$(VERSION)'" -o $(BUILD_DIR)/$(BINARY) $(MAIN_DIR)
-	@echo "✅ 构建完成: $(BUILD_DIR)/$(BINARY)"
+	@cd backend && go work sync
+	@cd backend && go build -ldflags="-X 'main.BuildVersion=$(VERSION)'" -o output/build/$(BINARY) $(MAIN_DIR)
+	@echo "✅ 构建完成: ./backend/output/build/$(BINARY)"
 
 # 为指定环境构建（默认注入 CGO_ENABLED=0，适合容器/Linux 交叉编译）
 build-env:
 	$(call validate_app)
 	@echo "🔨 正在为 [$(GO_ENV)] 构建 $(APP)..."
 	@mkdir -p $(BUILD_DIR)
-	@go work sync
-	@$(GO_ENV) go build -ldflags="-X 'main.BuildVersion=$(VERSION)'" -o $(BUILD_DIR)/$(BINARY) $(MAIN_DIR)
-	@echo "✅ 构建完成: $(BUILD_DIR)/$(BINARY)"
+	@cd backend && go work sync
+	@cd backend && $(GO_ENV) go build -ldflags="-X 'main.BuildVersion=$(VERSION)'" -o output/build/$(BINARY) $(MAIN_DIR)
+	@echo "✅ 构建完成: ./backend/output/build/$(BINARY)"
 
 # ============================================================
 # 清理
@@ -93,18 +94,20 @@ clean:
 # ============================================================
 
 # 直接用 go run 启动（开发调试用）
+# 注意：必须在 backend/apps/<app>/cmd 目录下启动——config（../config/config.yaml）、
+# 日志（../../../log）等相对路径均按该 CWD 设计。
 run:
 	$(call validate_app)
 	@echo "🚀 正在运行应用程序 $(APP)..."
-	@go work sync
-	@go run $(MAIN_DIR)
+	@cd backend && go work sync
+	@cd backend/apps/$(APP)/cmd && go run .
 
 # 运行单元测试
 test:
 	$(call validate_app)
 	@echo "🧪 正在运行测试..."
-	@go work sync
-	@go test ./apps/$(APP)/internal/... -v
+	@cd backend && go work sync
+	@cd backend && go test ./apps/$(APP)/... -v
 
 # ============================================================
 # 依赖管理
@@ -113,8 +116,8 @@ test:
 # 同步 workspace 并更新所有子模块依赖
 deps:
 	@echo "📦 正在下载依赖项..."
-	@go work sync
-	@find . -name "go.mod" -not -path "*/vendor/*" | while read modfile; do \
+	@cd backend && go work sync
+	@find ./backend -name "go.mod" -not -path "*/vendor/*" | while read modfile; do \
 		dir=$$(dirname $$modfile); \
 		echo "  => $$dir"; \
 		(cd $$dir && $(GO_ENV) go mod download && go mod tidy); \
@@ -123,12 +126,12 @@ deps:
 
 # 仅执行 go mod tidy（不下载全量依赖，速度更快）
 tidy:
-	@find . -name "go.mod" -not -path "*/vendor/*" | while read modfile; do \
+	@find ./backend -name "go.mod" -not -path "*/vendor/*" | while read modfile; do \
 		dir=$$(dirname $$modfile); \
 		echo "==> Tidy in $$dir"; \
 		(cd $$dir && go mod tidy); \
 	done
-	@go work sync
+	@cd backend && go work sync
 
 # 升级指定依赖包（仅在引用该包的模块中执行）
 # 用法：make update-dep ARGS="-u github.com/morehao/golib@v0.1.1"
@@ -138,7 +141,7 @@ update-dep:
 		echo "   用法：make update-dep ARGS=\"-u github.com/morehao/golib@v0.1.1\""; \
 		exit 1; \
 	fi
-	@find . -name "go.mod" -not -path "*/vendor/*" | while read modfile; do \
+	@find ./backend -name "go.mod" -not -path "*/vendor/*" | while read modfile; do \
 		dir=$$(dirname $$modfile); \
 		pkg=$$(echo "$(ARGS)" | grep -oE '[a-zA-Z0-9._/-]+/[a-zA-Z0-9._/-]+' | head -1); \
 		if grep -q "$$pkg" "$$modfile"; then \
@@ -157,7 +160,7 @@ swag:
 	$(call validate_app)
 	@echo "📚 正在生成 Swagger 文档..."
 	@which swag > /dev/null 2>&1 || (echo "⚠️  swag 未安装，正在安装..." && go install github.com/swaggo/swag/cmd/swag@latest)
-	@swag init \
+	@cd backend && swag init \
 		--parseDependency \
 		--parseInternal \
 		-g app.go \
@@ -165,7 +168,7 @@ swag:
 		--output apps/$(APP)/docs \
 		--outputTypes go \
 		--instanceName $(APP)
-	@echo "✅ Swagger 文档已生成：apps/$(APP)/docs"
+	@echo "✅ Swagger 文档已生成：backend/apps/$(APP)/docs"
 
 # gocli 版本：模板已切换为 RESTful kebab-case 复数资源路由风格
 CLI_VERSION := v1.32.1
@@ -195,7 +198,7 @@ codegen:
 		fi; \
 	fi
 	@echo "🔧 开始生成代码：APP=$(APP)，COMMAND=$(COMMAND)"
-	@gocli generate $(COMMAND) -a $(APP)
+	@cd backend && gocli generate $(COMMAND) -a $(APP)
 
 # ============================================================
 # Docker
@@ -208,7 +211,7 @@ docker-build:
 	@echo "   镜像名称  : $(DOCKER_IMAGE)"
 	@echo "   Git Tag   : $(if $(GIT_TAG),$(GIT_TAG),无)"
 	@echo "   Git Commit: $(GIT_COMMIT)"
-	@docker buildx build -t $(DOCKER_IMAGE) -f ./apps/$(APP)/scripts/Dockerfile .
+	@docker buildx build -t $(DOCKER_IMAGE) -f ./backend/apps/$(APP)/scripts/Dockerfile ./backend
 	@echo "✅ Docker 镜像 $(DOCKER_IMAGE) 构建完成"
 
 # 运行 Docker 容器（镜像不存在时自动构建）
@@ -236,18 +239,35 @@ check-image:
 	fi
 
 # ============================================================
+# 前端开发
+# ============================================================
+
+# 启动前端开发服务（开发调试用）
+dev-frontend:
+	@echo "🚀 正在启动前端开发服务..."
+	@cd frontend && pnpm dev
+
+# 停止前端开发服务（本地测试用）
+stop-frontend:
+	@echo "🛑 正在停止前端服务..."
+	@pkill -f "vite.*goark" 2>/dev/null && echo "✅ 已停止" || echo "⚠️  没有运行中的前端服务"
+
+# ============================================================
 # 其他工具
 # ============================================================
 
 # 列出所有可用的应用程序
 list-apps:
 	@echo "📂 可用的应用程序:"
-	@ls -1 ./apps
+	@ls -1 ./backend/apps
 
-# 运行代码检查工具
+# 运行代码检查工具（在 workspace 各模块目录内分别执行）
 lint:
 	@echo "🔍 正在运行代码检查工具..."
-	@golangci-lint run ./...
+	@cd backend && go work edit -json | grep -o '"DiskPath": "[^"]*"' | awk '{gsub(/"/, "", $$2); print $$2}' | while read mod; do \
+		echo "  => lint $$mod"; \
+		(cd $$mod && golangci-lint run ./...); \
+	done
 
 # ============================================================
 # 帮助信息
@@ -280,11 +300,15 @@ help:
 	@echo "    make docker-build APP=<名称>           构建 Docker 镜像"
 	@echo "    make docker-run   APP=<名称> [PORT=N]  运行容器（镜像不存在时自动构建）"
 	@echo ""
+	@echo "  前端"
+	@echo "    make dev-frontend                      启动前端开发服务"
+	@echo "    make stop-frontend                     停止前端开发服务（本地测试）"
+	@echo ""
 	@echo "  其他"
 	@echo "    make list-apps                         列出所有可用的应用程序"
 	@echo "    make help                              显示此帮助信息"
 	@echo ""
 	@echo "📝 Docker 镜像标签规则："
-	@echo "   有 git tag  →  <tag>-<commit>   示例：demoapp:v1.0.0-abc1234"
-	@echo "   无 git tag  →  <commit>         示例：demoapp:abc1234"
+	@echo "   有 git tag  →  <tag>-<commit>   示例：demo:v1.0.0-abc1234"
+	@echo "   无 git tag  →  <commit>         示例：demo:abc1234"
 	@echo ""

@@ -1,7 +1,11 @@
 .idea
 .DS_Store
 .git
+.history
+.opencode
 
-internal/apps/internal/genCode/*
-internal/apps/internal/resource/*
-log/*
+frontend/
+**/node_modules/
+**/log/
+**/output/
+backend/.tmp/
