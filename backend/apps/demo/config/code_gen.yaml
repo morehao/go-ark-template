@@ -4,19 +4,19 @@ database_dsn: mysql://root:123456@tcp(127.0.0.1:3306)/demo?charset=utf8mb4&parse
 # database_dsn: postgresql://postgres:123456@localhost:5432/demo?sslmode=disable&TimeZone=Asia/Shanghai
 service_name: demo
 module:
-  package_name: user
-  description: 用户管理
-  table_name: user
+  package_name: company
+  description: 公司管理
+  table_name: company
   table_prefix: ""
 model:
-  package_name: user
-  description: 用户管理
-  table_name: user
+  package_name: company
+  description: 公司管理
+  table_name: company
   table_prefix: ""
 api:
-  package_name: user
-  target_filename: user.go
-  function_name: ResetStatus
+  package_name: company
+  target_filename: company.go
+  function_name: Refresh
   http_method: POST
-  description: 重置用户状态
-  api_doc_tag: 用户管理
+  description: 刷新公司信息
+  api_doc_tag: 公司管理
