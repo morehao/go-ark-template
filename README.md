@@ -2,19 +2,20 @@
 
 # Project Overview
 
-`goark` is a Go backend engineering practice project based on [Gin](https://github.com/gin-gonic/gin). It provides a layered, maintainable, and scalable service structure with multiple app modules.
+`go-ark-template` is a full-stack Go Web engineering practice project. The backend is based on [Gin](https://github.com/gin-gonic/gin) + GORM (Go workspace multi-module), and the frontend is based on React + Vite + Ant Design (pnpm monorepo). It provides a layered, maintainable, and scalable structure with frontend (React) and backend (Go) separated.
 
 ---
 
 # Features
 
-* **Clear Project Structure**: Inspired by [project-layout](https://github.com/golang-standards/project-layout), follows layered architecture principles, organized for team collaboration and long-term maintenance.
+* **Clear Project Structure**: Inspired by [project-layout](https://github.com/golang-standards/project-layout), follows layered architecture principles. Frontend and backend are separated (`backend/` + `frontend/`), organized for team collaboration and long-term maintenance.
 * **Common Component Integration**: Includes built-in examples for MySQL, Redis, and Elasticsearch.
 * **Full Link Logging**: Provides a custom logging package `glog` based on `zap`, supporting full trace ID propagation across MySQL, Redis, ES, and HTTP calls.
 * **Code Generation Tool**: Comes with a command-line tool `gocli` that can generate standardized code (including model, dao, object, dto, code, service, controller, router layers) based on config.
 * **Swagger API Documentation**: Automatically generate interactive API docs using `swaggo` for easier frontend-backend collaboration and testing.
+* **Frontend Monorepo**: Shared `packages/` (tsconfig/types/api) via pnpm workspace; business apps live in `apps/`.
 * **Docker Support**: Includes a basic `Dockerfile` for containerized deployment.
-* **Makefile Toolchain**: Provides a rich set of make commands to simplify code build, run, generation, Swagger docs, and Docker deployment.
+* **Makefile Toolchain**: Provides a rich set of make commands to simplify code build, run, generation, Swagger docs, Docker deployment, and frontend startup.
 * **Growing Golib Library**: Common utility components are abstracted and reusable via the [golib](https://github.com/morehao/golib) package.
 
 ---
@@ -25,41 +26,28 @@ Follows [project-layout](https://github.com/golang-standards/project-layout). Cu
 
 ```bash
 .
-├── apps
-│   ├── demo
-│   │   ├── cmd
-│   │   ├── client
-│   │   ├── config
-│   │   ├── dao
-│   │   ├── model
-│   │   ├── docs
-│   │   ├── internal
-│   │   │   ├── controller
-│   │   │   ├── dto
-│   │   │   ├── router
-│   │   │   └── service
-│   │   ├── middleware
-│   │   ├── object
-│   │   └── scripts
-│   └── iam
-│       ├── cmd
-│       ├── config
-│       ├── docs
-│       ├── dao
-│       ├── model
-│       ├── internal
-│       │   ├── controller
-│       │   ├── dto
-│       │   ├── router
-│       │   └── service
-│       ├── object
-│       └── scripts
-├── pkg
-│   ├── code
-│   ├── dbclient
-│   ├── testsetup
-│   └── utils
-└── scripts
+├── backend                 # Go backend project (go.work multi-module)
+│   ├── apps
+│   │   └── demo            # Demo example app
+│   │       ├── cmd         # Entry point
+│   │       ├── client      # External clients
+│   │       ├── config      # Config
+│   │       ├── dao         # Data access layer
+│   │       ├── model       # Data models
+│   │       ├── docs        # Swagger docs
+│   │       ├── internal    # controller / dto / router / service / middleware
+│   │       ├── object      # Base objects
+│   │       └── scripts     # Dockerfile etc.
+│   ├── pkg                 # Shared packages (code / dbclient / testsetup / token)
+│   ├── go.work             # Go workspace file
+│   └── output              # Build output
+├── frontend                # React frontend project (pnpm monorepo)
+│   ├── apps
+│   │   └── demo-web        # Demo frontend app (Vite + React + AntD)
+│   └── packages            # Shared packages (tsconfig / types / api)
+├── Makefile                # Root Makefile (backend + frontend commands)
+├── AGENTS.md               # Development conventions
+└── docs                    # Documentation
 ```
 
 ---
@@ -112,6 +100,21 @@ Access docs at (dev mode):
 ```
 http://localhost:8099/demo/redocs
 ```
+
+---
+
+## Frontend Development
+
+Install dependencies and start dev server under `frontend/`:
+
+```bash
+cd frontend
+pnpm install
+pnpm dev        # default :3000, proxies /v1 → http://localhost:8099
+```
+
+Or from the repo root: `make dev-frontend` to start, `make stop-frontend` to stop.
+> The frontend depends on the backend; start the backend first via `make run APP=demo`.
 
 ---
 
