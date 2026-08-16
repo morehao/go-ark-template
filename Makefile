@@ -171,7 +171,7 @@ swag:
 	@echo "✅ Swagger 文档已生成：backend/apps/$(APP)/docs"
 
 # gocli 版本：模板已切换为 RESTful kebab-case 复数资源路由风格
-CLI_VERSION := v1.32.1
+CLI_VERSION := v1.32.3
 CLI_PKG     := github.com/morehao/gocli
 
 # 代码生成（API / module / model 等）
@@ -187,14 +187,13 @@ codegen:
 		echo "⚠️  未检测到 gocli，正在安装 $(CLI_VERSION)..."; \
 		go install $(CLI_PKG)@$(CLI_VERSION); \
 	else \
-		INSTALLED_VER=$$(go version -m $$(which gocli) 2>/dev/null \
-			| grep -E "^\s+mod\s+$(CLI_PKG)" | awk '{print $$3}' || echo ""); \
-		echo "🔍 已安装的 gocli 版本: $$INSTALLED_VER，目标版本: $(CLI_VERSION)"; \
-		if [ "$$INSTALLED_VER" != "$(CLI_VERSION)" ] && [ "$(CLI_VERSION)" != "main" ]; then \
+		INSTALLED_VER=$$(go version -m $$(command -v gocli) 2>/dev/null | awk -v pkg="$(CLI_PKG)" '$$0 ~ "^[ \t]+mod[ \t]+" pkg "[ \t]" {print $$3; exit}'); \
+		echo "🔍 已安装的 gocli 版本: [$$INSTALLED_VER] 目标版本: $(CLI_VERSION)"; \
+		if [ -n "$$INSTALLED_VER" ] && [ "$$INSTALLED_VER" = "$(CLI_VERSION)" ]; then \
+			echo "✅ gocli 版本已是最新"; \
+		else \
 			echo "⚠️  版本不匹配，重新安装 $(CLI_VERSION)..."; \
 			go install $(CLI_PKG)@$(CLI_VERSION); \
-		else \
-			echo "✅ gocli 版本已是最新"; \
 		fi; \
 	fi
 	@echo "🔧 开始生成代码：APP=$(APP)，COMMAND=$(COMMAND)"
