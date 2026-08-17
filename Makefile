@@ -171,7 +171,7 @@ swag:
 	@echo "✅ Swagger 文档已生成：backend/apps/$(APP)/docs"
 
 # gocli 版本：模板已切换为 RESTful kebab-case 复数资源路由风格
-CLI_VERSION := v1.32.3
+CLI_VERSION := v1.32.5
 CLI_PKG     := github.com/morehao/gocli
 
 # 代码生成（API / module / model 等）

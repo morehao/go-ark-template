@@ -73,7 +73,7 @@ func pingES(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	if res.IsError() {
 		return context.DeadlineExceeded
 	}
