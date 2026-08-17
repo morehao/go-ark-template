@@ -65,7 +65,7 @@ func TestDbcheckVerify(t *testing.T) {
 		if err != nil {
 			t.Fatalf("es info failed: %v", err)
 		}
-		defer res.Body.Close()
+		defer func() { _ = res.Body.Close() }()
 		t.Logf("es info status => %d", res.StatusCode)
 	})
 }
